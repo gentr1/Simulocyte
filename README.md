@@ -1,5 +1,6 @@
 # Simulocyte
-### a minecraft for cell biology: work as a team online to build 3d models of the cell
+
+Simulocyte will be released in January 2015. It is a free software for computer simulation of the living cell. It represents molecular cell biology knowledge as a molecular network visualised in interactive 3D interface. With its unique QSSPN simulation engine, the Simulocyte makes molecular network alive. It generates trajectories of molecular events showing how behaviour of the cell emerges from the interaction between the genome and cell’s environment. The simulation of whole-cell molecular network is needed to make full use of molecular biology data in personalised medicine and synthetic biology. Simulocyte can be used online to form user communities building models together. One needs social networks to understand molecular networks. The Simulocyte can be also used as a desktop software.
 
 This version use sails, express, and socket.io for the networking.
 
