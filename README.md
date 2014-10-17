@@ -5,7 +5,7 @@ This version use sails, express, and socket.io for the networking.
 
 It also uses webgl to visualise metabolic networks of the cell using three.js, and combine with visualisations from d3js.
 
-downloads:
+**downloads:**
 
 1- install mongodb
 
@@ -16,7 +16,7 @@ downloads:
 
 4- download metabolic networks .json files that are available ( recon2.v02.xml_metabolic_net.json,  hepatonet1-msb201062-s5.xml_metabolic_net.json, Ec_iAF1260_flux2.xml_metabolic_net.json)
 
-installation:
+**installation:**
 
 0 - make sure mongodb is on (you can test that by issuing the command mongo , if it start the mongodb shell without error message that means it works ok, you can then exit it by typing "exit"...)
 
