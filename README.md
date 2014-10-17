@@ -1,5 +1,5 @@
 # Simulocyte
-### a minecraft for cell biology: work as a team online to build 3d models od the cell
+### a minecraft for cell biology: work as a team online to build 3d models of the cell
 
 This version use sails, express, and socket.io for the networking.
 
