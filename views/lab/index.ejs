@@ -1,0 +1,29 @@
+<div class='container'>
+	<div class="jumbotron">
+	<h1>Labs </h1>
+	
+	
+	<table class='table table-bordered' style="text-align:left;">
+		<tr>
+			
+			<th>Name</th>
+			<th>Comment</th>
+			
+		</tr>
+		
+
+		<% _.each(lbs, function(usr) { %>
+		<tr data-id="<%= usr.id %>" data-model="usr">
+			
+			<td><%= usr.name %></td>
+			<td><%= usr.comment %></td>
+			
+		</tr> 
+
+		<% }) %>
+	</table>
+	
+	
+	
+	
+</div>

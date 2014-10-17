@@ -1,0 +1,30 @@
+<h1>Metabolic networks</h1>
+<form action="/metabolic_net/create" method="POST" id="metabolic-net-sign-up-form" enctype="multipart/form-data" class="form-signin">
+	<h2 class="form-signin-heading">Create a metabolic network</h2>
+
+	<% if(flash && flash.err) { %>
+		<ul class="alert alert-success">
+	<% Object.keys(flash.err).forEach(function(error) { %>
+		<li><%- JSON.stringify(flash.err[error]) %></li>
+	<% }) %>
+	</ul>
+	<% } %>
+
+	
+	<div class="control-group">
+	<input type="text" class="form-control" placeholder="metabolic network sbml name" name="name">
+	</div>
+	<div class="control-group">
+	<input type="text" class="form-control" placeholder="comment" name="comment">
+	</div>
+	<div class="control-group">
+	<input type="file" placeholder="file" name="myfile">
+	</div>
+	<br>
+	<input type="submit" class="btn btn-lg btn-primary btn-block" value="Create Metabolic Network"/>
+	
+	
+	
+	
+	<input type="hidden" name="_csrf" value="<%= _csrf %>" />
+</form>

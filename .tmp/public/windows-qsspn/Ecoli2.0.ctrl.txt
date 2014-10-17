@@ -1,0 +1,34 @@
+
+MODEL Ec_iAF1260_flux2.pnfba1.sfba 
+NUMBER_OF_SAMPLES 1 
+SEED 14651 
+TIME_MAX 7.0 
+MAXIMAL_TIMESTEP 0.0167 
+
+OUTPUT Ecoli2.0.out.xls
+LOG Ecoli2.0.log.txt
+MONITOR 1 
+
+TARGET BIOMASS 100000000 
+
+PETRI_NET_MONITORS
+CRPcAMP
+External_galactose
+External_lactose
+External_glucose
+CRP
+LacZYmRNA
+LacZ
+AC
+LacY
+BIOMASS
+Lactose
+External_glycerol
+External_acetate
+END
+
+PRINT_MESSAGES
+HYBRID_SIMULATION4
+//PRINT_SYSTEM
+
+

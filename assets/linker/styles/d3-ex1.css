@@ -1,0 +1,333 @@
+.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
+}
+
+.chart rect {
+  fill: steelblue;
+}
+
+.chart text {
+  fill: white;
+  font: 10px sans-serif;
+  text-anchor: end;
+}
+
+#contFadeIn{
+    opacity: 0;
+    
+}
+a { text-decoration: none;}
+ 
+a i {
+  font: 0/0 a;
+  text-shadow: none;
+  color: transparent;
+}
+ 
+nav {
+  background-color: rgba(0, 0, 0, 0.6);
+  height: 100%;
+  position: fixed;
+  right: -300px;
+  top: 0;
+  -moz-transition: right 0.2s linear;
+  -o-transition: right 0.2s linear;
+  -webkit-transition: right 0.2s linear;
+  transition: right 0.2s linear;
+  width: 300px;
+  z-index: 9001;/* IT'S OVER 9000! */
+}
+ 
+nav #menuToggle {
+  background: rgba(0, 0, 0, 0.6);
+  display: block;
+  position: relative;
+  height: 40px;
+  left: -50px;
+  top: 75px;
+  width: 50px;
+}
+ 
+nav #menuToggle span {
+  background: white;
+  display: block;
+  height: 10%;
+  left: 10%;
+  position: absolute;
+  top: 45%;
+  width: 80%;
+}
+ 
+nav #menuToggle span:before,
+nav #menuToggle span:after {
+  background: white;
+  content: '';
+  display: block;
+  height: 100%;
+  position: absolute;
+  top: -250%;
+  -moz-transform: rotate(0deg);
+  -ms-transform: rotate(0deg);
+  -webkit-transform: rotate(0deg);
+  transform: rotate(0deg);
+  width: 100%;
+}
+ 
+nav #menuToggle span:after { top: 250%; }
+ 
+nav a:nth-child(n+2) {
+  color: white;
+  display: block;
+  font-size: 1.3em;
+  margin: 10px 0 10px 10px;
+}
+ 
+nav a:nth-child(n+2):after {
+  background: #ffa53e;
+  content: '';
+  display: block;
+  height: 2px;
+  -moz-transition: width 0.2s;
+  -o-transition: width 0.2s;
+  -webkit-transition: width 0.2s;
+  transition: width 0.2s;
+  width: 0;
+}
+ 
+nav a:nth-child(n+2):hover:after { width: 100%; }
+ 
+.open { right: 0; }
+ 
+.open #menuToggle span {
+  background: transparent;
+  left: 10%;
+  top: 45%;
+}
+ 
+.open #menuToggle span:before,
+.open #menuToggle span:after {
+  background: white;
+  top: 0;
+  -moz-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+ 
+.open #menuToggle span:after {
+  -moz-transform: rotate(-45deg);
+  -ms-transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+ 
+#menuToggle .navClosed {
+  -moz-transition: background 0.1s linear;
+  -o-transition: background 0.1s linear;
+  -webkit-transition: background 0.1s linear;
+  transition: background 0.1s linear;
+}
+ 
+#menuToggle .navClosed:before,
+#menuToggle .navClosed:after {
+  -moz-transition: top 0.2s linear 0.1s, -moz-transform 0.2s linear 0.1s;
+  -o-transition: top 0.2s linear 0.1s, -o-transform 0.2s linear 0.1s;
+  -webkit-transition: top 0.2s linear, -webkit-transform 0.2s linear;
+  -webkit-transition-delay: 0.1s, 0.1s;
+  transition: top 0.2s linear 0.1s, transform 0.2s linear 0.1s;
+}
+ 
+#menuToggle .navOpen {
+  -moz-transition: background 0.1s linear 0.2s;
+  -o-transition: background 0.1s linear 0.2s;
+  -webkit-transition: background 0.1s linear;
+  -webkit-transition-delay: 0.2s;
+  transition: background 0.1s linear 0.2s;
+}
+ 
+#menuToggle .navOpen:before,
+#menuToggle .navOpen:after {
+  -moz-transition: top 0.2s linear, -moz-transform 0.2s linear;
+  -o-transition: top 0.2s linear, -o-transform 0.2s linear;
+  -webkit-transition: top 0.2s linear, -webkit-transform 0.2s linear;
+  transition: top 0.2s linear, transform 0.2s linear;
+}
+
+#mytooltip {
+          display: none;
+          position: fixed;
+          background-color: #fff;
+          border: 1px solid #555;
+          width: 200px;
+          height: 100px;
+}
+#mytooltip2 {
+          display: none;
+          position: fixed;
+		  color: white;
+          //background-color: #000000;
+          //border: 1px solid #555;
+          width: 300px;
+          height: 70px;
+}
+
+.myborderclass {
+  border: 1px solid white;
+}
+
+.default-link:link {font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 12px; font-style: normal; color: #0066CC;text-decoration: underline; background: transparent;}
+
+.mline {
+  fill: none;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+
+.marea {
+  fill: #e7e7e7;
+}
+
+
+.axis {
+  font: 0px sans-serif;
+  
+  z-index: 2;
+}
+
+.axis text {
+  -webkit-transition: fill-opacity 250ms linear;
+}
+
+.axis path {
+  display: none;
+}
+
+.axis line {
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis.top {
+  background-image: linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -o-linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -moz-linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -webkit-linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -ms-linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  top: 0px;
+  padding: 0 0 24px 0;
+}
+
+.axis.bottom {
+  background-image: linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -o-linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -moz-linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -webkit-linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -ms-linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  bottom: 0px;
+  padding: 24px 0 0 0;
+}
+
+.horizon {
+  border-bottom: solid 1px #000;
+  overflow: hidden;
+  position: relative;
+}
+
+.horizon {
+  border-top: solid 1px #000;
+  border-bottom: solid 1px #000;
+}
+
+.horizon + .horizon {
+  border-top: none;
+}
+
+.horizon canvas {
+  display: block;
+}
+
+.horizon .title {
+  bottom: 0;
+  line-height: 30px;
+  margin: 0 6px;
+  position: absolute;
+  font: 12px sans-serif;
+  text-shadow: 0 1px 0 rgba(255,255,255,.5);
+  white-space: nowrap;
+}
+.horizon .value {
+  bottom: 0;
+  line-height: 35px;
+  
+  font-weight: bold;
+  margin: 0 6px;
+  position: absolute;
+  text-shadow: 0 1px 0 rgba(255,255,255,.5);
+  white-space: nowrap;
+}
+
+.horizon .title {
+  left: 0;
+}
+
+.horizon .value {
+  right: 0;
+}
+
+.line {
+  background: #000;
+  z-index: 1000;
+}
+
+.hvaxis {
+  stroke: #000;
+  stroke-width: 0.5px;
+}
+.hvnode {
+  stroke: #000;
+  stroke-width: 1.0px;
+}
+
+.hvnode.active {
+  stroke: #DC143C;
+  stroke-width: 3px;
+}
+
+.hvlink {
+  fill: none;
+  stroke-width: 0.5px;
+}
+.hvlink.active {
+  stroke: #DC143C;
+  stroke-width: 4px;
+  stroke-opacity: 0.8;
+}
+
+.handsontable .currentRow {
+  background-color: #D4E9C2;
+}
+
+
+
+
+
+
+
+
+.maxis2 path, .maxis2 line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+.maxis2 text {
+    font-family: sans-serif;
+    font-size: 11px;
+}
+
+.mytab1 { margin-left: 40px; }

@@ -1,0 +1,1304 @@
+
+<div class='container' id = "container">
+	
+	<div class="jumbotron">
+	<h1>QSSPN models </h1>
+	
+	
+	<table class='table table-bordered' style="text-align:left">
+		<tr>
+			
+			<th>Name</th>
+			<th>Comment</th>
+			<th><a href="/qsspn_model/new" class="btn btn-sm btn-primary">Create New</a></th>
+		</tr>
+		
+
+		<% 
+		var detailMTN={};
+		var listMTN={};
+		_.each(qms, function(qm) { %>
+		<tr data-id="<%= qm.id %>" data-model="qm">
+			
+			<td style="font-size:15px;"><b><%= qm.name %></b></td>
+			<td style="font-size:15px;"><%= qm.comment %></td>
+			<td><a href="/qsspn_model/show/<%= qm.id %>" class="btn btn-sm btn-success">Show</a> <a href="/qsspn_model/edit/<%= qm.id %>" class="btn btn-sm btn-primary">Edit</a></td>
+		</tr> 
+
+		<% 
+		var tmpListModelNodes={};
+		for (var i=0, j= qm.file.extra[3].length; i<j; i++){
+			if (qm.file.extra[3][i][3]==2){
+				//var name_model_node= 
+				if (tmpListModelNodes.hasOwnProperty(qm.file.extra[2][qm.file.extra[3][i][0]][1])){
+					tmpListModelNodes[qm.file.extra[2][qm.file.extra[3][i][0]][1]].push(mtns[qm.metabolic_net][qm.file.extra[3][i][1]][1]);
+					if (detailMTN.hasOwnProperty(qm.metabolic_net)){
+						if (detailMTN[qm.metabolic_net].indexOf(mtns[qm.metabolic_net][qm.file.extra[3][i][1]][1])==-1){
+							
+							detailMTN[qm.metabolic_net].push(mtns[qm.metabolic_net][qm.file.extra[3][i][1]][1]);
+						}
+					}
+					else{
+						detailMTN[qm.metabolic_net]=[];
+						detailMTN[qm.metabolic_net].push(mtns[qm.metabolic_net][qm.file.extra[3][i][1]][1]);
+						
+					}
+				}
+				else{
+					tmpListModelNodes[qm.file.extra[2][qm.file.extra[3][i][0]][1]]=[];
+					tmpListModelNodes[qm.file.extra[2][qm.file.extra[3][i][0]][1]].push(mtns[qm.metabolic_net][qm.file.extra[3][i][1]][1]);
+					if (detailMTN.hasOwnProperty(qm.metabolic_net)){
+						if (detailMTN[qm.metabolic_net].indexOf(mtns[qm.metabolic_net][qm.file.extra[3][i][1]][1])==-1){
+							
+							detailMTN[qm.metabolic_net].push(mtns[qm.metabolic_net][qm.file.extra[3][i][1]][1]);
+						}
+					}
+					else{
+						detailMTN[qm.metabolic_net]=[];
+						detailMTN[qm.metabolic_net].push(mtns[qm.metabolic_net][qm.file.extra[3][i][1]][1]);
+						
+					}
+				}
+			
+			}
+		}
+		listMTN[qm.name]=[qm.metabolic_net,tmpListModelNodes];
+		
+		}) %>
+	</table>
+</div>
+
+<div id="mcontainer" style="position: absolute;left: 0px; overflow: inherit"></div>
+<div id="democ0" style="position: absolute;left: 0px; overflow: inherit" class="myborderclass"></div>
+<div id="mytooltip2"></div>
+<script>
+var listMTNs =  <%-JSON.stringify(listMTN) %>
+var detailListMTNs =  <%-JSON.stringify(detailMTN) %>
+
+if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+var SCALE = 1;
+var MARGIN = 100;
+
+var WIDTH = window.innerWidth;
+var HEIGHT = window.innerHeight - 2 * MARGIN;
+
+var NEAR = 1.0, FAR = 350.0;
+var VIEW_ANGLE = 40;
+
+// controls
+
+var mouseX = 0;
+var mouseY = 0;
+var mouse = new THREE.Vector2(), INTERSECTED;
+
+var targetX = 0, targetY = 0;
+var angle = 0;
+var target = new THREE.Vector3( 0, 0, 0 );
+
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = window.innerHeight / 2;
+var arrayMeshes=[];
+var arrayColors=[];
+var select_mesh;
+var disableSelection=false;
+// core
+
+var renderer, camera, scene, stats, clock;
+
+// lights
+
+var areaLight1, areaLight2, areaLight3, areaLight4;
+
+//
+var keyboard = new KeyboardState();
+
+// particles 
+var projector, raycaster;
+var selectedModelName="";
+
+var text0 = document.createElement('div');
+text0.style.position = 'absolute';
+text0.style.width = 100;
+text0.style.height = 100;
+text0.style.color = "white";
+text0.style.textAlign="left";
+//text0.style.backgroundColor = "#FFFFCC";
+//text1.innerHTML = ' <input type="text" name="first_name" value="" maxlength="100" />';
+text0.innerHTML = 'hello ';
+text0.style.top = 200 + 'px';
+text0.style.left = 200 + 'px';
+document.body.appendChild(text0);
+var myListModels;
+var myListMTNS;
+var results ={};
+
+$("#democ0").css({top:  $("#container").position().top + $("#container").height()});
+
+
+
+
+
+init();
+animate();
+
+// -----------------------------
+
+function init() {
+
+	// renderer
+
+	renderer = new THREE.WebGLDeferredRenderer( { width: WIDTH, height: HEIGHT, scale: SCALE, antialias: true, tonemapping: THREE.FilmicOperator, brightness: 2.5 } );
+
+	renderer.domElement.style.position = "absolute";
+	renderer.domElement.style.top = MARGIN + "px";
+	renderer.domElement.style.left = "0px";
+
+	var container = document.getElementById( 'mcontainer' );
+	container.appendChild( renderer.domElement );
+
+	// effects
+
+	var bloomEffect = new THREE.BloomPass( 0.65 );
+	renderer.addEffect( bloomEffect );
+
+	// camera
+
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, WIDTH / HEIGHT, NEAR, FAR );
+	camera.position.y = 40;
+
+	// scene
+
+	scene = new THREE.Scene();
+	scene.add( camera );
+
+	// stats
+
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	
+	//$("#democ0").css({top:  $("#container").position().top + $("#container").height()});
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	stats.domElement.style.top = container.style.top+ container.style.height+100+'px';
+	// clock
+
+	clock = new THREE.Clock();
+
+	// add lights
+
+	initLights();
+
+	// add objects
+
+	initObjects();
+
+	// events
+
+	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+	window.addEventListener( 'resize', onWindowResize, false );
+
+}
+
+// -----------------------------
+
+function createAreaEmitter( light ) {
+
+	var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+	var material = new THREE.MeshBasicMaterial( { color: light.color.getHex(), vertexColors: THREE.FaceColors } );
+
+	var backColor = 0x222222;
+
+	geometry.faces[ 5 ].color.setHex( backColor );
+	geometry.faces[ 4 ].color.setHex( backColor );
+	geometry.faces[ 2 ].color.setHex( backColor );
+	geometry.faces[ 1 ].color.setHex( backColor );
+	geometry.faces[ 0 ].color.setHex( backColor );
+
+	var emitter = new THREE.Mesh( geometry, material );
+	emitter.scale.set( light.width * 2, 0.2, light.height * 2 );
+
+	return emitter;
+
+}
+
+function setupAreaLight( light ) {
+
+	var matrix = light.matrixWorld;
+
+	light.right.set( 1, 0, 0 );
+	light.normal.set( 0, -1, 0 );
+
+	light.right.applyMatrix4( matrix );
+	light.normal.applyMatrix4( matrix );
+
+}
+
+function initLights() {
+
+	areaLight1 = new THREE.AreaLight( 0xffffff, 2.5 );
+	areaLight1.position.set( 0.0001, 3.0001, -18.5001 );
+	areaLight1.rotation.set( -1.5707, 0.0001, 0.0001 );
+	areaLight1.width = 10;
+	areaLight1.height = 1;
+	scene.add( areaLight1 );
+
+	var meshEmitter = createAreaEmitter( areaLight1 );
+	areaLight1.add( meshEmitter );
+
+	//
+
+	areaLight2 = new THREE.AreaLight( 0x33ff66, 1.5 );
+	areaLight2.position.set( -19.0001, 3.0001, 0.0001 );
+	areaLight2.rotation.set( -1.5707, 0.0001, 1.5707 );
+	areaLight2.width = 8;
+	areaLight2.height = 1;
+	scene.add( areaLight2 );
+
+	var meshEmitter = createAreaEmitter( areaLight2 );
+	areaLight2.add( meshEmitter );
+
+	//
+
+	areaLight3 = new THREE.AreaLight( 0x3366ff, 1.5 );
+	areaLight3.position.set( 19.0001, 3.0001, 0.0001 );
+	areaLight3.rotation.set( 1.5707, 0.0001, -1.5707 );
+	areaLight3.width = 8;
+	areaLight3.height = 1;
+	scene.add( areaLight3 );
+
+	var meshEmitter = createAreaEmitter( areaLight3 );
+	areaLight3.add( meshEmitter );
+	
+	areaLight4 = new THREE.AreaLight( 0xffffff, 1 );
+	areaLight4.position.set( 0.0001, 3.0001, 24.0001 );
+	areaLight4.rotation.set( Math.PI/2, 0.0001, 0.0001 );
+	areaLight4.width = 10;
+	areaLight4.height = 1;
+	scene.add( areaLight4 );
+
+	var meshEmitter = createAreaEmitter( areaLight4 );
+	areaLight4.add( meshEmitter );
+
+}
+
+// -----------------------------
+
+function initObjects() {
+
+
+	myListModels=Object.keys(listMTNs);
+	myListMTNS=Object.keys(detailListMTNs);
+	//console.log(myListModels);
+	//console.log(myListMTNS);
+	
+	var data;
+	for (el0 in listMTNs ){
+		if (listMTNs.hasOwnProperty(el0)) {
+			data = [];
+			for (var j = 0, jl =detailListMTNs[listMTNs[el0][0]].length; j < jl; j += 1) {
+				var tmpdata = [];
+				for (var k = 0, kl = Object.keys(listMTNs[el0][1]).length; k < kl; k += 1) {
+					if (listMTNs[el0][1][Object.keys(listMTNs[el0][1])[k]].indexOf(detailListMTNs[listMTNs[el0][0]][j])>-1){
+					tmpdata.push(1);
+					}
+					else{
+					tmpdata.push(0);
+					}
+				}
+				data.push(tmpdata);
+			}
+			results[el0]=data;
+		}
+	}
+	
+	var width = window.innerWidth / 5,
+    height = window.innerHeight *0.6,
+    mdiv = d3.select('#democ0'),
+    msvg = mdiv.append('svg')
+        .attr('width', width)
+        .attr('height', height),
+    rw = width/results[myListModels[0]][0].length,
+    rh = height/results[myListModels[0]].length;
+
+	var data = [];
+	for (var j = 0, jl =detailListMTNs[listMTNs[myListModels[0]][0]].length; j < jl; j += 1) {
+		var tmpdata = [];
+		for (var k = 0, kl = Object.keys(listMTNs[myListModels[0]][1]).length; k < kl; k += 1) {
+			if (listMTNs[myListModels[0]][1][Object.keys(listMTNs[myListModels[0]][1])[k]].indexOf(detailListMTNs[listMTNs[myListModels[0]][0]][j])>-1){
+			tmpdata.push(1);
+			}
+			else{
+			tmpdata.push(0);
+			}
+		}
+		data.push(tmpdata);
+	}
+
+	// Create a group for each row in the data matrix and
+	// translate the group vertically
+	var grp = msvg.selectAll('g')
+		.data(data)
+		.enter()
+		.append('g')
+		.attr('transform', function(d, i) {
+			return 'translate(0, ' + (rh*1.2) * i + ')';
+		});
+
+	// For each group, create a set of rectangles and bind 
+	// them to the inner array (the inner array is already
+	// binded to the group)
+	grp.selectAll('rect')
+		.data(function(d) { return d; })
+		.enter()
+		.append('rect')
+        .attr('x', function(d, i) { return (rw*1.2 )* i; })
+        .attr('width', rw)
+        .attr('height', rh)
+		.style("fill", function(d, i) { if (d==1) {return "rgb("+(parseInt(255*d))+",0,0)"} else return "transparent"})
+
+		
+		
+	
+	var material = new THREE.MeshPhongMaterial( { color: 0xffaa55, specular: 0x888888, shininess: 200} );
+	var object = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 1000 ), material );
+	object.rotation.x = - Math.PI / 2;
+	object.scale.multiplyScalar( 2 );
+	scene.add( object );
+
+	// create plane meshes of models  
+	
+	var tempXIncrement=0
+	for (model in results ){
+		if (results.hasOwnProperty(model)) {			
+			arrayMeshes.push(new THREE.Mesh( new THREE.PlaneGeometry( (results[model][0].length)/5, (results[model].length)/10 ), new THREE.MeshPhongMaterial( { color: '#'+Math.floor(Math.random()*16777215).toString(16), specular: 0xffffff, shininess: 1} ) ));
+			arrayMeshes[arrayMeshes.length-1].rotation.x = -Math.PI/2 ;
+			arrayMeshes[arrayMeshes.length-1].position.set(tempXIncrement,1, -8+(results[model].length)/20 );
+			tempXIncrement+=(((results[model][0].length)/10)+3);
+			arrayMeshes[arrayMeshes.length-1].name="m"+(arrayMeshes.length-1);
+			scene.add( arrayMeshes[arrayMeshes.length-1] );
+		}
+	}
+	
+	var select_geometry = new THREE.PlaneGeometry( 1, 1, 1,1 );
+	var select_material = new THREE.MeshBasicMaterial( { color: 0xb9b9b9, wireframe: false } );
+	select_mesh= new THREE.Mesh( select_geometry, select_material );
+	select_mesh.rotation.x = -Math.PI/2 ;
+	select_mesh.position.set(9999999,0.9, -9999999 );
+	scene.add(select_mesh );
+	
+	// create square cells
+	/*var geometry = new THREE.BoxGeometry( 0.1, 1, 0.1 );
+
+	for ( var i = 0; i < 4000; i ++ ) {
+
+		var cobject = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: 0xffffff } ) );
+		//var cobject = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: 0xb9b9b9, wireframe: false }));
+		cobject.position.x = 9999999;
+		cobject.position.y = 1;
+		cobject.position.z = -9999999;
+
+		//cobject.rotation.x = Math.random() * 2 * Math.PI;
+		//cobject.rotation.y = Math.random() * 2 * Math.PI;
+		//cobject.rotation.z = Math.random() * 2 * Math.PI;
+
+		//cobject.scale.x = Math.random() + 0.5;
+		//cobject.scale.y = Math.random() + 0.5;
+		//cobject.scale.z = Math.random() + 0.5;
+
+		scene.add( cobject );
+
+	}*/
+
+	projector = new THREE.Projector();
+	raycaster = new THREE.Raycaster();
+
+
+}
+
+
+// -----------------------------
+
+function onWindowResize( event ) {
+
+	windowHalfX = window.innerWidth / 2;
+	windowHalfY = window.innerHeight / 2;
+
+	WIDTH = window.innerWidth;
+	HEIGHT = window.innerHeight - 2 * MARGIN;
+
+	renderer.setSize( WIDTH, HEIGHT );
+
+	camera.aspect = WIDTH / HEIGHT;
+	camera.updateProjectionMatrix();
+
+}
+
+function onDocumentMouseMove( event ) {
+event.preventDefault();
+	mouseX = ( event.clientX - windowHalfX ) * 1;
+	mouseY = ( event.clientY - windowHalfY ) * 1;
+	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	//mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+	mouse.y = - ( (event.clientY-$("#mcontainer").position().top+window.pageYOffset-26) / window.innerHeight ) * 2 + 1;
+}
+
+// -----------------------------
+
+function animate() {
+
+	requestAnimationFrame( animate );
+
+	render();
+	stats.update();
+
+}
+
+function render() {
+
+	// update camera
+
+	var delta = clock.getDelta();
+
+	keyboard.update();
+			
+	
+	
+	
+	
+	
+	targetX = mouseX * .0002;
+	targetY = mouseY * .0002;
+
+	angle += 0.05 * ( targetX - angle );
+	camera.position.x = -Math.sin( angle ) * 40;
+	camera.position.z =  Math.cos( angle ) * 40;
+	camera.lookAt( target );
+	
+			
+	// find intersections
+
+	var vector = new THREE.Vector3( mouse.x, mouse.y, 1 );
+	projector.unprojectVector( vector, camera );
+
+	raycaster.set( camera.position, vector.sub( camera.position ).normalize() );
+	
+	var intersects = raycaster.intersectObjects( scene.children );
+	if ( intersects.length > 0 ) {
+		
+		/*var min_distance=99999999;
+		var closest_index=-1;
+		for (var i=0, j =intersects.length;i<j;i++){
+			var tmp_distance=intersects[i].distance;
+			if (tmp_distance<= min_distance){
+				tmp_distance= min_distance;
+				closest_index=i;
+			}
+		
+		}*/
+		//console.log(intersects[closest_index].name)
+		//if ( INTERSECTED != intersects[ closest_index ].object ) {
+		//	INTERSECTED = intersects[ closest_index ].object;
+		//	console.log(INTERSECTED)
+		//}
+		if ( INTERSECTED != intersects[ 0 ].object && disableSelection==false) {
+
+			
+
+			INTERSECTED = intersects[ 0 ].object;
+			//console.log(intersects)
+			
+			if ( INTERSECTED.name && INTERSECTED.name[0]=="m" && INTERSECTED.name!=selectedModelName) {
+				//console.log(INTERSECTED)
+				selectedModelName=INTERSECTED.name;
+				select_mesh.position.set(INTERSECTED.position.x,0.99, INTERSECTED.position.z );
+				//select_mesh.scale.x=(INTERSECTED.geometry.vertices[1]-INTERSECTED.geometry.vertices[0]);
+				
+				select_mesh.geometry.vertices[0]=INTERSECTED.geometry.vertices[0];
+				
+				select_mesh.geometry.vertices[1]=INTERSECTED.geometry.vertices[1];
+				
+				select_mesh.geometry.vertices[2]=INTERSECTED.geometry.vertices[2];
+				select_mesh.geometry.vertices[3]=INTERSECTED.geometry.vertices[3];
+				select_mesh.scale.x=1.15;
+				select_mesh.scale.y=1.05;
+				select_mesh.geometry.verticesNeedUpdate = true;
+				
+				text0.style.top = $("#mcontainer").position().top+150 + 'px';								
+				text0.style.left = window.innerWidth*0.75+ 'px';
+				var nm=myListModels[parseInt(selectedModelName.substring(1))];
+				text0.innerHTML="<div style='width:400px;height:"+$("#mcontainer").css( "height" )*0.7+"px;border:1px solid #ffffff;'><h2 class='mytab1'>"+nm+"</h2><h3 class='mytab1'>"+listMTNs[nm][0]+"</h3><br><p class='mytab1'>"+results[nm][0].length+" model nodes linked to "+results[nm].length+" metabolic network nodes.</p><p class='mytab1'>Links between the model and the metabolic network are shown with an ("+results[nm][0].length+" x "+results[nm].length+") adjacency matrix.</p></div>";
+				document.getElementById("democ0").style.top=$("#mcontainer").position().top+150 + 'px';
+				document.getElementById("democ0").style.left=window.innerWidth*0.05+ 'px';
+				updateD3jsData();
+				//console.log(INTERSECTED.scale)
+				//select_mesh.scale.y = INTERSECTED.scale.y*2;
+				//areaLight4.position.set( INTERSECTED.position.x, 5, 24.001 );
+				//areaLight4.rotation.set( Math.PI/2, 0.0001, 0.0001 );
+				//areaLight4.width = 10;
+				//areaLight4.height = 10;
+				
+			}
+			//if ( INTERSECTED && INTERSECTED.name && INTERSECTED.name[0]=="m") {
+				//console.log("model")
+			//INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+			//INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+			//INTERSECTED.material.emissive.setHex( 0xff0000 );
+			//}
+			//INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+			//INTERSECTED.material.emissive.setHex( 0xff0000 );
+			
+		}
+
+	} else {
+
+		//if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+
+		INTERSECTED = null;
+		select_mesh.position.set(9999999,0.5, -9999999 );
+		text0.style.top = '8000px';								
+		text0.style.left = '8000px';
+	}
+	
+	
+
+	if ( keyboard.pressed("left") ) {
+		//camera.position.y = -0.0000001;
+		//console.log("up")
+		//target.y= -0.00001;
+		for (var i=0, j=arrayMeshes.length;i<j;i++  ){		
+				arrayMeshes[i].position.x-=1;
+				
+		}
+		select_mesh.position.x=arrayMeshes[parseInt(selectedModelName.substring(1))].position.x;
+	}
+		
+	if ( keyboard.pressed("right") ){
+		for (var i=0, j=arrayMeshes.length;i<j;i++  ){		
+				arrayMeshes[i].position.x+=1;
+				
+		}
+		
+		select_mesh.position.x=arrayMeshes[parseInt(selectedModelName.substring(1))].position.x;
+	} 
+	
+	if ( keyboard.pressed("X") ) {
+		//controls.dollyIn();
+	}
+		
+	if ( keyboard.pressed("Z") ){
+		//controls.pan(-5* controls.zoomScale(),0);
+		//controls.dollyOut();
+	} 
+	
+	
+	
+	
+
+	var time = Date.now();
+
+	//areaLight1.position.x = Math.sin( Date.now() * 0.001 ) * 9;
+	//areaLight1.position.y = Math.sin( Date.now() * 0.0013 ) * 5 + 5;
+
+	//areaLight2.position.y = Math.sin( Date.now() * 0.0011 ) * 3 + 5;
+	//areaLight2.position.z = Math.sin( Date.now() * 0.00113 ) * 10;
+
+	//areaLight3.position.y = Math.sin( Date.now() * 0.00111 ) * 3 + 5;
+	//areaLight3.position.z = Math.sin( Date.now() * 0.001113 ) * 10;
+
+	// render
+
+	renderer.render( scene, camera );
+
+}
+
+
+
+
+function updateD3jsData() {
+
+	
+	//console.log(msvg)
+	var nbModel=parseInt(selectedModelName.substring(1));
+	var data = [];
+	for (var j = 0, jl =detailListMTNs[listMTNs[myListModels[nbModel]][0]].length; j < jl; j += 1) {
+		var tmpdata = [];
+		for (var k = 0, kl = Object.keys(listMTNs[myListModels[nbModel]][1]).length; k < kl; k += 1) {
+			if (listMTNs[myListModels[nbModel]][1][Object.keys(listMTNs[myListModels[nbModel]][1])[k]].indexOf(detailListMTNs[listMTNs[myListModels[nbModel]][0]][j])>-1){
+			tmpdata.push(1);
+			}
+			else{
+			tmpdata.push(0);
+			}
+		}
+		data.push(tmpdata);
+	}
+	//console.log(listMTNs);
+	//console.log(detailListMTNs);
+    // Make the changes
+	$("#democ0").html("");
+	var width = window.innerWidth / 5,
+    height = window.innerHeight *0.6,
+    mdiv = d3.select('#democ0'),
+    msvg = mdiv.append('svg')
+        .attr('width', width)
+        .attr('height', height),
+	rw = width/results[myListModels[nbModel]][0].length,
+    rh = height/results[myListModels[nbModel]].length;
+	//var msvg = d3.select("#democ0").transition();
+	var grp = msvg.selectAll('g')
+		.data(data)
+		.enter()
+		.append('g')
+		.attr('transform', function(d, i) {
+			return 'translate(0, ' + (rh*1.0) * i + ')';
+		});
+
+	// For each group, create a set of rectangles and bind 
+	// them to the inner array (the inner array is already
+	// binded to the group)
+	grp.selectAll('rect')
+		.data(function(d) { return d; })
+		.enter()
+		.append('rect')
+        .attr('x', function(d, i) { return (rw*1.0 )* i; })
+        .attr('width', rw)
+        .attr('height', rh)
+		.style("fill", function(d, i) { if (d==1) {return "rgb(0,"+(parseInt(255*d))+",0)"} else return "transparent"})
+		.on('mouseover', function(d,i,j) {
+					disableSelection=true;
+					if (d==1){
+					d3.select(this).transition().duration(10)
+					.style({'stroke-opacity':1,'stroke':'#F00', 'stroke-width':2});
+					$("#mytooltip2")
+                      .html("Link between: <br>Model node: <b>"+Object.keys(listMTNs[myListModels[nbModel]][1])[i]+"</b><br>and Metabolic node: <b>"+detailListMTNs[listMTNs[myListModels[nbModel]][0]][j]) //listMTNs[myListModels[nbModel]][1]
+					  .css('left', window.event.clientX+40)
+                      .css('top', window.event.clientY)
+                      .show();
+					}
+                    
+		})
+		.on("mouseout", function(d,i) {
+					disableSelection=false;
+				   $("#mytooltip2").html('').hide();
+				   d3.select(this).transition().duration(100)
+					.style({'stroke-opacity':0.0,'stroke':'transparent','stroke-width':0});
+		});
+		
+}
+
+
+
+
+
+
+//console.log(listMTNs)
+//console.log(detailListMTNs)
+// create depednecy matrices for each model/metabolic network
+/*$("#democ0").css({top:  $("#container").position().top + $("#container").height()});
+
+var width = 400,
+    height = 1800,
+    div = d3.select('#democ0'),
+    svg = div.append('svg')
+        .attr('width', width)
+        .attr('height', height),
+    rw = 4,
+    rh = 2;
+
+var data = [];
+for (var j = 0, jl =detailListMTNs['hepatonet1-msb201062-s5'].length; j < jl; j += 1) {
+	var tmpdata = [];
+	for (var k = 0, kl = Object.keys(listMTNs['hep-model'][1]).length; k < kl; k += 1) {
+		if (listMTNs['hep-model'][1][Object.keys(listMTNs['hep-model'][1])[k]].indexOf(detailListMTNs['hepatonet1-msb201062-s5'][j])>-1){
+		tmpdata.push(1);
+		}
+		else{
+		tmpdata.push(0);
+		}
+	}
+    data.push(tmpdata);
+}
+
+// Create a group for each row in the data matrix and
+// translate the group vertically
+var grp = svg.selectAll('g')
+    .data(data)
+    .enter()
+    .append('g')
+    .attr('transform', function(d, i) {
+        return 'translate(0, ' + 3 * i + ')';
+    });
+
+// For each group, create a set of rectangles and bind 
+// them to the inner array (the inner array is already
+// binded to the group)
+grp.selectAll('rect')
+    .data(function(d) { return d; })
+    .enter()
+    .append('rect')
+        .attr('x', function(d, i) { return 5 * i; })
+        .attr('width', rw)
+        .attr('height', rh)
+		.style("fill", function(d, i) { return "rgb("+(parseInt(255*d))+",0,0)"})
+*/		
+/*		
+if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+var container, stats;
+
+var camera, scene, renderer, controls;
+var composer;
+var effectFXAA;
+var mesh;
+var keyboard = new KeyboardState();
+var verticalMirror, groundMirror;
+init();
+
+
+
+animate();
+
+function init() {
+
+	container = document.getElementById( 'mcontainer' );
+
+	//
+
+	camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 5, 1003500 );
+	camera.position.z = 2750;
+
+	scene = new THREE.Scene();
+	//scene.fog = new THREE.Fog( 0x050505, 2000, 3500 );
+
+	// set up data
+	var myListModels=Object.keys(listMTNs);
+	var myListMTNS=Object.keys(detailListMTNs);
+	//console.log(myListModels);
+	//console.log(myListMTNS);
+	var results ={};
+	var data;
+	for (el0 in listMTNs ){
+		if (listMTNs.hasOwnProperty(el0)) {
+			data = [];
+			for (var j = 0, jl =detailListMTNs[listMTNs[el0][0]].length; j < jl; j += 1) {
+				var tmpdata = [];
+				for (var k = 0, kl = Object.keys(listMTNs[el0][1]).length; k < kl; k += 1) {
+					if (listMTNs[el0][1][Object.keys(listMTNs[el0][1])[k]].indexOf(detailListMTNs[listMTNs[el0][0]][j])>-1){
+					tmpdata.push(1);
+					}
+					else{
+					tmpdata.push(0);
+					}
+				}
+				data.push(tmpdata);
+			}
+			results[el0]=data;
+		}
+	}
+	
+
+	var particles = 1000000;
+
+	var geometry = new THREE.BufferGeometry();
+
+	var positions = new Float32Array( particles * 3 );
+	var colors = new Float32Array( particles * 3 );
+
+	var color = new THREE.Color();
+
+	var n = 1000, n2 = n / 2; // particles spread in the cube
+
+	for ( var i = 0; i < positions.length; i += 3 ) {
+
+		// positions
+		var x = Math.random() * n - n2;
+		var y = Math.random() * n - n2;
+		var z = Math.random() * n - n2;
+		
+		
+
+		
+		positions[ i ]     = -99999999;
+		positions[ i + 1 ] = -99999999;
+		positions[ i + 2 ] = -99999999;
+		//positions[ i ]     = x;
+		//positions[ i + 1 ] = y;
+		//positions[ i + 2 ] = z;
+
+		// colors
+
+		var vx = ( x / n ) + 0.5;
+		var vy = ( y / n ) + 0.5;
+		var vz = ( z / n ) + 0.5;
+
+		color.setRGB( vx, vy, vz );
+
+		colors[ i ]     = color.r;
+		colors[ i + 1 ] = color.g;
+		colors[ i + 2 ] = color.b;
+
+	}
+	var tmpPos=0;
+	var tempXIncrement=0;
+	for (model in results ){
+		if (results.hasOwnProperty(model)) {
+			
+			for (var nb0=0, nbL0 = results[model].length;nb0<nbL0;nb0++){
+				for (var nb1=0, nbL1 = results[model][nb0].length;nb1<nbL1;nb1++){
+					if (results[model][nb0][nb1]==1){
+						positions[ tmpPos ]     = (nb1*4)+tempXIncrement;
+						positions[ tmpPos + 1 ] = (nb0*4);
+						positions[ tmpPos + 2 ] = 0;
+						colors[ tmpPos ]     = 255;
+						colors[ tmpPos + 1 ] = 0;
+						colors[ tmpPos + 2 ] = 0;
+						tmpPos+=3;
+					}
+					
+				}
+				
+			}
+			tempXIncrement+=((results[model][0].length*4)+20);
+		}
+	}
+
+	geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+	geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
+
+	geometry.computeBoundingSphere();
+
+	//
+	// add subtle ambient lighting
+      var ambientLight = new THREE.AmbientLight(0x222222);
+      scene.add(ambientLight);
+      
+      // directional lighting
+      var directionalLight = new THREE.DirectionalLight(0xffffff);
+      directionalLight.position.set(-20, 40, 100).normalize();
+      scene.add(directionalLight);
+	
+	var material = new THREE.PointCloudMaterial( { size: 15, vertexColors: THREE.VertexColors } );
+
+	particleSystem = new THREE.PointCloud( geometry, material );
+	scene.add( particleSystem );
+	var arrayMeshes=[];
+	var arrayColors=[];
+	tempXIncrement=0
+	for (model in results ){
+		if (results.hasOwnProperty(model)) {
+			//arrayColors.push('#'+Math.floor(Math.random()*16777215).toString(16));
+			//arrayMeshes.push(new THREE.Mesh(new THREE.BoxGeometry(results[model][0].length*4, results[model].length*4, 0), new THREE.MeshBasicMaterial({color: new THREE.Color( 0, 1.0, 1.0 )})));
+			//arrayMeshes.push(new THREE.Mesh(new THREE.BoxGeometry(results[model][0].length*4, results[model].length*4, 0),new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: 0.5, transparent: true } ) ));
+			//arrayMeshes.push(new THREE.Mesh(new THREE.BoxGeometry(results[model][0].length*4, results[model].length*4, 0),new THREE.MeshPhongMaterial( { color: 0xffffff, shading: THREE.SmoothShading } )));
+			arrayMeshes.push(new THREE.Mesh(new THREE.PlaneGeometry(results[model][0].length*4, results[model].length*4), new THREE.MeshPhongMaterial({shading: THREE.SmoothShading, blending:     THREE.AdditiveBlending,specular: '#a9fcff', side :THREE.DoubleSide,//side: THREE.BackSide,//side :THREE.DoubleSide,
+			
+		// intermediate
+        color: '#00abb1',
+        // dark
+        emissive: '#006063',
+        shininess: 200 
+		})));
+		//arrayMeshes[arrayMeshes.length-1].doubleSided = true;
+			arrayMeshes[arrayMeshes.length-1].rotation.x = - Math.PI;
+			arrayMeshes[arrayMeshes.length-1].position.set((tempXIncrement+(results[model][0].length*4/2))-2, (results[model].length*4/2)-2, -2 );
+			tempXIncrement+=((results[model][0].length*4)+20);
+			scene.add(arrayMeshes[arrayMeshes.length-1]);
+		}
+	}
+	
+	
+	//var mirrorPlan = new THREE.Mesh(new THREE.PlaneGeometry( 4000, 1000 ), new THREE.MeshPhongMaterial({shading: THREE.SmoothShading, blending:     THREE.AdditiveBlending,specular: '#a9fcff', side: THREE.BackSide,//side :THREE.DoubleSide,
+			
+		// intermediate
+    //    color: '#00abb1',
+        // dark
+    //    emissive: '#006063',
+     //   shininess: 200 
+	//	}));
+	//mirrorPlan.doubleSided = true;
+	//mirrorPlan.position.set(0, -12,0);
+	//mirrorPlan.rotation.set( Math.PI/2, 0,0);
+	//scene.add(mirrorPlan);*
+	
+	//var mirrorPlan = new THREE.Mesh( new THREE.PlaneGeometry( 40000, 1000 ), new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: 0.5, transparent: true, side :THREE.DoubleSide } ) );
+	var mirrorPlan = new THREE.Mesh( new THREE.PlaneGeometry( 40000, 1000 ), new THREE.MeshLambertMaterial( { color: 0xff6600, ambient: 0x993300, side :THREE.DoubleSide,  reflectivity: 0.9 } ) );
+				
+	mirrorPlan.position.x= 19000;
+	mirrorPlan.position.y = -12;
+	mirrorPlan.rotation.x = - Math.PI / 2;
+	mirrorPlan.doubleSided = true;
+	scene.add( mirrorPlan );
+	
+	
+	
+	
+	//scene.add(mirrorPlan);
+
+	//
+
+	renderer = new THREE.WebGLRenderer( { antialias: true } );
+	//renderer.setClearColor( scene.fog.color, 1 );
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	
+	var planeGeo = new THREE.PlaneGeometry( 100.1, 100.1 );
+				
+   //MIRORR planes
+	//groundMirror = new THREE.Mirror( renderer, camera, { clipBias: 0.003, textureWidth: window.innerWidth, textureHeight: window.innerHeight, color: 0x777777 } );
+	
+	//var mirrorMesh = new THREE.Mesh( planeGeo, groundMirror.material );
+	//mirrorMesh.add( groundMirror );
+	//mirrorMesh.rotateX( - Math.PI / 2 );
+	//mirrorMesh.position.y = 42;
+	//scene.add( mirrorMesh );
+
+	container.appendChild( renderer.domElement );
+
+	//
+
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.top = '0px';
+	container.appendChild( stats.domElement );
+	
+	controls = new THREE.OrbitControls( camera, container  );
+	controls.rotateSpeed = 1.0;
+	controls.zoomSpeed = 1.2;
+	controls.panSpeed = 0.8;
+	controls.noZoom = false;
+	controls.noPan = false;
+	controls.staticMoving = true;
+	controls.dynamicDampingFactor = 0.3;
+	
+
+	
+	// POSTPROCESSING
+
+	//renderer.autoClear = false;
+
+	//var renderModel = new THREE.RenderPass( scene, camera );
+	//var effectBloom = new THREE.BloomPass( 0.25 );
+	//var effectFilm = new THREE.FilmPass( 0.5, 0.125, 2048, false );
+
+	//effectFXAA = new THREE.ShaderPass( THREE.FXAAShader );
+
+	//var width = window.innerWidth || 2;
+	//var height = window.innerHeight || 2;
+
+	//effectFXAA.uniforms[ 'resolution' ].value.set( 1 / width, 1 / height );
+
+	//effectFilm.renderToScreen = true;
+
+	//composer = new THREE.EffectComposer( renderer );
+
+	//composer.addPass( renderModel );
+	//composer.addPass( effectFXAA );
+	//composer.addPass( effectBloom );
+	//composer.addPass( effectFilm );
+	//
+
+	window.addEventListener( 'resize', onWindowResize, false );
+
+}
+
+
+
+function onWindowResize() {
+
+	windowHalfX = window.innerWidth / 2;
+	windowHalfY = window.innerHeight / 2;
+
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	//composer.reset();
+
+	//			effectFXAA.uniforms[ 'resolution' ].value.set( 1 / window.innerWidth, 1 / window.innerHeight );
+}
+
+//
+
+function animate() {
+
+	requestAnimationFrame( animate );
+
+	render();
+	stats.update();
+
+}
+
+function render() {
+	//groundMirror.renderWithMirror( verticalMirror );
+				//verticalMirror.renderWithMirror( groundMirror );
+	controls.update();
+			keyboard.update();
+			
+			
+			if ( keyboard.pressed("A") ) {
+			
+				controls.panLeft(5* controls.zoomScale());
+			}
+			if ( keyboard.pressed("D") ) {
+				controls.panLeft(-5* controls.zoomScale());
+			}
+				
+			if ( keyboard.pressed("W") ) {
+				controls.panUp(5* controls.zoomScale());
+			}
+				
+			if ( keyboard.pressed("S") ){
+				controls.panUp(-5* controls.zoomScale());
+			} 
+			
+			if ( keyboard.pressed("X") ) {
+				controls.dollyIn();
+			}
+				
+			if ( keyboard.pressed("Z") ){
+				//controls.pan(-5* controls.zoomScale(),0);
+				controls.dollyOut();
+			} 
+	var time = Date.now() * 0.001;
+
+	//particleSystem.rotation.x = time * 0.25;
+	//particleSystem.rotation.y = time * 0.5;
+	//composer.render( 0.05 );
+	renderer.render( scene, camera );
+
+}
+		
+*/
+/*
+    var camera;
+
+    // once everything is loaded, we run our Three.js stuff.
+    $(function () {
+
+        var stats = initStats();
+
+        // create a scene, that will hold all our elements such as objects, cameras and lights.
+        var scene = new THREE.Scene();
+
+        // create a camera, which defines where we're looking at.
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        scene.add(camera);
+		
+		var mouseX = 0;
+			var mouseY = 0;
+		var angle = 0;
+		var angle2 = 0;
+			var target = new THREE.Vector3( 0, 20, 0 );
+	var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+			var targetX = 0, targetY = 0;
+			
+
+        // create a render and set the size
+//        var renderer = new THREE.WebGLRenderer();
+        var renderer = new THREE.WebGLDeferredRenderer({
+            width: window.innerWidth,
+            height: window.innerHeight,
+            scale: 1, antialias: true,
+            tonemapping: THREE.FilmicOperator, brightness: 2.5 });
+
+//        renderer.setSize(window.innerWidth, window.innerHeight);
+//        renderer.shadowMapEnabled = true;
+
+        // create the ground plane
+        var planeGeometry = new THREE.PlaneGeometry(700, 400, 1, 1);
+        var planeMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, specular: 0xffffff, shininess: 200 });
+        var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        // plane.receiveShadow  = true;
+
+        // rotate and position the plane
+        plane.rotation.x = - Math.PI/2;
+        plane.position.x = 0
+        plane.position.y = 0
+        plane.position.z = 0
+
+        // add the plane to the scene
+        scene.add(plane);
+
+        // position and point the camera to the center of the scene
+        camera.position.x = 20;
+        camera.position.y = 30;
+        camera.position.z = 21;
+        camera.lookAt(new THREE.Vector3(0, 0, -30));
+
+        // add the output of the renderer to the html element
+        $("#WebGL-output").append(renderer.domElement);
+
+        // call the render function
+        var step = 0;
+
+
+        var spotLight0 = new THREE.SpotLight(0xcccccc);
+        spotLight0.position.set(-40, 60, -60);
+        spotLight0.intensity = 0.1;
+        spotLight0.lookAt(plane);
+        scene.add(spotLight0);
+		
+		
+		
+		
+		
+		
+		var allMtns =Object.keys(listMTNs);
+		var arrayLights=[];
+		var arrayMeshes=[];
+		var arrayColors=[];
+		var tmpwidth=0;
+		for (var i=0; i< allMtns.length;i++){
+			// add different coloring by metabolic network
+			//arrayColors[i] ='#'+(16777214/(Object.keys(detailListMTNs).indexOf(listMTNs[allMtns[i]][0])+1)).toString(16);
+			//arrayColors[i] ='#'+Math.floor(Math.random()*16777215).toString(16);
+			arrayColors[i] ='#'+((Object.keys(detailListMTNs).indexOf(listMTNs[allMtns[i]][0])+1)*255).toString(16);
+			arrayLights[i] = new THREE.AreaLight(arrayColors[i], 2);
+			arrayLights[i].rotation.set(- Math.PI/2.00, 0,0 );
+			tmpwidth+=arrayLights[i].width+10
+			
+			arrayLights[i].width = (Object.keys(listMTNs[allMtns[i]][1]).length/6);//*0.99;
+			arrayLights[i].height = (detailListMTNs[listMTNs[allMtns[i]][0]].length/10)//;*0.99;//9.9;
+			arrayLights[i].position.set(( tmpwidth), detailListMTNs[listMTNs[allMtns[i]][0]].length/10+4, -65);
+			
+			
+			scene.add(arrayLights[i]);
+			console.log((-10 + (i*(Object.keys(listMTNs[allMtns[i]][1]).length/6+10))));
+			
+			//console.log((Object.keys(detailListMTNs).indexOf(listMTNs[allMtns[i]][0]))+1)
+			
+			arrayMeshes[i] = new THREE.Mesh(new THREE.BoxGeometry(Object.keys(listMTNs[allMtns[i]][1]).length/3, detailListMTNs[listMTNs[allMtns[i]][0]].length/5, 0), new THREE.MeshBasicMaterial({color: arrayColors[i]}));
+			//arrayMeshes[i].position = arrayLights[i].position;
+			//console.log(arrayMeshes[i].position)
+			//arrayMeshes[i].position.y=detailListMTNs[listMTNs[allMtns[i]][0]].length/10+4
+			arrayMeshes[i].position.set((tmpwidth), detailListMTNs[listMTNs[allMtns[i]][0]].length/10+4, -65 );
+			scene.add(arrayMeshes[i]);
+		}
+		
+		
+		var particles = 500000;
+
+				var mgeometry = new THREE.BufferGeometry();
+
+				var positions = new Float32Array( particles * 3 );
+				var colors = new Float32Array( particles * 3 );
+
+				var color = new THREE.Color();
+
+				var n = 100, n2 = n / 2; // particles spread in the cube
+
+				for ( var i = 0; i < positions.length; i += 3 ) {
+
+					// positions
+
+					var x = Math.random() * n;
+					var y = Math.random() * n;
+					var z = Math.random() * n;
+
+					positions[ i ]     = x;
+					positions[ i + 1 ] = y;
+					positions[ i + 2 ] = z;
+
+					// colors
+
+					var vx = ( x / n ) + 0.5;
+					var vy = ( y / n ) + 0.5;
+					var vz = ( z / n ) + 0.5;
+
+					color.setRGB( vx, vy, vz );
+
+					colors[ i ]     = color.r;
+					colors[ i + 1 ] = color.g;
+					colors[ i + 2 ] = color.b;
+
+				}
+
+				mgeometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+				mgeometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
+
+				mgeometry.computeBoundingSphere();
+
+				//
+
+				var material = new THREE.PointCloudMaterial( { size: 1, vertexColors: THREE.VertexColors } );
+
+				particleSystem = new THREE.PointCloud( mgeometry, material );
+				//particleSystem = new THREE.PointCloud( geometry, new THREE.MeshLambertMaterial( { color: 0xeeeddd, shading: THREE.FlatShading } ));
+				scene.add( particleSystem );
+		
+		
+		//var object = new THREE.Mesh(new THREE.PlaneGeometry( 10, 10, 4, 4 ),new THREE.MeshLambertMaterial( { color: 0xeeeddd, shading: THREE.FlatShading } )  );
+		//object.position.set( 0, 40, -45 );
+		//scene.add( object );
+		
+		
+		
+		
+
+        var controls = new function () {
+            this.rotationSpeed = 0.02;
+            this.color1 = 0xff0000;
+            this.intensity1 = 2;
+            this.color2 = 0x00ff00;
+            this.intensity2 = 2;
+            this.color3 = 0x0000ff;
+            this.intensity3 = 2;
+        }
+
+        
+		
+		document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+		
+		
+		
+
+			function onDocumentMouseMove( event ) {
+
+				mouseX = ( event.clientX - windowHalfX ) * 1;
+				mouseY = ( event.clientY - windowHalfY ) * 1;
+
+			}
+
+
+        render();
+
+        function render() {
+			targetX = mouseX * .001;
+				targetY = mouseY * .001;
+
+				angle += 0.05 * ( targetX - angle );
+				angle2 += 0.02 * ( targetY - angle2 );
+
+				camera.position.x = -Math.sin( angle ) * 40;
+				camera.position.z =  Math.cos( angle ) * 40;
+				//camera.position.y =  Math.cos( angle2 ) * 50;
+				target.y-=( targetY - angle2 );
+				camera.lookAt( target );
+		
+            stats.update();
+
+            // render using requestAnimationFrame
+            requestAnimationFrame(render);
+            renderer.render(scene, camera);
+        }
+
+        function initStats() {
+
+            var stats = new Stats();
+
+            stats.setMode(0); // 0: fps, 1: ms
+
+            // Align top-left
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.left = '0px';
+            stats.domElement.style.top = '0px';
+
+            $("#Stats-output").append(stats.domElement);
+
+            return stats;
+        }
+    });
+
+*/
+</script>  

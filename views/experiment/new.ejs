@@ -1,0 +1,1593 @@
+<br><br><form action="/experiment/create" method="POST" id="experiment-creation-form" class="form-signin">
+	<h2 class="form-signin-heading">Create an experiment</h2>
+
+	<% if(flash && flash.err) { %>
+		<ul class="alert alert-success">
+	<% Object.keys(flash.err).forEach(function(error) { %>
+		<li><%- JSON.stringify(flash.err[error]) %></li>
+	<% }) %>
+	</ul>
+	<% } %>
+
+	<% 
+		var InputParameters=JSON.stringify({'default_p':[] , 'simulations_p':[]});
+		var qm=qms[0];
+		var InputdataJson=qm.file;
+		//var InputdataJson=JSON.stringify({"places" : [], "qssf" : { "constraints" : [], "externality_tag" :null,"objectives" : []}, "transitions" : []});
+		var InputdataSfba=JSON.stringify([]);
+	%>
+	<div class="control-group">
+	<input type="text" class="form-control" placeholder="experiment title" name="name">
+	</div>
+
+	<div class="control-group">
+	<input type="text" class="form-control" placeholder="comments" name="comment">
+	</div>
+	
+	
+	<div class="control-group">Choose a model instance to use in this experiment :
+		<select class="form-control" name="qsspn_model_name" onchange="updateModel(this);">
+		<% 
+		var mtb_name=qm.metabolic_net; 
+		_.each(qms, function(qm) {%>
+		   <option><%=qm.name%></option>
+		<% }) %>
+		</select>
+	</div>
+	
+	Fill in or copy/paste experiment parameters in the following tables:<input type="text" name="parameters" id ="parameters" style="visibility: hidden;" value=<%=InputParameters%>>
+	<br><b>Experiment parameters spreadsheet creation:</b>
+	<div class="control-group"> 
+	<br>
+	<br><b>1. General Simulation Parameters:</b><div id="parametersTable1"></div>
+	<br>
+	<br><b>2. List of initial states:</b><div id="parametersTable3"></div>
+	<br>
+	<br><b>3. List of monitored petri-nets:</b><div id="parametersTable2"></div>
+	<br>
+	<br><b>4. List of reset functions:</b><div id="parametersTable4"></div>
+	<br>
+	</div>
+	
+	<input type="text" name="mySpreadsheet0" id ="mySpreadsheet0" style="visibility: hidden;" value="">
+	<input type="text"  name="mySpreadsheet1" id ="mySpreadsheet1" style="visibility: hidden;" value="">
+	<input type="text"  name="mySpreadsheet2" id ="mySpreadsheet2" style="visibility: hidden;" value="">
+	<input type="text"  name="mySpreadsheet3" id ="mySpreadsheet3" style="visibility: hidden;" value="">
+	<input type="text"  name="mySpreadsheet4" id ="mySpreadsheet4" style="visibility: hidden;" value="">
+	<input type="text"  name="mySpreadsheet5" id ="mySpreadsheet5" style="visibility: hidden;" value="">
+	<input type="text"  name="mySpreadsheet6" id ="mySpreadsheet6" style="visibility: hidden;" value="">
+	<input type="text"  name="mySpreadsheet7" id ="mySpreadsheet7" style="visibility: hidden;" value="">
+	<input type="text"  name="mySpreadsheet8" id ="mySpreadsheet8" style="visibility: hidden;" value="">
+	<input type="text"  name="mySpreadsheet9" id ="mySpreadsheet9" style="visibility: hidden;" value="">
+	
+	<input type="text"  name="mySfbaSpreadsheet0" id ="mySfbaSpreadsheet0" style="visibility: hidden;" value=<%=InputdataSfba%>>
+	<input type="text"  name="mySfbaSpreadsheet1" id ="mySfbaSpreadsheet1" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet2" id ="mySfbaSpreadsheet2" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet3" id ="mySfbaSpreadsheet3" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet4" id ="mySfbaSpreadsheet4" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet5" id ="mySfbaSpreadsheet5" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet6" id ="mySfbaSpreadsheet6" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet7" id ="mySfbaSpreadsheet7" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet8" id ="mySfbaSpreadsheet8" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet9" id ="mySfbaSpreadsheet9" style="visibility: hidden;" value="">
+	
+	<input type="text" name="metabolic_net_name" id ="metabolic_net_name" style="visibility: hidden;" value=<%=mtb_name%>>
+	
+	Use selected QSSPN model or change it slightly in the following tables:
+	<br><b>3. QSSPN model instance (.json format) spreadsheet confirmation/modification:</b>
+	<div class="control-group"> 
+	<br>
+	<br><b>Places List:</b><div id="placesTable"></div>
+	<br>
+	<b id="t">Transitions List:</b><div id="transitionsTable"></div>
+	<br><b id="t1">Pre-places List:</b><div id="prePlacesTable"></div>
+	<br><b id="t1.1">Activity Table:</b><div id="activityTable"></div>
+	<br><b id="t2">Consumed List:</b><div id="consumedTable"></div>
+	<br><b id="t3">Post-places List:</b><div id="postPlacesTable"></div>
+	<br>	
+	<b id="qssf" >QSS-Fluxes:</b><div id="qssfTable"></div>			
+	<br><b id="qssf1">Constraints List:</b><div id="constraintsTable"></div>	
+	<br><b id="qssf1.1">Activity Table:</b><div id="constraintsActivityTable" ></div>	
+	<br><b id="qssf1.2">Flux List:</b><div id="fluxListActivityTable" ></div>
+	<br><b id="qssf2">Objective List:</b><div id="objectiveTable"></div>
+	<br><b id="qssf2.1">Activity Table:</b><div id="objectiveActivityTable"></div>
+	</div>
+	<br><b>4. SFBA instance spreadsheet confirmation/modification:</b>
+	<div class="control-group"> 
+	<br>
+	<br><b>SFBA table:</b><div id="sfbaTable"></div>
+	<br>
+	</div>
+	<input type="submit" class="btn btn-lg btn-primary btn-block" value="Create Experiment"/>
+	<input type="hidden" name="_csrf" value="<%= _csrf %>" />
+</form>
+
+<script>
+var dataParam1=[];
+var dataParam2=[];
+var dataParam3=[];
+var dataParam4=[];
+
+
+
+var $container01 = $("#parametersTable1");
+$container01.handsontable({
+  data: [],
+  width: $("#experiment-creation-form").width(),
+  height:80,
+  dataSchema: {name: null, nb_samples: null, seed: null, time_max:null, max_timestep:null ,max_change:null, output:null, log:null, monitor:null, progress:null , target_name:null, target_quantity:null},
+  startRows: 1,
+  startCols: 12,
+  maxRows: 1,
+  colHeaders: ['Model SFBA Name', 'Nb Samples', 'Seed','Time_Max','Max_Timestep','Max_change','Output','Log','Monitor','Progress','Target name', 'Target Qty'],
+  columns: [
+    {data: "name"},
+    {data: "nb_samples"},
+    {data: "seed"},
+    {data: "time_max"},
+	{data: "max_timestep"},
+	{data: "max_change"},
+	{data: "output"},
+	{data: "log"},
+	{data: "monitor"},
+	{data: "progress"},
+	{data: "target_name"},
+	{data: "target_quantity"}
+  ],
+  afterChange: function(changes, source) {
+	var dt = this.getData();
+	dataParam1=[dt[0].name , dt[0].nb_samples, dt[0].seed, dt[0].time_max, dt[0].max_timestep,dt[0].max_change, dt[0].output, dt[0].log, dt[0].monitor, dt[0].progress, dt[0].target_name, dt[0].target_quantity];
+	document.getElementById("parameters").value=JSON.stringify({'default_p':[dataParam1,dataParam2,dataParam3,dataParam4] , 'simulations_p':[]});
+	//console.log(document.getElementById("parameters").value)
+  },
+  minSpareRows: 1
+});
+
+var $container02 = $("#parametersTable2");
+$container02.handsontable({
+  data: [],
+  width: $("#experiment-creation-form").width(),
+  height:200,
+  dataSchema: {petri_name: null},
+  startRows: 1,
+  startCols: 1,
+  colHeaders: ['Petri-Net Monitored'],
+  columns: [
+    {data: "petri_name"}
+  ],
+  afterChange: function(changes, source) {
+	var dt = this.getData();
+	
+	dataParam2=[];
+	for (var i=0, j= dt.length;i<j-1;i++){
+		dataParam2.push(dt[i].petri_name);
+	}
+	//console.log(dataParam2)
+	document.getElementById("parameters").value=JSON.stringify({'default_p':[dataParam1,dataParam2,dataParam3,dataParam4] , 'simulations_p':[]});
+	//console.log(document.getElementById("parameters").value)
+	//console.log("aa")
+  },
+  minSpareRows: 1
+});
+
+var $container03 = $("#parametersTable3");
+$container03.handsontable({
+  data: [],
+  width: $("#experiment-creation-form").width(),
+  height:100,
+  dataSchema: {petri_name: null, state: null},
+  startRows: 1,
+  startCols: 2,
+  colHeaders: ['Petri-Net','Initial State'],
+  columns: [
+    {data: "petri_name"},
+	{data: "state"}
+  ],
+  afterChange: function(changes, source) {
+	var dt = this.getData();
+	
+	dataParam3=[];
+	for (var i=0, j= dt.length;i<j-1;i++){
+		dataParam3.push([dt[i].petri_name,dt[i].state]);
+	}
+	//console.log(dataParam3)
+	document.getElementById("parameters").value=JSON.stringify({'default_p':[dataParam1,dataParam2,dataParam3,dataParam4] , 'simulations_p':[]});
+	//console.log(document.getElementById("parameters").value)
+	//console.log("aa")
+  },
+  minSpareRows: 1
+});
+
+
+var $container04 = $("#parametersTable4");
+$container04.handsontable({
+  data: [],
+  width: $("#experiment-creation-form").width(),
+  height:100,
+  dataSchema: {fn_name: null, equation: null},
+  startRows: 1,
+  startCols: 2,
+  colHeaders: ['Reset function name','Equation'],
+  columns: [
+    {data: "fn_name"},
+	{data: "equation"}
+  ],
+  afterChange: function(changes, source) {
+	var dt = this.getData();
+	
+	dataParam4=[];
+	for (var i=0, j= dt.length;i<j-1;i++){
+		dataParam4.push([dt[i].fn_name,dt[i].equation]);
+	}
+	//console.log(dataParam3)
+	document.getElementById("parameters").value=JSON.stringify({'default_p':[dataParam1,dataParam2,dataParam3,dataParam4] , 'simulations_p':[]});
+	//console.log(document.getElementById("parameters").value)
+	//console.log("aa")
+  },
+  minSpareRows: 1
+});
+
+
+//console.log(<%-JSON.stringify(InputdataJson['qssf']['externality_tag'])%>)
+var allData=<%-JSON.stringify(qms)%>;
+//var dataJson=allData[0].file;
+var dataJson=<%-JSON.stringify(InputdataJson)%>
+
+var mlength=JSON.stringify(dataJson).length;
+var nbArrays=1;
+if (mlength>524288){
+	nbArrays=parseInt(Math.ceil(mlength/524288.0));
+}
+if (nbArrays==1){
+	document.getElementById("mySpreadsheet0").value=JSON.stringify(dataJson);
+}
+else{
+	var stringSfba=JSON.stringify(dataJson);
+	var chunksize=524288;
+	var stringChunks=[];
+	//console.log(mlength)
+	for (var i=0;i<nbArrays;i++){
+		stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+		document.getElementById("mySpreadsheet"+i).value=stringChunks[i];
+		//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+		//console.log(document.getElementById("mySpreadsheet"+i).value.length)
+	}
+	//console.log(stringChunks)
+}
+
+
+var dataSfba=[];
+//console.log(allData)
+
+
+
+var presentTransitionNb=-1;
+var presentPrePlaceNb=-1;
+var presentConstraintNb=-1;
+var presentObjectiveNb=-1;
+
+var $container1 = $("#placesTable");
+$container1.handsontable({
+  data: [],
+  width: ($("#experiment-creation-form").width()),
+  height:200,
+  dataSchema: {name: null, state: null, type: null, max:null, subsystem:null},
+  startRows: 5,
+  startCols: 5,
+  colHeaders: ['Name', 'State', 'Type','Max','Sub-system'],
+  columns: [
+    {data: "name"},
+    {data: "state"},
+    {data: "type"},
+    {data: "max"},
+	{data: "subsystem"}
+  ],
+  afterChange: function(changes, source) {
+    //console.log(this.getData());
+	var dt = this.getData();
+	for (var i=0, j= dt.length;i<j-1;i++){
+		if (dataJson["places"].length <i+1){
+			dataJson["places"].push({"place":{	"max" : dt[i].max,"name" : dt[i].name,"state" : dt[i].state,"type" : dt[i].type,"subsystem" : dt[i].subsystem} });
+		}
+		else dataJson["places"][i]={"place":{	"max" : dt[i].max,"name" : dt[i].name,"state" : dt[i].state,"type" : dt[i].type,"subsystem" : dt[i].subsystem} };
+	}
+	//document.getElementById("mySpreadsheet").value=JSON.stringify(dataJson);
+	var mlength=JSON.stringify(dataJson).length;
+	var nbArrays=1;
+	if (mlength>524288){
+		nbArrays=parseInt(Math.ceil(mlength/524288.0));
+	}
+	if (nbArrays==1){
+		document.getElementById("mySpreadsheet0").value=JSON.stringify(dataJson);
+	}
+	else{
+		var stringSfba=JSON.stringify(dataJson);
+		var chunksize=524288;
+		var stringChunks=[];
+		//console.log(mlength)
+		for (var i=0;i<nbArrays;i++){
+			stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+			document.getElementById("mySpreadsheet"+i).value=stringChunks[i];
+			//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+			//console.log(document.getElementById("mySpreadsheet"+i).value.length)
+		}
+		//console.log(stringChunks)
+	}
+	
+  },
+  minSpareRows: 1
+});
+
+var tempdata1=new Array(dataJson["places"].length);
+for (var i=0, j=dataJson["places"].length; i<j;i++){
+	tempdata1[i]=new Array(5);
+	tempdata1[i][0]=dataJson["places"][i]["place"]["name"];
+	tempdata1[i][1]=dataJson["places"][i]["place"]["state"];
+	tempdata1[i][2]=dataJson["places"][i]["place"]["type"];
+	tempdata1[i][3]=dataJson["places"][i]["place"]["max"];
+	tempdata1[i][4]=dataJson["places"][i]["place"]["subsystem"];
+}
+//console.log(tempdata1)
+var ht = $('#placesTable').handsontable('getInstance');
+if ($.isArray(tempdata1) && tempdata1[0] && $.isArray(tempdata1[0])){
+	ht.populateFromArray (0, 0, tempdata1,tempdata1.length-1, 3);
+}
+
+
+var $container2 = $("#transitionsTable");
+$container2.handsontable({
+  data: [],
+  width: ($("#experiment-creation-form").width()),
+  height:200,
+  colWidths: [350, 50, 50, 50,100],
+  dataSchema: {name: null, delay: null, type: null, c:null ,prePlaces:null,consumed:null, postPlaces:null , subsystem:null },
+  startRows: 5,
+  startCols: 5,
+  colHeaders: ['Name', 'Delay','Type','c','Sub-system'],
+  columns: [
+    {data: "name"},
+    {data: "delay"},
+    {data: "type"},
+    {data: "c"},
+	{data: "subsystem"}
+  ],
+  afterSelection : function(rowNb, colNb) {
+	presentTransitionNb=rowNb;
+	document.getElementById("t1").innerHTML = 'Pre-places List for transition nb:'+rowNb+ ', name:'+this.getDataAtCell(rowNb,0);
+	document.getElementById("t2").innerHTML = 'Consumed List for transition nb:'+rowNb+ ', name:'+this.getDataAtCell(rowNb,0);
+	document.getElementById("t3").innerHTML = 'Post-places List for transition nb:'+rowNb+ ', name:'+this.getDataAtCell(rowNb,0);
+	if(dataJson["transitions"][presentTransitionNb]){
+		//dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"]=[{	"preplace" : {	"activity" : [{ "a" : 0.0, "t" : 1.0}],"name" : "dNTPs","stoichiometry" : 1.0}}];
+		/*if(dataJson["transitions"][presentTransitionNb]["transition"] && dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"]){
+			var dt=dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"];
+			var ht = $('#prePlacesTable').handsontable('getInstance');
+			ht.clear();
+			var tmpT= new Array(dt.length);
+			for (var i=0, j= dt.length;i<j;i++){
+					tmpT[i]=new Array(2);
+					tmpT[i][0]=dt[i]["preplace"]["name"];
+					tmpT[i][1]=dt[i]["preplace"]["stoichiometry"];
+			}	
+			//console.log(tmpT)
+			if ($.isArray(tmpT) && tmpT[0] && $.isArray(tmpT[0])){
+				ht.populateFromArray (0, 0, tmpT,tmpT.length-1, 1)
+			}
+		}*/
+		if(dataJson["transitions"][presentTransitionNb]["transition"]){ 
+			if (dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"]){
+				var dt=dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"];
+				var ht = $('#prePlacesTable').handsontable('getInstance');
+				ht.clear();
+				var tmpT= new Array(dt.length);
+				for (var i=0, j= dt.length;i<j;i++){
+						tmpT[i]=new Array(2);
+						tmpT[i][0]=dt[i]["preplace"]["name"];
+						tmpT[i][1]=dt[i]["preplace"]["stoichiometry"];
+				}	
+				//console.log(tmpT)
+				if ($.isArray(tmpT) && tmpT[0] && $.isArray(tmpT[0])){
+					ht.populateFromArray (0, 0, tmpT,tmpT.length-1, 1)
+				}
+				
+				if(presentPrePlaceNb!=-1 && dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]){
+					//console.log(dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb])
+					if (dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["activity"]){
+						var dt=dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["activity"];
+						
+						var tmpT= new Array(dt.length);
+						for (var i=0, j= dt.length;i<j;i++){
+								tmpT[i]=new Array(2);
+								tmpT[i][0]=dt[i]["a"];
+								tmpT[i][1]=dt[i]["t"];
+						}	
+						var ht = $('#activityTable').handsontable('getInstance');
+						ht.clear();
+						if ($.isArray(tmpT) && tmpT[0] && $.isArray(tmpT[0])){
+							ht.populateFromArray (0, 0, tmpT,tmpT.length-1, 1);
+						}
+					}
+					else{
+						//var ht = $('#activityTable').handsontable('getInstance');
+						//ht.clear();
+					}
+				}
+				else{
+					//var ht = $('#activityTable').handsontable('getInstance');
+					//ht.clear();
+				}
+				
+				
+				
+			}
+			else{
+				var ht = $('#prePlacesTable').handsontable('getInstance');
+				ht.clear();
+				//var ht = $('#activityTable').handsontable('getInstance');
+				//ht.clear();
+			}
+			
+			if (dataJson["transitions"][presentTransitionNb]["transition"]["consumed"]){
+				var dt=dataJson["transitions"][presentTransitionNb]["transition"]["consumed"];
+				var ht = $('#consumedTable').handsontable('getInstance');
+				ht.clear();
+				var tmpT= new Array(dt.length);
+				for (var i=0, j= dt.length;i<j;i++){
+						tmpT[i]=new Array(1);
+						tmpT[i][0]=dt[i]["consumed_preplace"]["name"];
+				}	
+				//console.log(tmpT)
+				if ($.isArray(tmpT) && tmpT[0] && $.isArray(tmpT[0])){
+					ht.populateFromArray (0, 0, tmpT,tmpT.length-1, 1)
+				}
+				
+			}
+			else{
+				var ht = $('#consumedTable').handsontable('getInstance');
+				ht.clear();
+			}
+			
+			if (dataJson["transitions"][presentTransitionNb]["transition"]["postplaces"]){
+				var dt=dataJson["transitions"][presentTransitionNb]["transition"]["postplaces"];
+				var ht = $('#postPlacesTable').handsontable('getInstance');
+				ht.clear();
+				var tmpT= new Array(dt.length);
+				for (var i=0, j= dt.length;i<j;i++){
+						tmpT[i]=new Array(2);
+						tmpT[i][0]=dt[i]["postplace"]["name"];
+						tmpT[i][1]=dt[i]["postplace"]["stoichiometry"];
+				}	
+				//console.log(tmpT)
+				if ($.isArray(tmpT) && tmpT[0] && $.isArray(tmpT[0])){
+					ht.populateFromArray (0, 0, tmpT,tmpT.length-1, 1)
+				}
+				
+			}
+			else{
+				var ht = $('#postPlacesTable').handsontable('getInstance');
+				ht.clear();
+			}
+			
+			
+		}
+		
+		
+		else{
+			var ht = $('#prePlacesTable').handsontable('getInstance');
+			ht.clear();
+			var ht = $('#consumedTable').handsontable('getInstance');
+			ht.clear();
+		}
+	}
+	else{
+		var ht = $('#prePlacesTable').handsontable('getInstance');
+		ht.clear();
+		var ht = $('#consumedTable').handsontable('getInstance');
+		ht.clear();
+	}
+  },
+  afterChange: function(changes, source) {
+    //console.log(this.getData());
+	var dt = this.getData();
+	for (var i=0, j= dt.length;i<j-1;i++){
+		if (dataJson["transitions"].length <i+1){
+			dataJson["transitions"].push({"transition":{ "name" : dt[i].name,"delay" : dt[i].delay,"type" : dt[i].type,"c" : dt[i].c,"subsystem" : dt[i].subsystem}});
+		}
+		else {
+			dataJson["transitions"][i]["transition"]["name"]=dt[i].name;
+			dataJson["transitions"][i]["transition"]["delay"]=dt[i].delay;
+			dataJson["transitions"][i]["transition"]["type"]=dt[i].type;
+			dataJson["transitions"][i]["transition"]["c"]=dt[i].c;
+			dataJson["transitions"][i]["transition"]["subsystem"]=dt[i].subsystem;
+		}
+	}
+	//document.getElementById("mySpreadsheet").value=JSON.stringify(dataJson);
+	var mlength=JSON.stringify(dataJson).length;
+	var nbArrays=1;
+	if (mlength>524288){
+		nbArrays=parseInt(Math.ceil(mlength/524288.0));
+	}
+	if (nbArrays==1){
+		document.getElementById("mySpreadsheet0").value=JSON.stringify(dataJson);
+	}
+	else{
+		var stringSfba=JSON.stringify(dataJson);
+		var chunksize=524288;
+		var stringChunks=[];
+		//console.log(mlength)
+		for (var i=0;i<nbArrays;i++){
+			stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+			document.getElementById("mySpreadsheet"+i).value=stringChunks[i];
+			//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+			//console.log(document.getElementById("mySpreadsheet"+i).value.length)
+		}
+		//console.log(stringChunks)
+	}
+	
+	
+	//console.log(dataJson);
+	//dataJson.places.push()
+  },
+  minSpareRows: 1
+});
+
+var tempdata2=new Array(dataJson["transitions"].length);
+for (var i=0, j=dataJson["transitions"].length; i<j;i++){
+	tempdata2[i]=new Array(4);
+	tempdata2[i][0]=dataJson["transitions"][i]["transition"]["name"];
+	tempdata2[i][1]=dataJson["transitions"][i]["transition"]["delay"];
+	tempdata2[i][2]=dataJson["transitions"][i]["transition"]["type"];
+	tempdata2[i][3]=dataJson["transitions"][i]["transition"]["c"];
+}
+//console.log(tempdata1)
+var ht = $('#transitionsTable').handsontable('getInstance');
+if ($.isArray(tempdata2) && tempdata2[0] && $.isArray(tempdata2[0])){
+	ht.populateFromArray (0, 0, tempdata2,tempdata2.length-1, 3);
+}
+
+
+
+var $container3 = $("#postPlacesTable");
+$container3.handsontable({
+  data: [],
+  width: ($("#experiment-creation-form").width()),
+  height:200,
+  dataSchema: {name: null, stoichiometry: null  },
+  startRows: 5,
+  startCols: 4,
+  colHeaders: ['Name', 'Stoichiometry'],
+  columns: [
+    {data: "name"},
+    {data: "stoichiometry"},
+  ],
+  afterChange: function(changes, source) {
+	if(dataJson["transitions"][presentTransitionNb] && dataJson["transitions"][presentTransitionNb]["transition"]){
+		var dt = this.getData();
+		
+		if (dataJson["transitions"][presentTransitionNb]["transition"]["postplaces"]){
+			for (var i=0, j= dt.length;i<j-1;i++){
+				if (dataJson["transitions"][presentTransitionNb]["transition"]["postplaces"].length <i+1){
+					dataJson["transitions"][presentTransitionNb]["transition"]["postplaces"].push({"postplace":{	"name" : dt[i].name, "stoichiometry" : dt[i].stoichiometry} });
+				}
+				else{
+					dataJson["transitions"][presentTransitionNb]["transition"]["postplaces"][i]["postplace"]["name"]=dt[i].name;
+					dataJson["transitions"][presentTransitionNb]["transition"]["postplaces"][i]["postplace"]["stoichiometry"]=dt[i].stoichiometry;
+				}
+			}
+		}
+		else{
+			dataJson["transitions"][presentTransitionNb]["transition"]["postplaces"]=[];
+			for (var i=0, j= dt.length;i<j-1;i++){
+				dataJson["transitions"][presentTransitionNb]["transition"]["postplaces"].push({"postplace":{	"name" : dt[i].name, "stoichiometry" : dt[i].stoichiometry} });
+			}
+		}
+		//console.log(dataJson["transitions"][presentTransitionNb]["transition"]["consumed"])
+		
+	}
+	//document.getElementById("mySpreadsheet").value=JSON.stringify(dataJson);
+	var mlength=JSON.stringify(dataJson).length;
+	var nbArrays=1;
+	if (mlength>524288){
+		nbArrays=parseInt(Math.ceil(mlength/524288.0));
+	}
+	if (nbArrays==1){
+		document.getElementById("mySpreadsheet0").value=JSON.stringify(dataJson);
+	}
+	else{
+		var stringSfba=JSON.stringify(dataJson);
+		var chunksize=524288;
+		var stringChunks=[];
+		//console.log(mlength)
+		for (var i=0;i<nbArrays;i++){
+			stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+			document.getElementById("mySpreadsheet"+i).value=stringChunks[i];
+			//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+			//console.log(document.getElementById("mySpreadsheet"+i).value.length)
+		}
+		//console.log(stringChunks)
+	}
+	
+  },
+  minSpareRows: 1
+});
+var $container4 = $("#prePlacesTable");
+$container4.handsontable({
+  data: [],
+  width: ($("#experiment-creation-form").width()),
+  height:200,
+  dataSchema: {name: null, stoichiometry: null  },
+  startRows: 5,
+  startCols: 4,
+  colHeaders: ['Name','Stoichiometry'],
+  columns: [
+    {data: "name"},
+    {data: "stoichiometry"},
+  ],
+  afterSelection : function(rowNb, colNb) {
+	presentPrePlaceNb=rowNb;
+	document.getElementById("t1.1").innerHTML = 'Activity table for pre-place nb:'+rowNb+ ', name:'+this.getDataAtCell(rowNb,0);
+	
+	if(dataJson["transitions"][presentTransitionNb]){
+	//console.log(dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb])
+		//dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"]=[{	"preplace" : {	"activity" : [{ "a" : 0.0, "t" : 1.0}],"name" : "dNTPs","stoichiometry" : 1.0}}];
+		if(dataJson["transitions"][presentTransitionNb]["transition"] 
+		&& dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"]
+		&& dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]
+		){
+			
+			if (dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["preplace"]["activity"]){
+				
+				var dt=dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["preplace"]["activity"];
+				//console.log(dt)
+				var tmpT= new Array(dt.length);
+				for (var i=0, j= dt.length;i<j;i++){
+						tmpT[i]=new Array(2);
+						tmpT[i][0]=dt[i]["a"];
+						tmpT[i][1]=dt[i]["t"];
+				}	
+				var ht = $('#activityTable').handsontable('getInstance');
+				ht.clear();
+				if ($.isArray(tmpT) && tmpT[0] && $.isArray(tmpT[0])){
+					ht.populateFromArray (0, 0, tmpT,tmpT.length-1, 1);
+				}
+			}
+			else{
+				var ht = $('#activityTable').handsontable('getInstance');
+				ht.clear();
+			}
+			//var ht = $('#activityTable').handsontable('getInstance');
+			//ht.clear();
+			//var tmpT= new Array(dt.length);
+			//for (var i=0, j= dt.length;i<j;i++){
+			//		tmpT[i]=new Array(2);
+			//		tmpT[i][0]=dt[i]["a"];
+			//		tmpT[i][1]=dt[i]["t"];
+			//}	
+			//console.log(tmpT)
+			//if ($.isArray(tmpT) && tmpT[0] && $.isArray(tmpT[0])){
+			//	ht.populateFromArray (0, 0, tmpT,tmpT.length-1, 1)
+			//}
+		}
+		else{
+			var ht = $('#activityTable').handsontable('getInstance');
+			ht.clear();
+		}
+	}
+	else{
+		var ht = $('#activityTable').handsontable('getInstance');
+		ht.clear();
+	}
+  },
+  
+  afterChange: function(changes, source) {
+	if(dataJson["transitions"][presentTransitionNb]){
+		var dt = this.getData();
+		if (dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"]){
+			
+			for (var i=0, j= dt.length;i<j-1;i++){
+				if (dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"].length <i+1){
+					dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"].push({"preplace":{	"name" : dt[i].name,"stoichiometry" : dt[i].stoichiometry, "activity":[]} });
+				}
+				else {
+					
+					dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][i]["preplace"]["name"]=dt[i].name;
+					dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][i]["preplace"]["stoichiometry"]=dt[i].stoichiometry;
+				}
+			}
+		}
+		else{
+			dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"]=[];
+			for (var i=0, j= dt.length;i<j-1;i++){
+				if (dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"].length <i+1){
+					dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"].push({"preplace":{	"name" : dt[i].name,"stoichiometry" : dt[i].stoichiometry, "activity":[]} });
+				}
+				else {
+					
+					dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][i]["preplace"]["name"]=dt[i].name;
+					dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][i]["preplace"]["stoichiometry"]=dt[i].stoichiometry;
+				}
+			}
+		}
+		
+	}
+	
+	//document.getElementById("mySpreadsheet").value=JSON.stringify(dataJson);
+	var mlength=JSON.stringify(dataJson).length;
+	var nbArrays=1;
+	if (mlength>524288){
+		nbArrays=parseInt(Math.ceil(mlength/524288.0));
+	}
+	if (nbArrays==1){
+		document.getElementById("mySpreadsheet0").value=JSON.stringify(dataJson);
+	}
+	else{
+		var stringSfba=JSON.stringify(dataJson);
+		var chunksize=524288;
+		var stringChunks=[];
+		//console.log(mlength)
+		for (var i=0;i<nbArrays;i++){
+			stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+			document.getElementById("mySpreadsheet"+i).value=stringChunks[i];
+			//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+			//console.log(document.getElementById("mySpreadsheet"+i).value.length)
+		}
+		//console.log(stringChunks)
+	}
+  },
+  
+  minSpareRows: 1
+});
+
+var $container5 = $("#activityTable");
+$container5.handsontable({
+  data: [],
+  width: ($("#experiment-creation-form").width()),
+  height:200,
+  dataSchema: {a: null, t:null},
+  startRows: 5,
+  startCols: 4,
+  colHeaders: ['a', 't'],
+  columns: [
+    {data: "a"},
+	{data: "t"},
+  ],
+  afterChange: function(changes, source) {
+	if(presentTransitionNb!=-1 && presentPrePlaceNb!=-1 && dataJson["transitions"][presentTransitionNb]){
+		
+		if (dataJson["transitions"][presentTransitionNb]["transition"]
+		&& dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"]
+		&& dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]){
+			//console.log(dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]);
+			
+			if(dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["activity"]){
+				var dt = this.getData();
+				//console.log(dt);
+				for (var i=0, j= dt.length;i<j-1;i++){
+					
+					if (dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["activity"].length<i+1){
+						dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["activity"].push({"a":dt[i].a,"t" : dt[i].t});		
+					}
+					else{
+						dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["activity"][i]["a"]=dt[i].a;
+						dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["activity"][i]["t"]=dt[i].t;	
+					}
+				}
+				//console.log(dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["activity"]);
+			}
+			else{
+				dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["activity"]=[];
+				var dt = this.getData();
+				for (var i=0, j= dt.length;i<j-1;i++){
+					dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["activity"].push({"a":dt[i].a,"t" : dt[i].t});		
+				}
+			}
+			//console.log(dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["activity"])
+		}
+		//if (!dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["activity"]){
+		//	dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["activity"]=[];
+		//}
+	//	dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]=[];
+		//for (var i=0, j= dt.length;i<j-1;i++){
+		//	if (dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["activity"].length <i+1){
+		//		dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["activity"].push({"a":dt[i].a,"t" : dt[i].t});
+		//	}
+		//	else {
+		//		dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["activity"][i]["a"]=dt[i].a;
+		//		dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb]["activity"][i]["t"]=dt[i].t;
+		//	}
+		//}
+	}
+	//document.getElementById("mySpreadsheet").value=JSON.stringify(dataJson);
+	var mlength=JSON.stringify(dataJson).length;
+	var nbArrays=1;
+	if (mlength>524288){
+		nbArrays=parseInt(Math.ceil(mlength/524288.0));
+	}
+	if (nbArrays==1){
+		document.getElementById("mySpreadsheet0").value=JSON.stringify(dataJson);
+	}
+	else{
+		var stringSfba=JSON.stringify(dataJson);
+		var chunksize=524288;
+		var stringChunks=[];
+		//console.log(mlength)
+		for (var i=0;i<nbArrays;i++){
+			stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+			document.getElementById("mySpreadsheet"+i).value=stringChunks[i];
+			//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+			//console.log(document.getElementById("mySpreadsheet"+i).value.length)
+		}
+		//console.log(stringChunks)
+	}
+  },
+  minSpareRows: 1
+});
+var $container6 = $("#consumedTable");
+$container6.handsontable({
+  data: [],
+  width: ($("#experiment-creation-form").width()),
+  height:200,
+  dataSchema: {name: null},
+  startRows: 5,
+  startCols: 1,
+  colHeaders: ['name'],
+  columns: [
+    {data: "name"}
+  ],
+  afterChange: function(changes, source) {
+	if(dataJson["transitions"][presentTransitionNb] && dataJson["transitions"][presentTransitionNb]["transition"]){
+		var dt = this.getData();
+		
+		if (dataJson["transitions"][presentTransitionNb]["transition"]["consumed"]){
+			for (var i=0, j= dt.length;i<j-1;i++){
+				if (dataJson["transitions"][presentTransitionNb]["transition"]["consumed"].length <i+1){
+					dataJson["transitions"][presentTransitionNb]["transition"]["consumed"].push({"consumed_preplace":{	"name" : dt[i].name} });
+				}
+				else{
+					dataJson["transitions"][presentTransitionNb]["transition"]["consumed"][i]["consumed_preplace"]["name"]=dt[i].name;
+				}
+			}
+		}
+		else{
+			dataJson["transitions"][presentTransitionNb]["transition"]["consumed"]=[];
+			for (var i=0, j= dt.length;i<j-1;i++){
+				dataJson["transitions"][presentTransitionNb]["transition"]["consumed"].push({"consumed_preplace":{	"name" : dt[i].name} });
+			}
+		}
+		//console.log(dataJson["transitions"][presentTransitionNb]["transition"]["consumed"])
+		
+	}
+	//document.getElementById("mySpreadsheet").value=JSON.stringify(dataJson);
+	var mlength=JSON.stringify(dataJson).length;
+	var nbArrays=1;
+	if (mlength>524288){
+		nbArrays=parseInt(Math.ceil(mlength/524288.0));
+	}
+	if (nbArrays==1){
+		document.getElementById("mySpreadsheet0").value=JSON.stringify(dataJson);
+	}
+	else{
+		var stringSfba=JSON.stringify(dataJson);
+		var chunksize=524288;
+		var stringChunks=[];
+		//console.log(mlength)
+		for (var i=0;i<nbArrays;i++){
+			stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+			document.getElementById("mySpreadsheet"+i).value=stringChunks[i];
+			//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+			//console.log(document.getElementById("mySpreadsheet"+i).value.length)
+		}
+		//console.log(stringChunks)
+	}
+  },
+  minSpareRows: 1
+});
+
+var $container7 = $("#qssfTable");
+$container7.handsontable({
+  data: [],
+  width: ($("#experiment-creation-form").width()),
+  height:200,
+  dataSchema: {externality_tag: null, sfba_file: null},
+  startRows: 1,
+  startCols: 2,
+  maxRows: 1,
+  colHeaders: ['externality_tag', 'sfba_file'],
+  columns: [
+	{data: "externality_tag"},
+	{data: "sfba_file"}
+  ],
+  afterChange: function(changes, source) {
+	var dt = this.getData();
+	
+		dataJson["qssf"]["externality_tag"]=dt[0].externality_tag;
+		//dataJson["qssf"]["sfba_file"]=dt[0].sfba_file;	
+		//document.getElementById("mySpreadsheet").value=JSON.stringify(dataJson);
+		var mlength=JSON.stringify(dataJson).length;
+		var nbArrays=1;
+		if (mlength>524288){
+			nbArrays=parseInt(Math.ceil(mlength/524288.0));
+		}
+		if (nbArrays==1){
+			document.getElementById("mySpreadsheet0").value=JSON.stringify(dataJson);
+		}
+		else{
+			var stringSfba=JSON.stringify(dataJson);
+			var chunksize=524288;
+			var stringChunks=[];
+			//console.log(mlength)
+			for (var i=0;i<nbArrays;i++){
+				stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+				document.getElementById("mySpreadsheet"+i).value=stringChunks[i];
+				//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+				//console.log(document.getElementById("mySpreadsheet"+i).value.length)
+			}
+			//console.log(stringChunks)
+		}
+		
+  },
+  minSpareRows: 1
+});
+dataJson=allData[0].file;
+
+//console.log(dataJson["qssf"])
+//console.log(<%-JSON.stringify(qms[0]['name'])%>)
+//dataJson["qssf"]["externality_tag"]="_xt";
+//dataJson["qssf"]["sfba_file"]=;
+var tempdata3=[[dataJson["qssf"]["externality_tag"],dataJson["qssf"]["sfba_file"] ]];
+
+var ht = $('#qssfTable').handsontable('getInstance');
+if ($.isArray(tempdata3) && tempdata3[0] && $.isArray(tempdata3[0])){
+	ht.populateFromArray (0, 0, tempdata3,tempdata3.length-1, 1);
+}
+
+
+var $container8 = $("#constraintsTable");
+$container8.handsontable({
+  data: [],
+  width: ($("#experiment-creation-form").width()),
+  height:200,
+  dataSchema: {name: null},
+  startRows: 5,
+  startCols: 1,
+  colHeaders: ['name'],
+  columns: [
+    {data: "name"}
+  ],
+  afterSelection : function(rowNb, colNb) {
+	//console.log(rowNb);
+	//console.log($("t1").text())
+	presentConstraintNb=rowNb;
+	document.getElementById("qssf1.1").innerHTML = 'Activity Table for constraint nb:'+rowNb+ ', name:'+this.getDataAtCell(rowNb,0);
+	document.getElementById("qssf1.2").innerHTML = 'Flux List for constraint nb:'+rowNb+ ', name:'+this.getDataAtCell(rowNb,0);
+	
+	if(dataJson["qssf"]["constraints"][presentConstraintNb]){
+		if(dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]){ 
+			if (dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["activity"]){
+				var dt=dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["activity"];
+				var ht = $('#constraintsActivityTable').handsontable('getInstance');
+				ht.clear();
+				var tmpT= new Array(dt.length);
+				for (var i=0, j= dt.length;i<j;i++){
+						tmpT[i]=new Array(3);
+						tmpT[i][0]=dt[i]["lb"];
+						tmpT[i][1]=dt[i]["ub"];
+						tmpT[i][2]=dt[i]["t"];
+				}	
+				//console.log(tmpT)
+				if ($.isArray(tmpT) && tmpT[0] && $.isArray(tmpT[0])){
+					ht.populateFromArray (0, 0, tmpT,tmpT.length-1, 2)
+				}
+			}
+			else{
+				var ht = $('#constraintsActivityTable').handsontable('getInstance');
+				ht.clear();
+				//var ht = $('#activityTable').handsontable('getInstance');
+				//ht.clear();
+			}
+			
+			if (dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["flux_list"]){
+				var dt=dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["flux_list"];
+				var ht = $('#fluxListActivityTable').handsontable('getInstance');
+				ht.clear();
+				var tmpT= new Array(dt.length);
+				for (var i=0, j= dt.length;i<j;i++){
+						tmpT[i]=new Array(1);
+						tmpT[i][0]=dt[i];
+				}	
+				//console.log(tmpT)
+				if ($.isArray(tmpT) && tmpT[0] && $.isArray(tmpT[0])){
+					ht.populateFromArray (0, 0, tmpT,tmpT.length-1, 1)
+				}
+				
+			}
+			else{
+				var ht = $('#fluxListActivityTable').handsontable('getInstance');
+				ht.clear();
+			}
+			
+			
+			
+			
+		}
+		
+		
+		else{
+			var ht = $('#constraintsActivityTable').handsontable('getInstance');
+			ht.clear();
+			var ht = $('#fluxListActivityTable').handsontable('getInstance');
+			ht.clear();
+		}
+	}
+	else{
+		var ht = $('#constraintsActivityTable').handsontable('getInstance');
+		ht.clear();
+		var ht = $('#fluxListActivityTable').handsontable('getInstance');
+		ht.clear();
+	}
+	
+	
+  },
+  afterChange: function(changes, source) {
+    //console.log(this.getData());
+	var dt = this.getData();
+	for (var i=0, j= dt.length;i<j-1;i++){
+		if (dataJson["qssf"]["constraints"].length <i+1){
+			dataJson["qssf"]["constraints"].push({"constraint":{	"name" : dt[i].name,"activity" : [],"flux_list" : []} });
+		}
+		else dataJson["qssf"]["constraints"][i]["constraint"]["name"]=dt[i].name;
+	}
+	//document.getElementById("mySpreadsheet").value=JSON.stringify(dataJson);
+	var mlength=JSON.stringify(dataJson).length;
+	var nbArrays=1;
+	if (mlength>524288){
+		nbArrays=parseInt(Math.ceil(mlength/524288.0));
+	}
+	if (nbArrays==1){
+		document.getElementById("mySpreadsheet0").value=JSON.stringify(dataJson);
+	}
+	else{
+		var stringSfba=JSON.stringify(dataJson);
+		var chunksize=524288;
+		var stringChunks=[];
+		//console.log(mlength)
+		for (var i=0;i<nbArrays;i++){
+			stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+			document.getElementById("mySpreadsheet"+i).value=stringChunks[i];
+			//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+			//console.log(document.getElementById("mySpreadsheet"+i).value.length)
+		}
+		//console.log(stringChunks)
+	}
+	
+	//console.log(dataJson["qssf"]["constraints"]);
+	//dataJson.places.push()
+  },
+  minSpareRows: 1
+});
+
+var tempdata4=new Array(dataJson["qssf"]["constraints"].length);
+for (var i=0, j=dataJson["qssf"]["constraints"].length; i<j;i++){
+	tempdata4[i]=new Array(1);
+	tempdata4[i][0]=dataJson["qssf"]["constraints"][i]["constraint"]["name"];
+}
+var ht = $('#constraintsTable').handsontable('getInstance');
+if ($.isArray(tempdata4) && tempdata4[0] && $.isArray(tempdata4[0])){
+	ht.populateFromArray (0, 0, tempdata4,tempdata4.length-1, 1);
+}
+
+var $container9 = $("#constraintsActivityTable");
+$container9.handsontable({
+  data: [],
+  width: ($("#experiment-creation-form").width()),
+  height:200,
+  dataSchema: {lb: null, ub: null, t: null},
+  startRows: 1,
+  startCols: 3,
+  colHeaders: ['lb', 'ub', 't'],
+  columns: [
+    {data: "lb"},
+	{data: "ub"},
+	{data: "t"},
+  ],
+  afterChange: function(changes, source) {
+	if(dataJson["qssf"]["constraints"][presentConstraintNb]){
+		var dt = this.getData();
+		if (dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["activity"]){
+			
+			for (var i=0, j= dt.length;i<j-1;i++){
+				if (dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["activity"].length <i+1){
+					dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["activity"].push({	"ub" : dt[i].ub,"lb" : dt[i].lb, "t":dt[i].t} );
+				}
+				else {
+					
+					dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["activity"][i]["ub"]=dt[i].ub;
+					dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["activity"][i]["lb"]=dt[i].lb;
+					dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["activity"][i]["t"]=dt[i].t;
+				}
+			}
+			//console.log(dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["activity"]);
+		}
+		
+	}
+	//document.getElementById("mySpreadsheet").value=JSON.stringify(dataJson);
+	var mlength=JSON.stringify(dataJson).length;
+	var nbArrays=1;
+	if (mlength>524288){
+		nbArrays=parseInt(Math.ceil(mlength/524288.0));
+	}
+	if (nbArrays==1){
+		document.getElementById("mySpreadsheet0").value=JSON.stringify(dataJson);
+	}
+	else{
+		var stringSfba=JSON.stringify(dataJson);
+		var chunksize=524288;
+		var stringChunks=[];
+		//console.log(mlength)
+		for (var i=0;i<nbArrays;i++){
+			stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+			document.getElementById("mySpreadsheet"+i).value=stringChunks[i];
+			//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+			//console.log(document.getElementById("mySpreadsheet"+i).value.length)
+		}
+		//console.log(stringChunks)
+	}
+	
+  },
+  minSpareRows: 1
+});
+
+var $container10 = $("#fluxListActivityTable");
+$container10.handsontable({
+  data: [],
+  width: ($("#experiment-creation-form").width()),
+  height:200,
+  dataSchema: {name: null},
+  startRows: 5,
+  startCols: 1,
+  colHeaders: ['name'],
+  columns: [
+    {data: "name"}
+  ],
+  afterChange: function(changes, source) {
+	if(dataJson["qssf"]["constraints"][presentConstraintNb]){
+		var dt = this.getData();
+		if (dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["flux_list"]){
+			
+			for (var i=0, j= dt.length;i<j-1;i++){
+				if (dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["flux_list"].length <i+1){
+					dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["flux_list"].push(dt[i].name);
+				}
+				else {
+					
+					dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["flux_list"][i]=dt[i].name;
+					
+				}
+			}
+			//console.log(dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["flux_list"]);
+		}
+		
+	}
+	//document.getElementById("mySpreadsheet").value=JSON.stringify(dataJson);
+	var mlength=JSON.stringify(dataJson).length;
+	var nbArrays=1;
+	if (mlength>524288){
+		nbArrays=parseInt(Math.ceil(mlength/524288.0));
+	}
+	if (nbArrays==1){
+		document.getElementById("mySpreadsheet0").value=JSON.stringify(dataJson);
+	}
+	else{
+		var stringSfba=JSON.stringify(dataJson);
+		var chunksize=524288;
+		var stringChunks=[];
+		//console.log(mlength)
+		for (var i=0;i<nbArrays;i++){
+			stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+			document.getElementById("mySpreadsheet"+i).value=stringChunks[i];
+			//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+			//console.log(document.getElementById("mySpreadsheet"+i).value.length)
+		}
+		//console.log(stringChunks)
+	}
+	
+  },
+  minSpareRows: 1
+});
+
+var $container11 = $("#objectiveTable");
+$container11.handsontable({
+  data: [],
+  width: ($("#experiment-creation-form").width()),
+  height:200,
+  dataSchema: {name: null, objective: null},
+  startRows: 1,
+  startCols: 4,
+  colHeaders: ['name', 'objective'],
+  columns: [
+    {data: "name"},
+	{data: "objective"}
+	
+  ],
+  afterSelection : function(rowNb, colNb) {
+	//console.log(rowNb);
+	//console.log($("t1").text())
+	presentObjectiveNb=rowNb;
+	document.getElementById("qssf2.1").innerHTML = 'Activity Table for objective nb:'+rowNb+ ', name:'+this.getDataAtCell(rowNb,0);
+	
+	if(dataJson["qssf"]["objectives"][presentObjectiveNb]){
+		if(dataJson["qssf"]["objectives"][presentObjectiveNb]["objective"]){ 
+			if (dataJson["qssf"]["objectives"][presentObjectiveNb]["objective"]["activity"]){
+				var dt=dataJson["qssf"]["objectives"][presentObjectiveNb]["objective"]["activity"];
+				var ht = $('#objectiveActivityTable').handsontable('getInstance');
+				ht.clear();
+				var tmpT= new Array(dt.length);
+				for (var i=0, j= dt.length;i<j;i++){
+						tmpT[i]=new Array(2);
+						tmpT[i][0]=dt[i]["a"];
+						tmpT[i][1]=dt[i]["t"];
+						
+				}	
+				//console.log(tmpT)
+				if ($.isArray(tmpT) && tmpT[0] && $.isArray(tmpT[0])){
+					ht.populateFromArray (0, 0, tmpT,tmpT.length-1, 1)
+				}
+			}
+			else{
+				var ht = $('#objectiveActivityTable').handsontable('getInstance');
+				ht.clear();
+				//var ht = $('#activityTable').handsontable('getInstance');
+				//ht.clear();
+			}
+			
+		}
+		
+		
+		else{
+			var ht = $('#objectiveActivityTable').handsontable('getInstance');
+			ht.clear();
+			
+		}
+	}
+	else{
+		var ht = $('#objectiveActivityTable').handsontable('getInstance');
+		ht.clear();
+		
+	}
+	
+  },
+  afterChange: function(changes, source) {
+    //console.log(this.getData());
+	var dt = this.getData();
+	
+	for (var i=0, j= dt.length;i<j-1;i++){
+		if (dataJson["qssf"]["objectives"].length <i+1){
+			dataJson["qssf"]["objectives"].push({"objective":{	"name" : dt[i].name,"objective" : dt[i].objective,"activity" : []} });
+		}
+		else {
+			dataJson["qssf"]["objectives"][i]["objective"]["name"]=dt[i].name;
+			dataJson["qssf"]["objectives"][i]["objective"]["objective"]=dt[i].objective;
+		}
+	}
+	//dataJson["qssf"]["objectives"].splice(dt.length,dataJson["qssf"]["objectives"].length-dt.length)
+	//document.getElementById("mySpreadsheet").value=JSON.stringify(dataJson);
+	var mlength=JSON.stringify(dataJson).length;
+	var nbArrays=1;
+	if (mlength>524288){
+		nbArrays=parseInt(Math.ceil(mlength/524288.0));
+	}
+	if (nbArrays==1){
+		document.getElementById("mySpreadsheet0").value=JSON.stringify(dataJson);
+	}
+	else{
+		var stringSfba=JSON.stringify(dataJson);
+		var chunksize=524288;
+		var stringChunks=[];
+		//console.log(mlength)
+		for (var i=0;i<nbArrays;i++){
+			stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+			document.getElementById("mySpreadsheet"+i).value=stringChunks[i];
+			//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+			//console.log(document.getElementById("mySpreadsheet"+i).value.length)
+		}
+		//console.log(stringChunks)
+	}
+	
+	//console.log(dataJson["qssf"]["objectives"]);
+	//dataJson.places.push()
+  },
+  minSpareRows: 1
+});
+
+var tempdata5=new Array(dataJson["qssf"]["objectives"].length);
+for (var i=0, j=dataJson["qssf"]["objectives"].length; i<j;i++){
+	tempdata5[i]=new Array(2);
+	tempdata5[i][0]=dataJson["qssf"]["objectives"][i]["objective"]["name"];
+	tempdata5[i][1]=dataJson["qssf"]["objectives"][i]["objective"]["objective"];
+}
+var ht = $('#objectiveTable').handsontable('getInstance');
+if ($.isArray(tempdata5) && tempdata5[0] && $.isArray(tempdata5[0])){
+	ht.populateFromArray (0, 0, tempdata5,tempdata5.length-1, 2);
+}
+
+
+var $container12 = $("#objectiveActivityTable");
+$container12.handsontable({
+  data: [],
+  width: ($("#experiment-creation-form").width()),
+  height:150,
+  dataSchema: {a: null, t: null},
+  startRows: 5,
+  startCols: 4,
+  colHeaders: ['a', 't', ],
+  columns: [
+    {data: "a"},
+	{data: "t"},
+  ],
+  afterChange: function(changes, source) {
+	if(dataJson["qssf"]["objectives"][presentObjectiveNb]){
+		var dt = this.getData();
+		if (dataJson["qssf"]["objectives"][presentObjectiveNb]["objective"]["activity"]){
+			
+			for (var i=0, j= dt.length;i<j-1;i++){
+				if (dataJson["qssf"]["objectives"][presentObjectiveNb]["objective"]["activity"].length <i+1){
+					dataJson["qssf"]["objectives"][presentObjectiveNb]["objective"]["activity"].push({	"a" : dt[i].a,"t" : dt[i].t} );
+				}
+				else {
+					
+					dataJson["qssf"]["objectives"][presentObjectiveNb]["objective"]["activity"][i]["a"]=dt[i].a;
+					dataJson["qssf"]["objectives"][presentObjectiveNb]["objective"]["activity"][i]["t"]=dt[i].t;
+				}
+			}
+			//console.log(dataJson["qssf"]["objectives"][presentObjectiveNb]["objective"]["activity"]);
+		}
+		
+	}
+	//document.getElementById("mySpreadsheet").value=JSON.stringify(dataJson);
+	var mlength=JSON.stringify(dataJson).length;
+	var nbArrays=1;
+	if (mlength>524288){
+		nbArrays=parseInt(Math.ceil(mlength/524288.0));
+	}
+	if (nbArrays==1){
+		document.getElementById("mySpreadsheet0").value=JSON.stringify(dataJson);
+	}
+	else{
+		var stringSfba=JSON.stringify(dataJson);
+		var chunksize=524288;
+		var stringChunks=[];
+		//console.log(mlength)
+		for (var i=0;i<nbArrays;i++){
+			stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+			document.getElementById("mySpreadsheet"+i).value=stringChunks[i];
+			//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+			//console.log(document.getElementById("mySpreadsheet"+i).value.length)
+		}
+		//console.log(stringChunks)
+	}
+	
+  },
+  minSpareRows: 1
+});
+
+
+
+var $container13 = $("#sfbaTable");
+$container13.handsontable({
+  data: [],
+  width: ($("#experiment-creation-form").width()),
+  height:200,
+  dataSchema: {name: null, formula: null, lb: null, ub:null, command:null, rule:null},
+  colWidths: [55, (($("#experiment-creation-form").width())-235)/2, 40, 40,100, (($("#experiment-creation-form").width())-235)/2],
+  startRows: 5,
+  startCols: 6,
+  colHeaders: ['Reaction name', 'Reaction Formula', 'Lb','Ub','Command','Gene/Reaction Rule'],
+  columns: [
+    {data: "name"},
+    {data: "formula"},
+    {data: "lb"},
+    {data: "ub"},
+	{data: "command"},
+	{data: "rule"}
+  ],
+  afterChange: function(changes, source) {
+    //console.log(this.getData());
+	var dt = this.getData();
+	
+	for (var i=0, j= dt.length;i<j-1;i++){
+		dataSfba[i]=new Array(6);
+		dataSfba[i][0]=dt[i].name;
+		dataSfba[i][1]=dt[i].formula;
+		dataSfba[i][2]=dt[i].lb;
+		dataSfba[i][3]=dt[i].ub;
+		dataSfba[i][4]=dt[i].command;
+		dataSfba[i][5]=dt[i].rule;
+	}
+		var mlength=JSON.stringify(dataSfba).length;
+		var nbArrays=1;
+		if (mlength>524288){
+			nbArrays=parseInt(Math.ceil(mlength/524288.0));
+		}
+		if (nbArrays==1){
+			document.getElementById("mySfbaSpreadsheet0").value=JSON.stringify(dataSfba);
+		}
+		else{
+			var stringSfba=JSON.stringify(dataSfba);
+			var chunksize=524288;
+			var stringChunks=[];
+			//console.log(mlength)
+			for (var i=0;i<nbArrays;i++){
+				stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+				document.getElementById("mySfbaSpreadsheet"+i).value=stringChunks[i];
+				//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+				//console.log(document.getElementById("mySfbaSpreadsheet"+i).value.length)
+			}
+			//console.log(stringChunks)
+		}
+
+		//console.log(JSON.stringify(dataSfba).length)
+		//console.log(document.getElementById("mySfbaSpreadsheet").value.length)
+		//console.log(document.getElementById("mySfbaSpreadsheet").value)
+	//dataJson.places.push()
+  },
+  minSpareRows: 1
+});
+var tempdata6=allData[0].sfba;
+var ht = $('#sfbaTable').handsontable('getInstance');
+//console.log(ht)
+if ($.isArray(tempdata6) && tempdata6[0] && $.isArray(tempdata6[0])){
+	ht.populateFromArray (0, 0, tempdata6,tempdata6.length-1, 5);
+}
+
+
+jsPlumb.ready(function() {
+	jsPlumb.connect({
+		source:"qssf",
+		target:"qssf1",
+		anchor:"Left",
+		
+		connector:[ "Flowchart", { stub:[40, 60], gap:50, cornerRadius:5, alwaysRespectStubs:true } ],
+		endpoint:"Blank"
+		
+	});
+	jsPlumb.connect({
+		source:"qssf1",
+		target:"qssf1.1",
+		
+		anchor:"Left",
+		connector:[ "Flowchart", { stub:[40, 60], gap:15, cornerRadius:5, alwaysRespectStubs:true } ],
+		endpoint:"Blank"
+	});
+	jsPlumb.connect({
+		source:"qssf1",
+		target:"qssf1.2",
+		anchor:"Left",
+		connector:[ "Flowchart", { stub:[40, 60], gap:15, cornerRadius:5, alwaysRespectStubs:true } ],
+		endpoint:"Blank"
+	});
+	jsPlumb.connect({
+		source:"qssf1",
+		target:"qssf2",
+		anchor:"Left",
+		connector:[ "Flowchart", { stub:[40, 60], gap:50, cornerRadius:5, alwaysRespectStubs:true } ],
+		endpoint:"Blank"
+	});
+	jsPlumb.connect({
+		source:"qssf2",
+		target:"qssf2.1",
+		anchor:"Left",
+		connector:[ "Flowchart", { stub:[40, 60], gap:5, cornerRadius:5, alwaysRespectStubs:true } ],
+		endpoint:"Blank"
+	});
+	jsPlumb.connect({
+		source:"t",
+		target:"t1",
+		anchor:"Left",
+		connector:[ "Flowchart", { stub:[40, 60], gap:50, cornerRadius:5, alwaysRespectStubs:true } ],
+		endpoint:"Blank"
+	});
+	jsPlumb.connect({
+		source:"t1",
+		target:"t1.1",
+		anchor:"Left",
+		connector:[ "Flowchart", { stub:[40, 60], gap:15, cornerRadius:5, alwaysRespectStubs:true } ],
+		endpoint:"Blank"
+	});
+	jsPlumb.connect({
+		source:"t",
+		target:"t2",
+		anchor:"Left",
+		connector:[ "Flowchart", { stub:[40, 60], gap:50, cornerRadius:5, alwaysRespectStubs:true } ],
+		endpoint:"Blank"
+	});
+	jsPlumb.connect({
+		source:"t",
+		target:"t3",
+		anchor:"Left",
+		connector:[ "Flowchart", { stub:[40, 60], gap:50, cornerRadius:5, alwaysRespectStubs:true } ],
+		endpoint:"Blank"
+	});
+	//jsPlumb.hide("t3");
+});
+
+
+
+
+function updateModel(target){
+	allData=<%-JSON.stringify(qms)%>;
+	dataJson=allData[target.selectedIndex].file;
+	
+	
+	document.getElementById("metabolic_net_name").value=allData[target.selectedIndex].metabolic_net; 
+	tempdata1=new Array(dataJson["places"].length);
+	for (var i=0, j=dataJson["places"].length; i<j;i++){
+		tempdata1[i]=new Array(5);
+		tempdata1[i][0]=dataJson["places"][i]["place"]["name"];
+		tempdata1[i][1]=dataJson["places"][i]["place"]["state"];
+		tempdata1[i][2]=dataJson["places"][i]["place"]["type"];
+		tempdata1[i][3]=dataJson["places"][i]["place"]["max"];
+		tempdata1[i][4]=dataJson["places"][i]["place"]["subsystem"];
+	}
+	//console.log(tempdata1)
+	$("#placesTable").handsontable('clear');
+	var ht = $('#placesTable').handsontable('getInstance');
+	if ($.isArray(tempdata1) && tempdata1[0] && $.isArray(tempdata1[0])){
+		ht.populateFromArray (0, 0, tempdata1,tempdata1.length-1, 3);
+	}
+	tempdata2=new Array(dataJson["transitions"].length);
+	for (var i=0, j=dataJson["transitions"].length; i<j;i++){
+		tempdata2[i]=new Array(4);
+		tempdata2[i][0]=dataJson["transitions"][i]["transition"]["name"];
+		tempdata2[i][1]=dataJson["transitions"][i]["transition"]["delay"];
+		tempdata2[i][2]=dataJson["transitions"][i]["transition"]["type"];
+		tempdata2[i][3]=dataJson["transitions"][i]["transition"]["c"];
+	}
+	
+	
+	$("#transitionsTable").handsontable('clear');
+	var ht = $('#transitionsTable').handsontable('getInstance');
+	if ($.isArray(tempdata2) && tempdata2[0] && $.isArray(tempdata2[0])){
+		ht.populateFromArray (0, 0, tempdata2,tempdata2.length-1, 3);
+	}
+	tempdata3=[[dataJson["qssf"]["externality_tag"],dataJson["qssf"]["sfba_file"] ]];
+	$("#qssfTable").handsontable('clear');
+	var ht = $('#qssfTable').handsontable('getInstance');
+	if ($.isArray(tempdata3) && tempdata3[0] && $.isArray(tempdata3[0])){
+		ht.populateFromArray (0, 0, tempdata3,tempdata3.length-1, 1);
+	}
+	tempdata4=new Array(dataJson["qssf"]["constraints"].length);
+	for (var i=0, j=dataJson["qssf"]["constraints"].length; i<j;i++){
+		tempdata4[i]=new Array(1);
+		tempdata4[i][0]=dataJson["qssf"]["constraints"][i]["constraint"]["name"];
+	}
+	//console.log(dataJson["qssf"]["constraints"][0]["constraint"]["activity"])
+	$("#constraintsTable").handsontable('clear');
+	var ht = $('#constraintsTable').handsontable('getInstance');
+	if ($.isArray(tempdata4) && tempdata4[0] && $.isArray(tempdata4[0])){
+		ht.populateFromArray (0, 0, tempdata4,tempdata4.length-1, 1);
+	}
+	tempdata5=new Array(dataJson["qssf"]["objectives"].length);
+	//console.log(dataJson["qssf"]["objectives"].length)
+	for (var i=0, j=dataJson["qssf"]["objectives"].length; i<j;i++){
+		tempdata5[i]=new Array(2);
+		tempdata5[i][0]=dataJson["qssf"]["objectives"][i]["objective"]["name"];
+		tempdata5[i][1]=dataJson["qssf"]["objectives"][i]["objective"]["objective"];
+	}
+	//console.log(tempdata5.length)
+	$("#objectiveTable").handsontable('clear');
+	var ht = $('#objectiveTable').handsontable('getInstance');
+	if ($.isArray(tempdata5) && tempdata5[0] && $.isArray(tempdata5[0])){
+		ht.populateFromArray (0, 0, tempdata5,tempdata5.length-1, 2);
+	}
+	
+	tempdata6=allData[target.selectedIndex].sfba;
+	$("#sfbaTable").handsontable('clear');
+	var ht = $('#sfbaTable').handsontable('getInstance');
+	//console.log(ht)
+	if ($.isArray(tempdata6) && tempdata6[0] && $.isArray(tempdata6[0])){
+		ht.populateFromArray (0, 0, tempdata6,tempdata6.length-1, 5);
+	}
+	
+}
+
+
+</script>

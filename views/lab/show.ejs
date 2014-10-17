@@ -1,0 +1,27 @@
+<div class='container'>
+	<h1>Lab </h1>
+	<hr>
+	<h2>Name: <%= lb.name %> </h2>
+	<hr>
+	<h2>creator: <%= lb.owner %></h2>
+	
+	<hr>
+	<h2>Comment: </h2>
+	<%= lb.comment %>
+	<hr>
+	<h2>users:</h2>
+	<table class='table table-bordered table-condensed'>
+		<tr>
+			<th>Name</th>
+			<th>User status</th>
+		</tr>
+	<%	_.each(lb.users, function(err,usr) {%>
+		<tr> <td><%=lb.users[usr]%></td> <td></td> </tr>
+	<%
+		});
+		%>
+	</table>
+	
+	<hr>
+	
+</div>

@@ -1,0 +1,29 @@
+<div class='container' >
+	<div class="jumbotron">
+	<h1>Metabolic networks </h1>
+	
+	
+	<table class='table table-bordered' style="text-align:left">
+		<tr>
+			
+			<th>Name</th>
+			<th>Comment</th>
+			<th><a href="/metabolic_net/new" class="btn btn-sm btn-primary">Create New</a></th>
+		</tr>
+		
+
+		<% _.each(mtns, function(mtn) { %>
+		<tr data-id="<%= mtn.id %>" data-model="mtn">
+			
+			<td style="font-size:15px;"><b><%= mtn.name %></b></td>
+			<td style="font-size:15px;"><%= mtn.comment %></td>
+			<td><a href="/metabolic_net/show/<%= mtn.id %>" class="btn btn-sm btn-success">Show</a></td>
+		</tr> 
+
+		<% }) %>
+	</table>
+	
+	
+	
+	
+</div>

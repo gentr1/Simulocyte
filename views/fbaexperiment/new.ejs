@@ -1,0 +1,136 @@
+<br><br><form action="/fbaexperiment/create" method="POST" id="experiment-creation-form" enctype="multipart/form-data" class="form-signin">
+	<h2 class="form-signin-heading">Create a FBA experiment</h2>
+
+	<% if(flash && flash.err) { %>
+		<ul class="alert alert-success">
+	<% Object.keys(flash.err).forEach(function(error) { %>
+		<li><%- JSON.stringify(flash.err[error]) %></li>
+	<% }) %>
+	</ul>
+	<% } %>
+
+	<% 
+		var InputParameters=JSON.stringify({'default_p':[] , 'simulations_p':[]});
+		var mtn=mtns[0];
+		//var InputdataJson=qm.file;
+		//var InputdataJson=JSON.stringify({"places" : [], "qssf" : { "constraints" : [], "externality_tag" :null,"objectives" : []}, "transitions" : []});
+		var metabolic_net_name=mtn.name;
+		var InputdataSfba=JSON.stringify([]);
+	%>
+	<div class="control-group">
+	<input type="text" class="form-control" placeholder="experiment title" name="name">
+	</div>
+
+	<div class="control-group">
+	<input type="text" class="form-control" placeholder="comments" name="comment">
+	</div>
+	
+	
+	<div class="control-group">Choose a metabolic network to use in this experiment :
+		<select class="form-control" name="mtn_model_name" onchange="updateModel(this);">
+		<% 
+		//var mtb_name=qm.metabolic_net; 
+		_.each(mtns, function(mtn) {%>
+		   <option><%=mtn.name%></option>
+		<% }) %>
+		</select>
+	</div>
+	
+	<br>Select a .sfba file to upload:
+	<input type="file" placeholder="sfba file" name="sfbafile">Or fill in or copy/paste data in the following tables:
+	<input type="text"  name="mySfbaSpreadsheet0" id ="mySfbaSpreadsheet0" style="visibility: hidden;" value=<%=InputdataSfba%>>
+	<input type="text"  name="mySfbaSpreadsheet1" id ="mySfbaSpreadsheet1" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet2" id ="mySfbaSpreadsheet2" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet3" id ="mySfbaSpreadsheet3" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet4" id ="mySfbaSpreadsheet4" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet5" id ="mySfbaSpreadsheet5" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet6" id ="mySfbaSpreadsheet6" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet7" id ="mySfbaSpreadsheet7" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet8" id ="mySfbaSpreadsheet8" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet9" id ="mySfbaSpreadsheet9" style="visibility: hidden;" value="">
+	
+	<input type="text"  name="nameMtn" id ="nameMtn" style="visibility: hidden;" value=<%=metabolic_net_name%>>
+	
+	<div class="control-group"> 
+	<br>
+	<br><b>SFBA table:</b><div id="sfbaTable"></div>
+	<br>
+	</div>
+	
+	<input type="submit" class="btn btn-lg btn-primary btn-block" value="Create Sfbaexperiment"/>
+	<input type="hidden" name="_csrf" value="<%= _csrf %>" />
+</form>
+
+<script>
+var dataSfba=[];
+
+
+function updateModel(target){
+	//console.log(target.value);
+	var metabolic_net_name=target.value;
+	document.getElementById("nameMtn").value= metabolic_net_name;
+	console.log(document.getElementById("nameMtn").value);
+}
+
+var $container13 = $("#sfbaTable");
+
+$container13.handsontable({
+  data: [],
+  width: $("#experiment-creation-form").width(),
+  height:200,
+  dataSchema: {name: null, formula: null, lb: null, ub:null,command:null, rule:null},
+  startRows: 5,
+  startCols: 6,
+  colHeaders: ['Reaction name', 'Reaction Formula', 'Lb','Ub','Command','Gene/Reaction Rule'],
+  columns: [
+    {data: "name"},
+    {data: "formula"},
+    {data: "lb"},
+    {data: "ub"},
+	{data: "command"},
+	{data: "rule"}
+  ],
+  afterChange: function(changes, source) {
+    //console.log(this.getData());
+	var dt = this.getData();
+	
+	for (var i=0, j= dt.length;i<j-1;i++){
+		dataSfba[i]=new Array(6);
+		dataSfba[i][0]=dt[i].name;
+		dataSfba[i][1]=dt[i].formula;
+		dataSfba[i][2]=dt[i].lb;
+		dataSfba[i][3]=dt[i].ub;
+		dataSfba[i][4]=dt[i].command;
+		dataSfba[i][5]=dt[i].rule;
+	}
+	
+		var mlength=JSON.stringify(dataSfba).length;
+		var nbArrays=1;
+		if (mlength>524288){
+			nbArrays=parseInt(Math.ceil(mlength/524288.0));
+		}
+		if (nbArrays==1){
+			document.getElementById("mySfbaSpreadsheet0").value=JSON.stringify(dataSfba);
+		}
+		else{
+			var stringSfba=JSON.stringify(dataSfba);
+			var chunksize=524288;
+			var stringChunks=[];
+			//console.log(mlength)
+			for (var i=0;i<nbArrays;i++){
+				stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+				document.getElementById("mySfbaSpreadsheet"+i).value=stringChunks[i];
+				//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+				console.log(document.getElementById("mySfbaSpreadsheet"+i).value.length)
+			}
+			//console.log(stringChunks)
+		}
+	
+	//console.log(JSON.stringify(dataSfba));
+	//dataJson.places.push()
+  },
+  minSpareRows: 1
+});
+
+
+</script>

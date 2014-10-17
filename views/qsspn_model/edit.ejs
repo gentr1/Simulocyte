@@ -1,0 +1,4316 @@
+<div class='container'>
+<br><br>
+	<h1>QSSPN Model </h1>
+	<br>
+	
+</div>	
+	<table id="mytable" class='table table-bordered table-condensed' style="text-align:left;height:400;tableLayout:fixed">
+		<tr>
+			
+			<th width="400">Select Place(s) or Transition(s):</th>
+			<th width="480"><b id="t1">Select corresponding Transitions or Places as Activators, Suppressors, Products, or Consumed</b></th>
+			<th>Select linked Metabolites/Reactions from Metabolic Network:</th>
+		</tr>
+	<tr>
+	<td height="500" width="400">
+	<ul class="nav nav-tabs">
+	  <li class="active"><a href="#tab1id" data-toggle="tab" id="tab1">Places</a></li>
+	  <li><a href="#tab2id" data-toggle="tab" id="tab2">Transitions</a></li>
+	</ul>
+	
+	<div class="tab-content">
+		<br>
+		Search Term: <input id="searchgrid" type="text" />
+		<br><br>
+		<div id="tab1id" class="tab-pane active"></div>
+		<div id="tab2id" class="tab-pane"></div>
+    
+	</div>
+	</td>
+	<td height="500" width="480">
+		<ul class="nav nav-tabs">
+		  <li class="active"><a href="#tab3id" data-toggle="tab" id="tab3">Activates</a></li>
+		  <li><a href="#tab4id" data-toggle="tab" id="tab4">Suppresses</a></li>
+		  <li><a href="#tab5id" data-toggle="tab" id="tab5">Produced by</a></li>
+		  <li><a href="#tab6id" data-toggle="tab" id="tab6">Consumed by</a></li>
+		</ul>
+	
+		<div class="tab-content">
+			<br>
+			Search Term: <input id="searchgrid2" type="text" />
+			<br><br>
+			<div id="tab3id" class="tab-pane active"></div>
+			<div id="tab4id" class="tab-pane"></div>
+			<div id="tab5id" class="tab-pane"></div>
+			<div id="tab6id" class="tab-pane"></div>
+		</div>
+	</td>
+	<td height="500" width="300">
+		
+	
+		
+			<br>
+			Search Term: <input id="searchgrid3" type="text" />
+			<br><br>
+			<div id="tab7id"></div>
+			
+			
+			
+	</div>
+		
+	</td>
+	</tr>
+	</table>
+	
+<button type="button" class="btn btn-primary" onclick="update()">Update</button> <br>
+
+<br><input id="searchgrid4" type="text" /> 
+<div id="tab8id"></div>	<br>
+Choose Layout: <select name="select" id="selectLayout" onchange="selectValue(this)">
+  <option value="0" selected>Default</option> 
+  <option value="1">Circular</option>
+  <option value="2">Concentric</option>
+  <option value="3">Grid</option>
+</select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Create new Layout: <input id="layoutName" type="text" /> <button type="button" class="btn btn-primary" onclick="save()">Save Layout</button>	<button type="button" class="btn btn-primary" onclick="save2()">Update/Save Model Data</button><br>
+<div id="cy"  style="height: 40%;width: 40%;position: absolute;left: 0;top: 0;"></div>
+<br>
+<form action="/qsspn_model/update/<%= qm.id %>" id="qsspn-model-edit-form" method="POST" class="form-signin" style="height: 40%;width: 40%;position: absolute;">	
+<%
+	var allLayouts=JSON.stringify({});
+	var mJsondata=JSON.stringify({});
+%>
+<input type="text" name="layouts0" id ="layouts0" style="visibility: hidden;" value=<%=allLayouts%>>
+<input type="text"  name="layouts1" id ="layouts1" style="visibility: hidden;" value="">
+<input type="text"  name="layouts2" id ="layouts2" style="visibility: hidden;" value="">
+<input type="text"  name="layouts3" id ="layouts3" style="visibility: hidden;" value="">
+<input type="text"  name="layouts4" id ="layouts4" style="visibility: hidden;" value="">
+<input type="text"  name="layouts5" id ="layouts5" style="visibility: hidden;" value="">
+<input type="text"  name="layouts6" id ="layouts6" style="visibility: hidden;" value="">
+<input type="text"  name="layouts7" id ="layouts7" style="visibility: hidden;" value="">
+<input type="text"  name="layouts8" id ="layouts8" style="visibility: hidden;" value="">
+<input type="text"  name="layouts9" id ="layouts9" style="visibility: hidden;" value="">
+<input type="text" name="mjsondata" id ="mjsondata" style="visibility: hidden;" value=<%=mJsondata%>>
+<input type="submit" value="Proceed" class="btn btn-lg btn-primary btn-block"/>
+
+<input type="hidden" name="_csrf" value="<%= _csrf %>" />
+</form>		
+<script>
+document.getElementById('mytable').style.tableLayout="fixed";
+var dataJson=<%-JSON.stringify(qm.file)%>;	
+var dataJson2={};
+var activetabNb=0;
+var rightActiveTable=0;
+var listLeftPlacesSelected={};
+var listLeftTransitionsSelected={};
+var dataLayout= <%-JSON.stringify(qm.layouts)%>;
+
+var cy;
+
+
+
+
+var dataJson2=<%-JSON.stringify(mtb.file[1])%>;	
+
+
+//console.log(listMtb)
+
+var tempdata=[];
+tempdata.push([]);
+tempdata.push([]);
+tempdata.push([]);
+tempdata.push([]);
+
+
+var listTSelected=[];
+listTSelected.push({});
+listTSelected.push({});
+listTSelected.push({});
+listTSelected.push({});
+var listPSelected=[];
+listPSelected.push({});
+listPSelected.push({});
+listPSelected.push({});
+listPSelected.push({});
+
+
+var tempdata1=new Array(dataJson["places"].length);
+for (var i=0, j=dataJson["places"].length; i<j;i++){
+	tempdata1[i]=new Array(2);
+	tempdata1[i][0]=dataJson["places"][i]["place"]["name"];
+	tempdata1[i][1]=false;
+	//listLeftPlacesSelected[tempdata1[i][0]]=0;
+}
+
+var tempdata2=new Array(dataJson["transitions"].length);
+for (var i=0, j=dataJson["transitions"].length; i<j;i++){
+	tempdata2[i]=new Array(2);
+	tempdata2[i][0]=dataJson["transitions"][i]["transition"]["name"];
+	tempdata2[i][1]=false;
+	//listLeftTransitionsSelected[tempdata2[i][0]]=0
+}
+
+// check duplicates:
+var list1=[];
+var list1Duplicates=[];
+for (var i=0, j=tempdata1.length; i<j;i++){
+	if (list1.indexOf(tempdata1[i][0])!=-1){
+		if (list1Duplicates.indexOf(tempdata1[i][0])==-1){
+			list1Duplicates.push(tempdata1[i][0]);
+		}
+	}
+	list1.push(tempdata1[i][0]);
+}
+var list2=[];
+var list2Duplicates=[];
+for (var i=0, j=tempdata2.length; i<j;i++){
+	if (list2.indexOf(tempdata2[i][0])!=-1){
+		if (list2Duplicates.indexOf(tempdata2[i][0])==-1){
+			list2Duplicates.push(tempdata2[i][0]);
+		}
+	}
+	list2.push(tempdata2[i][0]);
+}
+
+if (list1Duplicates.length==0 && list2Duplicates.length>0){
+	alert("Warning! The same name is given to several transitions in your model: " +list2Duplicates + " \n These should usually have a unique name. For the purpose of this editor, they are temporary renamed with an extra nb at the end.");
+	for (var i=0; i<list2Duplicates.length;i++){
+		var tmpnb=1;
+		for (var j=0;j<tempdata2.length;j++){
+			if (list2Duplicates[i]==tempdata2[j][0]){
+				tempdata2[j][0]=tempdata2[j][0]+""+tmpnb;
+				tmpnb++;
+			}
+		}
+	}
+}
+if (list1Duplicates.length>0 && list2Duplicates.length==0){
+	alert("Warning! The same name is given to several places in your model: " +list1Duplicates+ " \n These should usually have a unique name. For the purpose of this editor, they are temporary renamed with an extra nb at the end.");
+	for (var i=0; i<list1Duplicates.length;i++){
+		var tmpnb=1;
+		for (var j=0;j<tempdata1.length;j++){
+			if (list1Duplicates[i]==tempdata1[j][0]){
+				tempdata1[j][0]=tempdata1[j][0]+""+tmpnb;
+				tmpnb++;
+			}
+		}
+	}
+}
+if (list1Duplicates.length>0 && list2Duplicates.length>0){
+	alert("Warning! The same name is given to several places in your model: " +list1Duplicates+" and also to several transitions: "+list2Duplicates+ " \n These should usually have a unique name. For the purpose of this editor, they are temporary renamed with an extra nb at the end.");
+	for (var i=0; i<list2Duplicates.length;i++){
+		var tmpnb=1;
+		for (var j=0;j<tempdata2.length;j++){
+			if (list2Duplicates[i]==tempdata2[j][0]){
+				tempdata2[j][0]=tempdata2[j][0]+""+tmpnb;
+				tmpnb++;
+			}
+		}
+	}
+	for (var i=0; i<list1Duplicates.length;i++){
+		var tmpnb=1;
+		for (var j=0;j<tempdata1.length;j++){
+			if (list1Duplicates[i]==tempdata1[j][0]){
+				tempdata1[j][0]=tempdata1[j][0]+""+tmpnb;
+				tmpnb++;
+			}
+		}
+	}
+	
+}
+
+
+
+
+var activeStateRenderer = function (instance, td, row, col, prop, value, cellProperties) {
+    Handsontable.CheckboxCell.renderer.apply(this, arguments);
+
+    if (value === true) {
+		td.style.background = '#d4e9c2';
+        //instance.rootElement.find('table').first().find('tbody tr').eq(row).find('td').css('background', '#d4e9c2');
+    }
+
+    td.style.textAlign = 'center';
+
+}
+// create a list of activators, suppressors, consumed, and products transitions for each place
+// create a list of activators, suppressors, consumed, and products places for each transition
+var transitionsTypesListPerPlace={};
+var placesTypesListPerTransition={};
+
+var MetabolitesListPerPlace={}
+var MetabolitesListPerTransition={}
+
+var listMtb=[];
+var listMtbSelected={};
+var dictMtb={};
+for (var i=0, j=dataJson2.length;i<j;i++){
+	listMtb.push([dataJson2[i][1] , false]);
+	dictMtb[dataJson2[i][1]]=false;
+}
+//look at all elements (names belonging to metabolic net) in:
+//  ['qssf']['constraints'][i]['constraint']['flux_list'][j]
+//and relate them to place name:['qssf']['constraints'][i]['constraint']['name']
+
+
+
+//look at all elements (names belonging to metabolic net) in:
+//  ['qssf']['objectives'][i]['objective']
+//and relate them to place name:['qssf']['objectives'][i]['name']
+
+for (var i=0, j=dataJson['qssf']['objectives'].length;i<j;i++){
+	if (dictMtb.hasOwnProperty(dataJson['qssf']['objectives'][i]['objective']['objective'])){
+		if (MetabolitesListPerPlace.hasOwnProperty(dataJson['qssf']['objectives'][i]['objective']['name'])){
+			MetabolitesListPerPlace[dataJson['qssf']['objectives'][i]['objective']['name']].push(dataJson['qssf']['objectives'][i]['objective']['objective']);
+		}
+		else{
+			MetabolitesListPerPlace[dataJson['qssf']['objectives'][i]['objective']['name']]=[];
+			MetabolitesListPerPlace[dataJson['qssf']['objectives'][i]['objective']['name']].push(dataJson['qssf']['objectives'][i]['objective']['objective']);
+		}
+	}
+}
+for (var i=0, j=dataJson['qssf']['constraints'].length;i<j;i++){
+	for (var i1=0, j1=dataJson['qssf']['constraints'][i]['constraint']['flux_list'].length;i1<j1;i1++){
+		if (dictMtb.hasOwnProperty(dataJson['qssf']['constraints'][i]['constraint']['flux_list'][i1])){
+			if (MetabolitesListPerPlace.hasOwnProperty(dataJson['qssf']['constraints'][i]['constraint']['name'])){
+				MetabolitesListPerPlace[dataJson['qssf']['constraints'][i]['constraint']['name']].push(dataJson['qssf']['constraints'][i]['constraint']['flux_list'][i1]);
+			}
+			else{
+				MetabolitesListPerPlace[dataJson['qssf']['constraints'][i]['constraint']['name']]=[];
+				MetabolitesListPerPlace[dataJson['qssf']['constraints'][i]['constraint']['name']].push(dataJson['qssf']['constraints'][i]['constraint']['flux_list'][i1]);
+			}
+		}
+	}
+}
+//console.log(MetabolitesListPerPlace)
+
+
+var tmpDupNameCnt={};
+for (var i=0, j=dataJson["transitions"].length; i<j;i++){
+	
+	var tmpD=dataJson["transitions"][i]["transition"];
+	//console.log(tmpD)
+	if (list2Duplicates.indexOf(tmpD['name'])!=-1){
+		if (tmpDupNameCnt.hasOwnProperty(tmpD['name'])){
+			tmpDupNameCnt[tmpD['name']]+=1;
+		}
+		else{
+			tmpDupNameCnt[tmpD['name']]=1;
+		}
+	}
+	var tmpname="";
+	if (tmpDupNameCnt.hasOwnProperty(tmpD['name'])){
+		tmpname=tmpDupNameCnt[tmpD['name']];
+	}
+	
+	//console.log(tmpDupNameCnt)
+	//var listConsumedPrePlaces=[];
+	placesTypesListPerTransition[tmpD['name']+tmpname]={};
+	placesTypesListPerTransition[tmpD['name']+tmpname]['consumed']=[];
+	
+	if (tmpD.hasOwnProperty('consumed')){
+		for (var i1=0;i1<tmpD['consumed'].length;i1++){
+			placesTypesListPerTransition[tmpD['name']+tmpname]['consumed'].push(tmpD['consumed'][i1]['consumed_preplace']['name']);
+			if (transitionsTypesListPerPlace.hasOwnProperty(tmpD['consumed'][i1]['consumed_preplace']['name'])){
+				if (transitionsTypesListPerPlace[tmpD['consumed'][i1]['consumed_preplace']['name']].hasOwnProperty('consumed')){
+					transitionsTypesListPerPlace[tmpD['consumed'][i1]['consumed_preplace']['name']]['consumed'].push(tmpD['name']+tmpname);
+				}
+				else{
+					transitionsTypesListPerPlace[tmpD['consumed'][i1]['consumed_preplace']['name']]['consumed']=[];
+					transitionsTypesListPerPlace[tmpD['consumed'][i1]['consumed_preplace']['name']]['consumed'].push(tmpD['name']+tmpname);
+				}
+			}
+			else{
+				transitionsTypesListPerPlace[tmpD['consumed'][i1]['consumed_preplace']['name']]={};
+				transitionsTypesListPerPlace[tmpD['consumed'][i1]['consumed_preplace']['name']]['consumed']=[];
+				transitionsTypesListPerPlace[tmpD['consumed'][i1]['consumed_preplace']['name']]['consumed'].push(tmpD['name']+tmpname);
+			}
+			//transitionsTypesListPerPlace[tmpD['consumed'][i1]['consumed_preplace']['name']]['consumed'].push(tmpD['name']);
+		}
+	}
+	placesTypesListPerTransition[tmpD['name']+tmpname]['postplaces']=[];
+	if (tmpD.hasOwnProperty('postplaces')){
+		if (tmpD.hasOwnProperty('postplaces')){
+			for (var i1=0;i1<tmpD['postplaces'].length;i1++){
+				placesTypesListPerTransition[tmpD['name']+tmpname]['postplaces'].push(tmpD['postplaces'][i1]['postplace']['name'])
+				if (transitionsTypesListPerPlace.hasOwnProperty(tmpD['postplaces'][i1]['postplace']['name'])){
+					if (transitionsTypesListPerPlace[tmpD['postplaces'][i1]['postplace']['name']].hasOwnProperty('postplaces')){
+						transitionsTypesListPerPlace[tmpD['postplaces'][i1]['postplace']['name']]['postplaces'].push(tmpD['name']+tmpname);
+					}
+					else{
+						transitionsTypesListPerPlace[tmpD['postplaces'][i1]['postplace']['name']]['postplaces']=[];
+						transitionsTypesListPerPlace[tmpD['postplaces'][i1]['postplace']['name']]['postplaces'].push(tmpD['name']+tmpname);
+					}
+				}
+				else{
+					transitionsTypesListPerPlace[tmpD['postplaces'][i1]['postplace']['name']]={};
+					transitionsTypesListPerPlace[tmpD['postplaces'][i1]['postplace']['name']]['postplaces']=[];
+					transitionsTypesListPerPlace[tmpD['postplaces'][i1]['postplace']['name']]['postplaces'].push(tmpD['name']+tmpname);
+				}
+			
+			}
+		}
+	}
+	placesTypesListPerTransition[tmpD['name']+tmpname]['activators']=[];
+	placesTypesListPerTransition[tmpD['name']+tmpname]['suppressors']=[];
+	if (tmpD.hasOwnProperty('preplaces')){
+		for (var i1=0;i1<tmpD['preplaces'].length;i1++){
+			var tmpPlace=tmpD['preplaces'][i1]['preplace'];
+			if (placesTypesListPerTransition[tmpD['name']+tmpname]['consumed'].indexOf(tmpPlace['name']+tmpname)==-1){
+				
+				if(tmpPlace.hasOwnProperty('activity') && tmpPlace['activity'].length>0 && tmpPlace['activity'][0].hasOwnProperty('a') && tmpPlace['activity'][0].hasOwnProperty('t')){
+					
+					if (tmpPlace['activity'][0]['a']==0 && tmpPlace['activity'][0]['t']==0
+						&& tmpPlace['activity'][1]['a']!=0 && tmpPlace['activity'][1]['t']!=0){
+						//console.log("activator")
+						placesTypesListPerTransition[tmpD['name']+tmpname]['activators'].push(tmpPlace['name'])
+						if (transitionsTypesListPerPlace.hasOwnProperty(tmpD['preplaces'][i1]['preplace']['name'])){
+							if (transitionsTypesListPerPlace[tmpD['preplaces'][i1]['preplace']['name']].hasOwnProperty('activators')){
+								transitionsTypesListPerPlace[tmpD['preplaces'][i1]['preplace']['name']]['activators'].push(tmpD['name']+tmpname);
+							}
+							else{
+								transitionsTypesListPerPlace[tmpD['preplaces'][i1]['preplace']['name']]['activators']=[];
+								transitionsTypesListPerPlace[tmpD['preplaces'][i1]['preplace']['name']]['activators'].push(tmpD['name']+tmpname);
+							}
+						}
+						else{
+							transitionsTypesListPerPlace[tmpD['preplaces'][i1]['preplace']['name']]={};
+							transitionsTypesListPerPlace[tmpD['preplaces'][i1]['preplace']['name']]['activators']=[];
+							transitionsTypesListPerPlace[tmpD['preplaces'][i1]['preplace']['name']]['activators'].push(tmpD['name']+tmpname);
+						}
+					}
+					else{
+						//console.log("suppressor"+tmpPlace['activity'][0]['a']+" "+ tmpPlace['activity'][0]['t'] +" "+tmpPlace['activity'][1]['a'] +" "+tmpPlace['activity'][1]['t'])
+						placesTypesListPerTransition[tmpD['name']+tmpname]['suppressors'].push(tmpPlace['name'])
+						if (transitionsTypesListPerPlace.hasOwnProperty(tmpD['preplaces'][i1]['preplace']['name'])){
+							if (transitionsTypesListPerPlace[tmpD['preplaces'][i1]['preplace']['name']].hasOwnProperty('suppressors')){
+								transitionsTypesListPerPlace[tmpD['preplaces'][i1]['preplace']['name']]['suppressors'].push(tmpD['name']+tmpname);
+							}
+							else{
+								transitionsTypesListPerPlace[tmpD['preplaces'][i1]['preplace']['name']]['suppressors']=[];
+								transitionsTypesListPerPlace[tmpD['preplaces'][i1]['preplace']['name']]['suppressors'].push(tmpD['name']+tmpname);
+							}
+						}
+						else{
+							transitionsTypesListPerPlace[tmpD['preplaces'][i1]['preplace']['name']]={};
+							transitionsTypesListPerPlace[tmpD['preplaces'][i1]['preplace']['name']]['suppressors']=[];
+							transitionsTypesListPerPlace[tmpD['preplaces'][i1]['preplace']['name']]['suppressors'].push(tmpD['name']+tmpname);
+						}
+					}
+				}
+				//else{
+				//	console.log("preplace "+tmpPlace['name']+" has no activity table")
+				//}
+				//if (tmpPlace['activity'][0]['a']==0 && tmpPlace['activity'][0]['t']!=0
+				//	&& tmpPlace['activity'][1]['a']!=0 && tmpPlace['activity'][1]['t']==0){
+				//	console.log("suppressor")
+				//	placesTypesListPerTransition[tmpD['name']]['suppressors'].push(tmpPlace['name'])
+				//}
+			}
+		}
+	
+	}
+	
+	//
+	
+	//listLeftTransitionsSelected[tempdata2[i][0]]=0
+}
+//console.log(placesTypesListPerTransition)
+
+/*var activeStateRenderer = function (instance, td, row, col, prop, value, cellProperties) {
+    Handsontable.CheckboxCell.renderer.apply(this, arguments);
+
+    if (value === true) {
+        instance.rootElement.find('table').first().find('tbody tr').eq(row).find('td').css('background', '#d4e9c2');
+    }
+
+    td.style.textAlign = 'center';
+
+}*/
+
+
+//console.log(placesTypesListPerTransition)
+//console.log(transitionsTypesListPerPlace)
+var $container1 = $("#tab1id");
+$container1.handsontable({
+  data: [],
+  width: 385,
+  height:500,
+  dataSchema: {name: null, select: null},
+  colWidths: [345, 25],
+  startRows: 1,
+  startCols: 2,
+  columnSorting: true,
+  //currentRowClassName: 'currentRow',
+  //currentColClassName: 'currentCol',
+  //contextMenu: ['remove_row'],
+  colHeaders: ['Name', 'y'],
+  columns: [
+    {data: "name"},
+    {data: "select",type: "checkbox"}
+  ],
+  afterSelection : function(rowNb, colNb) {
+	var dt = this.getData();
+	//console.log(rowNb +" "+colNb)
+	//console.log(transitionsTypesListPerPlace[dt[rowNb]['name']])
+	for (var prop in listLeftPlacesSelected) {
+		if(listLeftPlacesSelected.hasOwnProperty(prop)){
+			delete listLeftPlacesSelected[prop];
+		}
+	}
+	if(typeof $("#tab1id").handsontable('getInstance').sortIndex[rowNb]!=='undefined'){
+		var sortToPhysicalIndex = $("#tab1id").handsontable('getInstance').sortIndex[rowNb][0];
+		rowNb=sortToPhysicalIndex;
+	}
+	listLeftPlacesSelected[dt[rowNb]['name']]=true;
+	
+	for (var tpd=0;tpd<4;tpd++){ 
+		for (var prop in listTSelected[tpd]) {
+			if(listTSelected[tpd].hasOwnProperty(prop)){
+				delete listTSelected[tpd][prop];
+			}
+		}
+	}
+	
+	if (transitionsTypesListPerPlace.hasOwnProperty(dt[rowNb]['name']) && transitionsTypesListPerPlace[dt[rowNb]['name']].hasOwnProperty('consumed')){
+		for (var i=0,j=transitionsTypesListPerPlace[dt[rowNb]['name']]['consumed'].length;i<j;i++){
+			listTSelected[3][transitionsTypesListPerPlace[dt[rowNb]['name']]['consumed'][i]]=true;
+		}
+	}
+	if (transitionsTypesListPerPlace.hasOwnProperty(dt[rowNb]['name']) && transitionsTypesListPerPlace[dt[rowNb]['name']].hasOwnProperty('postplaces')){
+		for (var i=0,j=transitionsTypesListPerPlace[dt[rowNb]['name']]['postplaces'].length;i<j;i++){
+			listTSelected[2][transitionsTypesListPerPlace[dt[rowNb]['name']]['postplaces'][i]]=true;
+		}
+	}
+	if (transitionsTypesListPerPlace.hasOwnProperty(dt[rowNb]['name']) && transitionsTypesListPerPlace[dt[rowNb]['name']].hasOwnProperty('activators')){
+		
+		for (var i=0,j=transitionsTypesListPerPlace[dt[rowNb]['name']]['activators'].length;i<j;i++){
+			listTSelected[0][transitionsTypesListPerPlace[dt[rowNb]['name']]['activators'][i]]=true;
+		}
+	}
+	if (transitionsTypesListPerPlace.hasOwnProperty(dt[rowNb]['name']) && transitionsTypesListPerPlace[dt[rowNb]['name']].hasOwnProperty('suppressors')){
+		for (var i=0,j=transitionsTypesListPerPlace[dt[rowNb]['name']]['suppressors'].length;i<j;i++){
+			listTSelected[1][transitionsTypesListPerPlace[dt[rowNb]['name']]['suppressors'][i]]=true;
+		}
+	}
+	// rebuild table
+	if ($('#searchgrid').val()==""){
+		tempdata1=new Array(dataJson["places"].length);
+		for (var i=0, j=dataJson["places"].length; i<j;i++){
+			tempdata1[i]=new Array(2);
+			tempdata1[i][0]=dataJson["places"][i]["place"]["name"];
+			if (listLeftPlacesSelected.hasOwnProperty(tempdata1[i][0])){
+				tempdata1[i][1]=true;
+			}
+			else{
+				tempdata1[i][1]=false;
+			}
+		}
+		for (var i=0; i<list1Duplicates.length;i++){
+			var tmpnb=1;
+			for (var j=0;j<tempdata1.length;j++){
+				if (list1Duplicates[i]==tempdata1[j][0]){
+					tempdata1[j][0]=tempdata1[j][0]+""+tmpnb;
+					tmpnb++;
+				}
+			}
+		}
+		for (var i=0, j=tempdata1.length; i<j;i++){
+			
+			if (listLeftPlacesSelected.hasOwnProperty(tempdata1[i][0])){
+				tempdata1[i][1]=true;
+			}
+			else{
+				tempdata1[i][1]=false;
+			}
+			//listLeftTransitionsSelected[tempdata2[i][0]]=0
+		}
+		
+		//console.log(tempdata1)
+		
+		var ht = $('#tab1id').handsontable('getInstance');
+		if ($.isArray(tempdata1) && tempdata1[0] && $.isArray(tempdata1[0])){
+			ht.populateFromArray (0, 0, tempdata1,tempdata1.length-1, 1);
+		}
+		//$('#tab1id').handsontable("selectCell", rowNb, 0);
+		
+		//ht.sort(0, true);
+		//ht.sort(1, false);
+		$('#tab1id').handsontable('render');
+		//$('#tab1id').handsontable("selectCell", rowNb, 0);
+	}
+	else{
+	/*tempdata1=new Array(dataJson["places"].length);
+		for (var i=0, j=dataJson["places"].length; i<j;i++){
+			tempdata1[i]=new Array(2);
+			tempdata1[i][0]=dataJson["places"][i]["place"]["name"];
+			if (listLeftPlacesSelected.hasOwnProperty(tempdata1[i][0])){
+				tempdata1[i][1]=true;
+			}
+			else{
+				tempdata1[i][1]=false;
+			}
+		}
+		for (var i=0; i<list1Duplicates.length;i++){
+			var tmpnb=1;
+			for (var j=0;j<tempdata1.length;j++){
+				if (list1Duplicates[i]==tempdata1[j][0]){
+					tempdata1[j][0]=tempdata1[j][0]+""+tmpnb;
+					tmpnb++;
+				}
+			}
+		}
+		for (var i=0, j=tempdata1.length; i<j;i++){
+			
+			if (listLeftPlacesSelected.hasOwnProperty(tempdata1[i][0])){
+				tempdata1[i][1]=true;
+			}
+			else{
+				tempdata1[i][1]=false;
+			}
+			//listLeftTransitionsSelected[tempdata2[i][0]]=0
+		}
+		
+		//console.log(tempdata1)
+		
+		var ht = $('#tab1id').handsontable('getInstance');
+		if ($.isArray(tempdata1) && tempdata1[0] && $.isArray(tempdata1[0])){
+			ht.populateFromArray (0, 0, tempdata1,tempdata1.length-1, 1);
+		}*/
+	//var hot = $('#tab1id').handsontable('getInstance');
+	//hot.sort(1, false);
+	$('#tab1id').handsontable('render');
+	//setTimeout(function() { //timeout is needed because Handsontable normally deselects current cell when you click outside the table
+    //    $("#tab1id").handsontable("selectCell", rowNb, 0);
+    //}, 0);
+	
+	}
+	
+	// refresh other tables
+	for (var tpd=0;tpd<4;tpd++){  
+		tempdata[tpd]=new Array(dataJson["transitions"].length);
+		for (var i=0, j=dataJson["transitions"].length; i<j;i++){
+			tempdata[tpd][i]=new Array(2);
+			tempdata[tpd][i][0]=dataJson["transitions"][i]["transition"]["name"];
+			if (listTSelected[tpd].hasOwnProperty(tempdata[tpd][i][0])){
+				tempdata[tpd][i][1]=true;
+			}
+			else{
+				tempdata[tpd][i][1]=false;
+			}
+			//listLeftTransitionsSelected[tempdata2[i][0]]=0
+		}
+		for (var i=0; i<list2Duplicates.length;i++){
+			var tmpnb=1;
+			for (var j=0;j<tempdata[tpd].length;j++){
+				if (list2Duplicates[i]==tempdata[tpd][j][tpd]){
+					tempdata[tpd][j][0]=tempdata[tpd][j][0]+""+tmpnb;
+					tmpnb++;
+				}
+			}
+		}
+		for (var i=0, j=tempdata[tpd].length; i<j;i++){
+			
+			if (listTSelected[tpd].hasOwnProperty(tempdata[tpd][i][0])){
+				tempdata[tpd][i][1]=true;
+			}
+			else{
+				tempdata[tpd][i][1]=false;
+			}
+			//listLeftTransitionsSelected[tempdata2[i][0]]=0
+		}
+	}
+	//console.log(tempdata[0])
+	var nametab='#tab'+(3+rightActiveTable)+'id'
+	var ht2 = $(nametab).handsontable('getInstance');
+	if ($.isArray(tempdata[rightActiveTable]) && tempdata[rightActiveTable][0] && $.isArray(tempdata[rightActiveTable][0])){
+		ht2.populateFromArray (0, 0, tempdata[rightActiveTable],tempdata[rightActiveTable].length-1, 1);
+	}
+	var hot = $(nametab).handsontable('getInstance');
+	hot.sort(1, false); //will sort table using values from the first column in descending order
+
+	$(nametab).handsontable('render');
+	
+	//
+	listMtbSelected={};
+	
+	
+	if (MetabolitesListPerPlace.hasOwnProperty(dt[rowNb]['name'])){
+		for (var i1=0, j1=MetabolitesListPerPlace[dt[rowNb]['name']].length;i1<j1;i1++){
+			listMtbSelected[MetabolitesListPerPlace[dt[rowNb]['name']][i1]]=true;
+		}
+	}
+	
+	listMtb=new Array(dataJson2.length);
+	for (var i=0, j=dataJson2.length;i<j;i++){
+		listMtb[i]=new Array(2);
+		listMtb[i][0]=dataJson2[i][1];
+		if (listMtbSelected.hasOwnProperty(listMtb[i][0])){
+			listMtb[i][1]=true;
+		}
+		else{
+			listMtb[i][1]=false;
+		}
+	}
+	//console.log(listMtbSelected)
+	var hot = $('#tab7id').handsontable('getInstance');
+	
+	if ($.isArray(listMtb) && listMtb[0] && $.isArray(listMtb[0])){
+		hot.populateFromArray (0, 0, listMtb,listMtb.length-1, 1);
+	}
+	
+	hot.sort(1, false);
+	$('#tab7id').handsontable('render');
+	
+  },
+  afterChange: function(changes, source) {
+	var dt = this.getData();
+	if  (activetabNb==0){
+		for (var i=0, j= dt.length;i<j-1;i++){
+			if (dt[i]['select']==true){
+				listLeftPlacesSelected[dt[i]['name']]=true;
+			}
+			else{
+				if (listLeftPlacesSelected.hasOwnProperty(dt[i]['name']) && dt[i]['select']==false){
+					delete listLeftPlacesSelected[dt[i]['name']];
+				}
+			}
+		}
+		//console.log(listLeftPlacesSelected)
+	}
+	
+  },
+  
+  minSpareRows: 1
+});	
+
+
+
+
+var $container2 = $("#tab2id");
+$container2.handsontable({
+  data: [],
+  width: 385,
+  height:500,
+  dataSchema: {name: null, select: null},
+  colWidths: [345, 25],
+  startRows: 1,
+  startCols: 2,
+  columnSorting: true,
+  colHeaders: ['Name', 'y'],
+  //currentRowClassName: 'currentRow',
+  columns: [
+    {data: "name"},
+    {data: "select",type: "checkbox"}
+  ],
+  afterSelection : function(rowNb, colNb) {
+	
+	//console.log(rowNb +" "+colNb)
+	//console.log(placesTypesListPerTransition[dt[rowNb]['name']])
+	var dt = this.getData();
+	//console.log(rowNb +" "+colNb)
+	//console.log(transitionsTypesListPerPlace[dt[rowNb]['name']])
+	for (var prop in listLeftTransitionsSelected) {
+		if(listLeftTransitionsSelected.hasOwnProperty(prop)){
+			delete listLeftTransitionsSelected[prop];
+		}
+	}
+	if(typeof $("#tab2id").handsontable('getInstance').sortIndex[rowNb]!=='undefined'){
+	var sortToPhysicalIndex = $("#tab2id").handsontable('getInstance').sortIndex[rowNb][0];
+	rowNb=sortToPhysicalIndex;
+	}
+	listLeftTransitionsSelected[dt[rowNb]['name']]=true;
+	//console.log(listLeftPlacesSelected)
+	for (var tpd=0;tpd<4;tpd++){ 
+		for (var prop in listPSelected[tpd]) {
+			if(listPSelected[tpd].hasOwnProperty(prop)){
+				delete listPSelected[tpd][prop];
+			}
+		}
+	}
+	
+	if (placesTypesListPerTransition.hasOwnProperty(dt[rowNb]['name']) && placesTypesListPerTransition[dt[rowNb]['name']].hasOwnProperty('consumed')){
+		for (var i=0,j=placesTypesListPerTransition[dt[rowNb]['name']]['consumed'].length;i<j;i++){
+			listPSelected[3][placesTypesListPerTransition[dt[rowNb]['name']]['consumed'][i]]=true;
+		}
+	}
+	if (placesTypesListPerTransition.hasOwnProperty(dt[rowNb]['name']) && placesTypesListPerTransition[dt[rowNb]['name']].hasOwnProperty('postplaces')){
+		for (var i=0,j=placesTypesListPerTransition[dt[rowNb]['name']]['postplaces'].length;i<j;i++){
+			listPSelected[2][placesTypesListPerTransition[dt[rowNb]['name']]['postplaces'][i]]=true;
+		}
+	}
+	if (placesTypesListPerTransition.hasOwnProperty(dt[rowNb]['name']) && placesTypesListPerTransition[dt[rowNb]['name']].hasOwnProperty('activators')){
+		for (var i=0,j=placesTypesListPerTransition[dt[rowNb]['name']]['activators'].length;i<j;i++){
+			listPSelected[0][placesTypesListPerTransition[dt[rowNb]['name']]['activators'][i]]=true;
+		}
+	}
+	if (placesTypesListPerTransition.hasOwnProperty(dt[rowNb]['name']) && placesTypesListPerTransition[dt[rowNb]['name']].hasOwnProperty('suppressors')){
+		for (var i=0,j=placesTypesListPerTransition[dt[rowNb]['name']]['suppressors'].length;i<j;i++){
+			listPSelected[1][placesTypesListPerTransition[dt[rowNb]['name']]['suppressors'][i]]=true;
+		}
+	}
+	// rebuild table
+	if ($('#searchgrid').val()==""){
+		tempdata2=new Array(dataJson["transitions"].length);
+		for (var i=0, j=dataJson["transitions"].length; i<j;i++){
+			tempdata2[i]=new Array(2);
+			tempdata2[i][0]=dataJson["transitions"][i]["transition"]["name"];
+			
+			if (listLeftTransitionsSelected.hasOwnProperty(tempdata2[i][0])){
+				tempdata2[i][1]=true;
+			}
+			else{
+				tempdata2[i][1]=false;
+			}
+		}
+		for (var i=0; i<list2Duplicates.length;i++){
+			var tmpnb=1;
+			for (var j=0;j<tempdata2.length;j++){
+				if (list2Duplicates[i]==tempdata2[j][0]){
+					tempdata2[j][0]=tempdata2[j][0]+""+tmpnb;
+					tmpnb++;
+				}
+			}
+		}
+		for (var i=0, j=tempdata2.length; i<j;i++){
+			
+			if (listLeftTransitionsSelected.hasOwnProperty(tempdata2[i][0])){
+				tempdata2[i][1]=true;
+			}
+			else{
+				tempdata2[i][1]=false;
+			}
+		}
+		var ht = $('#tab2id').handsontable('getInstance');
+		if ($.isArray(tempdata2) && tempdata2[0] && $.isArray(tempdata2[0])){
+			ht.populateFromArray (0, 0, tempdata2,tempdata2.length-1, 1);
+		}
+		$('#tab2id').handsontable('render');
+	}
+	else{
+		$('#tab2id').handsontable('render');
+	}
+	// refresh other tables
+	for (var tpd=0;tpd<4;tpd++){  
+		tempdata[tpd]=new Array(dataJson["places"].length);
+		for (var i=0, j=dataJson["places"].length; i<j;i++){
+			tempdata[tpd][i]=new Array(2);
+			tempdata[tpd][i][0]=dataJson["places"][i]["place"]["name"];
+			if (listPSelected[tpd].hasOwnProperty(tempdata[tpd][i][0])){
+				tempdata[tpd][i][1]=true;
+			}
+			else{
+				tempdata[tpd][i][1]=false;
+			}
+			//listLeftTransitionsSelected[tempdata2[i][0]]=0
+		}
+		for (var i=0; i<list1Duplicates.length;i++){
+			var tmpnb=1;
+			for (var j=0;j<tempdata[tpd].length;j++){
+				if (list1Duplicates[i]==tempdata[tpd][j][tpd]){
+					tempdata[tpd][j][0]=tempdata[tpd][j][0]+""+tmpnb;
+					tmpnb++;
+				}
+			}
+		}
+		for (var i=0, j=tempdata[tpd].length; i<j;i++){
+			
+			if (listPSelected[tpd].hasOwnProperty(tempdata[tpd][i][0])){
+				tempdata[tpd][i][1]=true;
+			}
+			else{
+				tempdata[tpd][i][1]=false;
+			}
+			//listLeftTransitionsSelected[tempdata2[i][0]]=0
+		}
+	}  
+	var nametab='#tab'+(3+rightActiveTable)+'id'
+	var ht2 = $(nametab).handsontable('getInstance');
+	if ($.isArray(tempdata[rightActiveTable]) && tempdata[rightActiveTable][0] && $.isArray(tempdata[rightActiveTable][0])){
+		ht2.populateFromArray (0, 0, tempdata[rightActiveTable],tempdata[rightActiveTable].length-1, 1);
+	}
+	var hot = $(nametab).handsontable('getInstance');
+	hot.sort(1, false);
+	$(nametab).handsontable('render');
+	
+	// refresh metabolic network metabolites table
+	
+	
+  },
+  afterChange: function(changes, source) {
+	var dt = this.getData();
+	if  (activetabNb==1){
+		for (var i=0, j= dt.length;i<j-1;i++){
+			if (dt[i]['select']==true){
+				listLeftTransitionsSelected[dt[i]['name']]=true;
+			}
+			else{
+				if (listLeftTransitionsSelected.hasOwnProperty(dt[i]['name']) && dt[i]['select']==false){
+					delete listLeftTransitionsSelected[dt[i]['name']];
+				}
+			}
+		}
+		//console.log(listLeftTransitionsSelected)
+	}
+	
+  },
+  minSpareRows: 1
+});
+
+
+//console.log(tempdata1)
+var ht = $('#tab1id').handsontable('getInstance');
+if ($.isArray(tempdata1) && tempdata1[0] && $.isArray(tempdata1[0])){
+	ht.populateFromArray (0, 0, tempdata1,tempdata1.length-1, 1);
+}
+
+
+
+$('a[href="#tab1id"]').on('shown.bs.tab', function (e) {
+	activetabNb=0;
+	document.getElementById("tab3").innerHTML="Activates";
+	document.getElementById("tab4").innerHTML="Suppresses";
+	document.getElementById("tab5").innerHTML="Produced by";
+	document.getElementById("tab6").innerHTML="Consumed by";
+	
+	tempdata1=new Array(dataJson["places"].length);
+	for (var i=0, j=dataJson["places"].length; i<j;i++){
+		tempdata1[i]=new Array(2);
+		tempdata1[i][0]=dataJson["places"][i]["place"]["name"];
+		if (listLeftPlacesSelected.hasOwnProperty(tempdata1[i][0])){
+			tempdata1[i][1]=true;
+		}
+		else{
+			tempdata1[i][1]=false;
+		}
+	}
+	for (var i=0; i<list1Duplicates.length;i++){
+		var tmpnb=1;
+		for (var j=0;j<tempdata1.length;j++){
+			if (list1Duplicates[i]==tempdata1[j][0]){
+				tempdata1[j][0]=tempdata1[j][0]+""+tmpnb;
+				tmpnb++;
+			}
+		}
+	}
+	for (var i=0, j=tempdata1.length; i<j;i++){
+		if (listLeftPlacesSelected.hasOwnProperty(tempdata1[i][0])){
+			tempdata1[i][1]=true;
+		}
+		else{
+			tempdata1[i][1]=false;
+		}
+	}
+	//console.log(tempdata1)
+	var ht = $('#tab1id').handsontable('getInstance');
+	if ($.isArray(tempdata1) && tempdata1[0] && $.isArray(tempdata1[0])){
+		ht.populateFromArray (0, 0, tempdata1,tempdata1.length-1, 1);
+	}
+      $('#tab1id').handsontable('render');
+	  
+	for (var tpd=0;tpd<4;tpd++){  
+		tempdata[tpd]=new Array(dataJson["transitions"].length);
+		for (var i=0, j=dataJson["transitions"].length; i<j;i++){
+			tempdata[tpd][i]=new Array(2);
+			tempdata[tpd][i][0]=dataJson["transitions"][i]["transition"]["name"];
+			if (listTSelected[tpd].hasOwnProperty(tempdata[tpd][i][0])){
+				tempdata[tpd][i][1]=true;
+			}
+			else{
+				tempdata[tpd][i][1]=false;
+			}
+			//listLeftTransitionsSelected[tempdata2[i][0]]=0
+		}
+		for (var i=0; i<list2Duplicates.length;i++){
+			var tmpnb=1;
+			for (var j=0;j<tempdata[tpd].length;j++){
+				if (list2Duplicates[i]==tempdata[tpd][j][tpd]){
+					tempdata[tpd][j][0]=tempdata[tpd][j][0]+""+tmpnb;
+					tmpnb++;
+				}
+			}
+		}
+		for (var i=0, j=tempdata[tpd].length; i<j;i++){
+			
+			if (listTSelected[tpd].hasOwnProperty(tempdata[tpd][i][0])){
+				tempdata[tpd][i][1]=true;
+			}
+			else{
+				tempdata[tpd][i][1]=false;
+			}
+			//listLeftTransitionsSelected[tempdata2[i][0]]=0
+		}
+	}
+	
+	
+	
+	
+	//console.log(tempdata1)
+	var nametab='#tab'+(3+rightActiveTable)+'id'
+	var ht2 = $(nametab).handsontable('getInstance');
+	if ($.isArray(tempdata[rightActiveTable]) && tempdata[rightActiveTable][0] && $.isArray(tempdata[rightActiveTable][0])){
+		ht2.populateFromArray (0, 0, tempdata[rightActiveTable],tempdata[rightActiveTable].length-1, 1);
+	}
+	$(nametab).handsontable('render');
+	
+	listMtbSelected={}
+	
+	if (Object.keys(listLeftPlacesSelected).length==1){
+		var ky = Object.keys(listLeftPlacesSelected)[0];
+		//console.log(ky)
+		if (MetabolitesListPerPlace.hasOwnProperty(ky)){
+			
+			for (var i1=0, j1=MetabolitesListPerPlace[ky].length;i1<j1;i1++){
+				listMtbSelected[MetabolitesListPerPlace[ky][i1]]=true;
+			}
+		}
+	}
+	//console.log(listLeftPlacesSelected)
+	//console.log(listMtbSelected)
+	listMtb=new Array(dataJson2.length);
+	for (var i=0, j=dataJson2.length;i<j;i++){
+		listMtb[i]=new Array(2);
+		listMtb[i][0]=dataJson2[i][1];
+		if (listMtbSelected.hasOwnProperty(listMtb[i][0])){
+			listMtb[i][1]=true;
+		}
+		else{
+			listMtb[i][1]=false;
+		}
+	}
+	//console.log(listMtbSelected)
+	var hot = $('#tab7id').handsontable('getInstance');
+	
+	if ($.isArray(listMtb) && listMtb[0] && $.isArray(listMtb[0])){
+		hot.populateFromArray (0, 0, listMtb,listMtb.length-1, 1);
+	}
+	
+	hot.sort(1, false);
+	$('#tab7id').handsontable('render');
+	
+	
+}); 
+$('a[href="#tab2id"]').on('shown.bs.tab', function (e) {
+	activetabNb=1;
+	document.getElementById("tab3").innerHTML="Activated by";
+	document.getElementById("tab4").innerHTML="Suppressed by";
+	document.getElementById("tab5").innerHTML="Produces";
+	document.getElementById("tab6").innerHTML="Consumes";
+	tempdata2=new Array(dataJson["transitions"].length);
+	for (var i=0, j=dataJson["transitions"].length; i<j;i++){
+		tempdata2[i]=new Array(2);
+		tempdata2[i][0]=dataJson["transitions"][i]["transition"]["name"];
+		
+		if (listLeftTransitionsSelected.hasOwnProperty(tempdata2[i][0])){
+			tempdata2[i][1]=true;
+		}
+		else{
+			tempdata2[i][1]=false;
+		}
+	}
+	for (var i=0; i<list2Duplicates.length;i++){
+		var tmpnb=1;
+		for (var j=0;j<tempdata2.length;j++){
+			if (list2Duplicates[i]==tempdata2[j][0]){
+				tempdata2[j][0]=tempdata2[j][0]+""+tmpnb;
+				tmpnb++;
+			}
+		}
+	}
+	for (var i=0, j=tempdata2.length; i<j;i++){
+		
+		if (listLeftTransitionsSelected.hasOwnProperty(tempdata2[i][0])){
+			tempdata2[i][1]=true;
+		}
+		else{
+			tempdata2[i][1]=false;
+		}
+	}
+	//console.log(tempdata1)
+	var ht = $('#tab2id').handsontable('getInstance');
+	if ($.isArray(tempdata2) && tempdata2[0] && $.isArray(tempdata2[0])){
+		ht.populateFromArray (0, 0, tempdata2,tempdata2.length-1, 1);
+	}
+      $('#tab2id').handsontable('render');
+	  
+	for (var tpd=0;tpd<4;tpd++){  
+		tempdata[tpd]=new Array(dataJson["places"].length);
+		for (var i=0, j=dataJson["places"].length; i<j;i++){
+			tempdata[tpd][i]=new Array(2);
+			tempdata[tpd][i][0]=dataJson["places"][i]["place"]["name"];
+			if (listPSelected[tpd].hasOwnProperty(tempdata[tpd][i][0])){
+				tempdata[tpd][i][1]=true;
+			}
+			else{
+				tempdata[tpd][i][1]=false;
+			}
+			//listLeftTransitionsSelected[tempdata2[i][0]]=0
+		}
+		for (var i=0; i<list1Duplicates.length;i++){
+			var tmpnb=1;
+			for (var j=0;j<tempdata[tpd].length;j++){
+				if (list1Duplicates[i]==tempdata[tpd][j][tpd]){
+					tempdata[tpd][j][0]=tempdata[tpd][j][0]+""+tmpnb;
+					tmpnb++;
+				}
+			}
+		}
+		
+	}  
+	
+	
+	var nametab='#tab'+(3+rightActiveTable)+'id'
+	var ht2 = $(nametab).handsontable('getInstance');
+	if ($.isArray(tempdata[rightActiveTable]) && tempdata[rightActiveTable][0] && $.isArray(tempdata[rightActiveTable][0])){
+		ht2.populateFromArray (0, 0, tempdata[rightActiveTable],tempdata[rightActiveTable].length-1, 1);
+	}
+	$(nametab).handsontable('render');
+	
+	listMtbSelected={};
+	
+	
+	
+	
+	listMtb=new Array(dataJson2.length);
+	for (var i=0, j=dataJson2.length;i<j;i++){
+		listMtb[i]=new Array(2);
+		listMtb[i][0]=dataJson2[i][1];
+			listMtb[i][1]=false;
+	}
+	//console.log(listMtbSelected)
+	var hot = $('#tab7id').handsontable('getInstance');
+	
+	if ($.isArray(listMtb) && listMtb[0] && $.isArray(listMtb[0])){
+		hot.populateFromArray (0, 0, listMtb,listMtb.length-1, 1);
+	}
+	
+	$('#tab7id').handsontable('render');
+	
+}); 
+
+$('#searchgrid').on('keyup',function(event){
+	var value = ('' + this.value).toLowerCase(),row,col,r_len,c_len,td;
+	//console.log(value)
+	var example;
+	if(activetabNb==0){
+		example = $('#tab1id');
+		tempdata1=new Array(dataJson["places"].length);
+		for (var i=0, j=dataJson["places"].length; i<j;i++){
+			tempdata1[i]=new Array(2);
+			tempdata1[i][0]=dataJson["places"][i]["place"]["name"];
+			
+			if (listLeftPlacesSelected.hasOwnProperty(tempdata1[i][0])){
+				tempdata1[i][1]=true;
+			}
+			else{
+				tempdata1[i][1]=false;
+			}
+		}
+		for (var i=0; i<list1Duplicates.length;i++){
+			var tmpnb=1;
+			for (var j=0;j<tempdata1.length;j++){
+				if (list1Duplicates[i]==tempdata1[j][0]){
+					tempdata1[j][0]=tempdata1[j][0]+""+tmpnb;
+					tmpnb++;
+				}
+			}
+		}
+		var data = tempdata1;
+		
+		//var data = $('#tab2id').handsontable('getData');
+		//console.log(data)
+		var searcharray = [];
+		if(value){
+			for(row=0,r_len = data.length;row< r_len;row++){
+				for(col=0,c_len = data[row].length;col < c_len-1; col++){
+					if(data[row][col] == null){
+						continue;
+					}
+					if(('' + data[row][col]).toLowerCase().indexOf(value) > -1){
+						searcharray.push(data[row]);
+						break;
+					}
+					else{
+					}
+				}
+			}
+			//console.log(searcharray);
+			for (var j=0;j<searcharray.length;j++){
+				if (listLeftPlacesSelected.hasOwnProperty(searcharray[j][0])){
+					searcharray[j][1]=true;
+				}
+				else{
+					searcharray[j][1]=false;
+				}
+			}
+			var ht = $('#tab1id').handsontable('getInstance');
+			//ht.clear();
+			ht.alter('remove_row', 0, tempdata1.length);
+			//console.log(searcharray)
+			tempdata1=searcharray;
+			if ($.isArray(searcharray) && searcharray[0] && $.isArray(searcharray[0])){
+				ht.populateFromArray (0, 0, searcharray,searcharray.length-1, 1);
+			}
+		}
+		else{
+			var ht = $('#tab1id').handsontable('getInstance');
+			//console.log(listLeftTransitionsSelected)
+			tempdata1=new Array(dataJson["places"].length);
+			for (var i=0, j=dataJson["places"].length; i<j;i++){
+				tempdata1[i]=new Array(2);
+				tempdata1[i][0]=dataJson["places"][i]["place"]["name"];
+				if (listLeftPlacesSelected.hasOwnProperty(tempdata1[i][0])){
+					
+					tempdata1[i][1]=true;
+				}
+				else{
+					tempdata1[i][1]=false;
+				}
+			}
+			for (var i=0; i<list1Duplicates.length;i++){
+				var tmpnb=1;
+				for (var j=0;j<tempdata1.length;j++){
+					if (list1Duplicates[i]==tempdata1[j][0]){
+						tempdata1[j][0]=tempdata1[j][0]+""+tmpnb;
+						tmpnb++;
+					}
+				}
+			}
+			for (var i=0, j=tempdata1.length; i<j;i++){
+				if (listLeftPlacesSelected.hasOwnProperty(tempdata1[i][0])){	
+					tempdata1[i][1]=true;
+				}
+				else{
+					tempdata1[i][1]=false;
+				}
+			}
+			//console.log(tempdata2)
+			//ht.clear();
+			ht.alter('remove_row', 0, tempdata1.length);
+			if ($.isArray(tempdata1) && tempdata1[0] && $.isArray(tempdata1[0])){
+				ht.populateFromArray (0, 0, tempdata1,tempdata1.length-1, 1);
+			}
+			
+		}
+		$('#tab1id').handsontable('deselectCell');
+		
+	}
+	else{
+		example = $('#tab2id');
+		tempdata2=new Array(dataJson["transitions"].length);
+		for (var i=0, j=dataJson["transitions"].length; i<j;i++){
+			tempdata2[i]=new Array(2);
+			tempdata2[i][0]=dataJson["transitions"][i]["transition"]["name"];
+			
+			if (listLeftTransitionsSelected.hasOwnProperty(tempdata2[i][0])){
+				tempdata2[i][1]=true;
+			}
+			else{
+				tempdata2[i][1]=false;
+			}
+		}
+		for (var i=0; i<list2Duplicates.length;i++){
+			var tmpnb=1;
+			for (var j=0;j<tempdata2.length;j++){
+				if (list2Duplicates[i]==tempdata2[j][0]){
+					tempdata2[j][0]=tempdata2[j][0]+""+tmpnb;
+					tmpnb++;
+				}
+			}
+		}
+		var data = tempdata2;
+		
+		//var data = $('#tab2id').handsontable('getData');
+		//console.log(data)
+		var searcharray = [];
+		if(value){
+			for(row=0,r_len = data.length;row< r_len;row++){
+				for(col=0,c_len = data[row].length;col < c_len-1; col++){
+					if(data[row][col] == null){
+						continue;
+					}
+					if(('' + data[row][col]).toLowerCase().indexOf(value) > -1){
+						searcharray.push(data[row]);
+						break;
+					}
+					else{
+					}
+				}
+			}
+			//console.log(searcharray);
+			for (var j=0;j<searcharray.length;j++){
+				if (listLeftTransitionsSelected.hasOwnProperty(searcharray[j][0])){
+					searcharray[j][1]=true;
+				}
+				else{
+					searcharray[j][1]=false;
+				}
+			}
+			var ht = $('#tab2id').handsontable('getInstance');
+			//ht.clear();
+			ht.alter('remove_row', 0, tempdata2.length);
+			if ($.isArray(searcharray) && searcharray[0] && $.isArray(searcharray[0])){
+				ht.populateFromArray (0, 0, searcharray,searcharray.length-1, 1);
+			}
+		}
+		else{
+			var ht = $('#tab2id').handsontable('getInstance');
+			//console.log(listLeftTransitionsSelected)
+			tempdata2=new Array(dataJson["transitions"].length);
+			for (var i=0, j=dataJson["transitions"].length; i<j;i++){
+				tempdata2[i]=new Array(2);
+				tempdata2[i][0]=dataJson["transitions"][i]["transition"]["name"];
+				if (listLeftTransitionsSelected.hasOwnProperty(tempdata2[i][0])){
+					
+					tempdata2[i][1]=true;
+				}
+				else{
+					tempdata2[i][1]=false;
+				}
+			}
+			for (var i=0; i<list2Duplicates.length;i++){
+				var tmpnb=1;
+				for (var j=0;j<tempdata2.length;j++){
+					if (list2Duplicates[i]==tempdata2[j][0]){
+						tempdata2[j][0]=tempdata2[j][0]+""+tmpnb;
+						tmpnb++;
+					}
+				}
+			}
+			for (var i=0, j=tempdata2.length; i<j;i++){
+				if (listLeftTransitionsSelected.hasOwnProperty(tempdata2[i][0])){	
+					tempdata2[i][1]=true;
+				}
+				else{
+					tempdata2[i][1]=false;
+				}
+			}
+			//console.log(tempdata2)
+			//ht.clear();
+			ht.alter('remove_row', 0, tempdata2.length);
+			if ($.isArray(tempdata2) && tempdata2[0] && $.isArray(tempdata2[0])){
+				ht.populateFromArray (0, 0, tempdata2,tempdata2.length-1, 1);
+			}
+			}
+			$('#tab2id').handsontable('deselectCell');
+	}	
+	document.getElementById("searchgrid").focus();
+	
+});
+	
+	
+for (var tpd=0;tpd<4;tpd++){  
+	tempdata[tpd]=new Array(dataJson["transitions"].length);
+	for (var i=0, j=dataJson["transitions"].length; i<j;i++){
+		tempdata[tpd][i]=new Array(2);
+		tempdata[tpd][i][0]=dataJson["transitions"][i]["transition"]["name"];
+		if (listTSelected[tpd].hasOwnProperty(tempdata[tpd][i][0])){
+			tempdata[tpd][i][1]=true;
+		}
+		else{
+			tempdata[tpd][i][1]=false;
+		}
+		//listLeftTransitionsSelected[tempdata2[i][0]]=0
+	}
+	for (var i=0; i<list2Duplicates.length;i++){
+		var tmpnb=1;
+		for (var j=0;j<tempdata[tpd].length;j++){
+			if (list2Duplicates[i]==tempdata[tpd][j][tpd]){
+				tempdata[tpd][j][0]=tempdata[tpd][j][0]+""+tmpnb;
+				tmpnb++;
+			}
+		}
+	}
+}
+
+var $container3 = $("#tab3id");
+$container3.handsontable({
+  data: [],
+  width: 450,
+  height:500,
+  dataSchema: {name: null, select: null},
+  colWidths: [410, 25],
+  startRows: 1,
+  startCols: 2,
+  columnSorting: true,
+  colHeaders: ['Name', 'y'],
+  columns: [
+    {data: "name"},
+    {data: "select",type: "checkbox",renderer: activeStateRenderer}
+  ],
+  afterChange: function(changes, source) {
+	var dt = this.getData();
+	if  (activetabNb==0){
+		for (var i=0, j= dt.length;i<j-1;i++){
+			if (dt[i]['select']==true){
+			
+				listTSelected[0][dt[i]['name']]=true;
+			}
+			else{
+				if (listTSelected[0].hasOwnProperty(dt[i]['name']) && dt[i]['select']==false){
+					delete listTSelected[0][dt[i]['name']];
+				}
+			}
+		}
+		//console.log(listLeftPlacesSelected)
+	}
+	if  (activetabNb==1){
+		for (var i=0, j= dt.length;i<j-1;i++){
+			if (dt[i]['select']==true){
+				listPSelected[0][dt[i]['name']]=true;
+			}
+			else{
+				if (listPSelected[0].hasOwnProperty(dt[i]['name']) && dt[i]['select']==false){
+					delete listPSelected[0][dt[i]['name']];
+				}
+			}
+		}
+		//console.log(listLeftPlacesSelected)
+	}
+	
+  },
+  
+  minSpareRows: 1
+});	
+
+var ht2 = $('#tab3id').handsontable('getInstance');
+if ($.isArray(tempdata[0]) && tempdata[0][0] && $.isArray(tempdata[0][0])){
+	ht2.populateFromArray (0, 0, tempdata[0],tempdata[0].length-1, 1);
+}
+
+
+
+var $container4 = $("#tab4id");
+$container4.handsontable({
+  data: [],
+  width: 450,
+  height:500,
+  dataSchema: {name: null, select: null},
+  colWidths: [410, 25],
+  startRows: 1,
+  startCols: 2,
+  columnSorting: true,
+  colHeaders: ['Name', 'y'],
+  columns: [
+    {data: "name"},
+    {data: "select",type: "checkbox",renderer: activeStateRenderer}
+  ],
+  afterChange: function(changes, source) {
+	var dt = this.getData();
+	if  (activetabNb==0){
+		for (var i=0, j= dt.length;i<j-1;i++){
+			if (dt[i]['select']==true){
+			
+				listTSelected[1][dt[i]['name']]=true;
+			}
+			else{
+				if (listTSelected[1].hasOwnProperty(dt[i]['name']) && dt[i]['select']==false){
+					delete listTSelected[1][dt[i]['name']];
+				}
+			}
+		}
+		//console.log(listLeftPlacesSelected)
+	}
+	if  (activetabNb==1){
+		for (var i=0, j= dt.length;i<j-1;i++){
+			if (dt[i]['select']==true){
+				listPSelected[1][dt[i]['name']]=true;
+			}
+			else{
+				if (listPSelected[1].hasOwnProperty(dt[i]['name']) && dt[i]['select']==false){
+					delete listPSelected[1][dt[i]['name']];
+				}
+			}
+		}
+		//console.log(listLeftPlacesSelected)
+	}
+	
+  },
+  
+  minSpareRows: 1
+});			
+	
+
+
+var $container5 = $("#tab5id");
+$container5.handsontable({
+  data: [],
+  width: 450,
+  height:500,
+  dataSchema: {name: null, select: null},
+  colWidths: [410, 25],
+  startRows: 1,
+  startCols: 2,
+  columnSorting: true,
+  colHeaders: ['Name', 'y'],
+  columns: [
+    {data: "name"},
+    {data: "select",type: "checkbox",renderer: activeStateRenderer}
+  ],
+  afterChange: function(changes, source) {
+	var dt = this.getData();
+	if  (activetabNb==0){
+		for (var i=0, j= dt.length;i<j-1;i++){
+			if (dt[i]['select']==true){
+			
+				listTSelected[2][dt[i]['name']]=true;
+			}
+			else{
+				if (listTSelected[2].hasOwnProperty(dt[i]['name']) && dt[i]['select']==false){
+					delete listTSelected[2][dt[i]['name']];
+				}
+			}
+		}
+		//console.log(listLeftPlacesSelected)
+	}
+	if  (activetabNb==1){
+		for (var i=0, j= dt.length;i<j-1;i++){
+			if (dt[i]['select']==true){
+				listPSelected[2][dt[i]['name']]=true;
+			}
+			else{
+				if (listPSelected[2].hasOwnProperty(dt[i]['name']) && dt[i]['select']==false){
+					delete listPSelected[2][dt[i]['name']];
+				}
+			}
+		}
+		//console.log(listLeftPlacesSelected)
+	}
+	
+  },
+  
+  minSpareRows: 1
+});		
+
+
+
+var $container6 = $("#tab6id");
+$container6.handsontable({
+  data: [],
+  width: 450,
+  height:500,
+  dataSchema: {name: null, select: null},
+  colWidths: [410, 25],
+  startRows: 1,
+  startCols: 2,
+  columnSorting: true,
+  colHeaders: ['Name', 'y'],
+  columns: [
+    {data: "name"},
+    {data: "select",type: "checkbox",renderer: activeStateRenderer}
+  ],
+  afterChange: function(changes, source) {
+	var dt = this.getData();
+	if  (activetabNb==0){
+		for (var i=0, j= dt.length;i<j-1;i++){
+			if (dt[i]['select']==true){
+			
+				listTSelected[3][dt[i]['name']]=true;
+			}
+			else{
+				if (listTSelected[3].hasOwnProperty(dt[i]['name']) && dt[i]['select']==false){
+					delete listTSelected[3][dt[i]['name']];
+				}
+			}
+		}
+		//console.log(listLeftPlacesSelected)
+	}
+	if  (activetabNb==1){
+		for (var i=0, j= dt.length;i<j-1;i++){
+			if (dt[i]['select']==true){
+				listPSelected[3][dt[i]['name']]=true;
+			}
+			else{
+				if (listPSelected[3].hasOwnProperty(dt[i]['name']) && dt[i]['select']==false){
+					delete listPSelected[3][dt[i]['name']];
+				}
+			}
+		}
+		//console.log(listLeftPlacesSelected)
+	}
+	
+  },
+  
+  minSpareRows: 1
+});		
+
+
+//for (var fn=0;fn<4;fn++){  
+
+	$('a[href="#tab3id"]').on('shown.bs.tab', function (e) {
+		rightActiveTable=0;
+		if (activetabNb==0){
+			tempdata[0]=new Array(dataJson["transitions"].length);
+			for (var i=0, j=dataJson["transitions"].length; i<j;i++){
+				tempdata[0][i]=new Array(2);
+				tempdata[0][i][0]=dataJson["transitions"][i]["transition"]["name"];
+				if (listTSelected[0].hasOwnProperty(tempdata[0][i][0])){
+					tempdata[0][i][1]=true;
+				}
+				else{
+					tempdata[0][i][1]=false;
+				}
+				//listLeftTransitionsSelected[tempdata2[i][0]]=0
+			}
+			for (var i=0; i<list2Duplicates.length;i++){
+				var tmpnb=1;
+				for (var j=0;j<tempdata[0].length;j++){
+					if (list2Duplicates[i]==tempdata[0][j][0]){
+						tempdata[0][j][0]=tempdata[0][j][0]+""+tmpnb;
+						tmpnb++;
+					}
+				}
+			}
+			//console.log(tempdata1)
+		}
+		if (activetabNb==1){
+			tempdata[0]=new Array(dataJson["places"].length);
+			for (var i=0, j=dataJson["places"].length; i<j;i++){
+				tempdata[0][i]=new Array(2);
+				tempdata[0][i][0]=dataJson["places"][i]["place"]["name"];
+				if (listPSelected[0].hasOwnProperty(tempdata[0][i][0])){
+					tempdata[0][i][1]=true;
+				}
+				else{
+					tempdata[0][i][1]=false;
+				}
+				//listLeftTransitionsSelected[tempdata2[i][0]]=0
+			}
+			for (var i=0; i<list1Duplicates.length;i++){
+				var tmpnb=1;
+				for (var j=0;j<tempdata[0].length;j++){
+					if (list1Duplicates[i]==tempdata[0][j][0]){
+						tempdata[0][j][0]=tempdata[0][j][0]+""+tmpnb;
+						tmpnb++;
+					}
+				}
+			}
+			//console.log(tempdata1)
+			
+		}
+		var ht2 = $('#tab3id').handsontable('getInstance');
+		if ($.isArray(tempdata[0]) && tempdata[0][0] && $.isArray(tempdata[0][0])){
+				ht2.populateFromArray (0, 0, tempdata[0],tempdata[0].length-1, 1);
+		}
+		if (Object.keys(listLeftPlacesSelected).length>0 || Object.keys(listLeftTransitionsSelected).length>0){
+			var hot = $('#tab3id').handsontable('getInstance');
+			hot.sort(1, false); //will sort table using values from the first column in descending order
+		}
+		$('#tab3id').handsontable('render');
+	}); 
+	
+	
+	$('a[href="#tab4id"]').on('shown.bs.tab', function (e) {
+		rightActiveTable=1;
+		if (activetabNb==0){
+			tempdata[1]=new Array(dataJson["transitions"].length);
+			for (var i=0, j=dataJson["transitions"].length; i<j;i++){
+				tempdata[1][i]=new Array(2);
+				tempdata[1][i][0]=dataJson["transitions"][i]["transition"]["name"];
+				if (listTSelected[1].hasOwnProperty(tempdata[1][i][0])){
+					tempdata[1][i][1]=true;
+				}
+				else{
+					tempdata[1][i][1]=false;
+				}
+				//listLeftTransitionsSelected[tempdata2[i][0]]=0
+			}
+			for (var i=0; i<list2Duplicates.length;i++){
+				var tmpnb=1;
+				for (var j=0;j<tempdata[1].length;j++){
+					if (list2Duplicates[i]==tempdata[1][j][0]){
+						tempdata[1][j][0]=tempdata[1][j][0]+""+tmpnb;
+						tmpnb++;
+					}
+				}
+			}
+			//console.log(tempdata1)
+		}
+		if (activetabNb==1){
+			tempdata[1]=new Array(dataJson["places"].length);
+			for (var i=0, j=dataJson["places"].length; i<j;i++){
+				tempdata[1][i]=new Array(2);
+				tempdata[1][i][0]=dataJson["places"][i]["place"]["name"];
+				if (listPSelected[1].hasOwnProperty(tempdata[1][i][0])){
+					tempdata[1][i][1]=true;
+				}
+				else{
+					tempdata[1][i][1]=false;
+				}
+				//listLeftTransitionsSelected[tempdata2[i][0]]=0
+			}
+			for (var i=0; i<list1Duplicates.length;i++){
+				var tmpnb=1;
+				for (var j=0;j<tempdata[1].length;j++){
+					if (list1Duplicates[i]==tempdata[1][j][0]){
+						tempdata[1][j][0]=tempdata[1][j][0]+""+tmpnb;
+						tmpnb++;
+					}
+				}
+			}
+			//console.log(tempdata1)
+			
+		}
+		var ht2 = $('#tab4id').handsontable('getInstance');
+		if ($.isArray(tempdata[1]) && tempdata[1][0] && $.isArray(tempdata[1][0])){
+				ht2.populateFromArray (0, 0, tempdata[1],tempdata[1].length-1, 1);
+		}
+		if (Object.keys(listLeftPlacesSelected).length>0 || Object.keys(listLeftTransitionsSelected).length>0){
+			var hot = $('#tab4id').handsontable('getInstance');
+			hot.sort(1, false); //will sort table using values from the first column in descending order
+		}
+		$('#tab4id').handsontable('render');
+	}); 
+	
+	
+	$('a[href="#tab5id"]').on('shown.bs.tab', function (e) {
+		rightActiveTable=2;
+		if (activetabNb==0){
+			tempdata[2]=new Array(dataJson["transitions"].length);
+			for (var i=0, j=dataJson["transitions"].length; i<j;i++){
+				tempdata[2][i]=new Array(2);
+				tempdata[2][i][0]=dataJson["transitions"][i]["transition"]["name"];
+				if (listTSelected[2].hasOwnProperty(tempdata[2][i][0])){
+					tempdata[2][i][1]=true;
+				}
+				else{
+					tempdata[2][i][1]=false;
+				}
+				//listLeftTransitionsSelected[tempdata2[i][0]]=0
+			}
+			for (var i=0; i<list2Duplicates.length;i++){
+				var tmpnb=1;
+				for (var j=0;j<tempdata[2].length;j++){
+					if (list2Duplicates[i]==tempdata[2][j][0]){
+						tempdata[2][j][0]=tempdata[2][j][0]+""+tmpnb;
+						tmpnb++;
+					}
+				}
+			}
+			//console.log(tempdata1)
+		}
+		if (activetabNb==1){
+			tempdata[2]=new Array(dataJson["places"].length);
+			for (var i=0, j=dataJson["places"].length; i<j;i++){
+				tempdata[2][i]=new Array(2);
+				tempdata[2][i][0]=dataJson["places"][i]["place"]["name"];
+				if (listPSelected[2].hasOwnProperty(tempdata[2][i][0])){
+					tempdata[2][i][1]=true;
+				}
+				else{
+					tempdata[2][i][1]=false;
+				}
+				//listLeftTransitionsSelected[tempdata2[i][0]]=0
+			}
+			for (var i=0; i<list1Duplicates.length;i++){
+				var tmpnb=1;
+				for (var j=0;j<tempdata[2].length;j++){
+					if (list1Duplicates[i]==tempdata[2][j][0]){
+						tempdata[2][j][0]=tempdata[2][j][0]+""+tmpnb;
+						tmpnb++;
+					}
+				}
+			}
+			//console.log(tempdata1)
+			
+		}
+		var ht2 = $('#tab5id').handsontable('getInstance');
+		if ($.isArray(tempdata[2]) && tempdata[2][0] && $.isArray(tempdata[2][0])){
+				ht2.populateFromArray (0, 0, tempdata[2],tempdata[2].length-1, 1);
+		}
+		if (Object.keys(listLeftPlacesSelected).length>0 || Object.keys(listLeftTransitionsSelected).length>0){
+			var hot = $('#tab5id').handsontable('getInstance');
+			hot.sort(1, false); //will sort table using values from the first column in descending order
+		}
+		$('#tab5id').handsontable('render');
+	}); 
+	
+	
+	$('a[href="#tab6id"]').on('shown.bs.tab', function (e) {
+		rightActiveTable=3;
+		if (activetabNb==0){
+			tempdata[3]=new Array(dataJson["transitions"].length);
+			for (var i=0, j=dataJson["transitions"].length; i<j;i++){
+				tempdata[3][i]=new Array(2);
+				tempdata[3][i][0]=dataJson["transitions"][i]["transition"]["name"];
+				if (listTSelected[3].hasOwnProperty(tempdata[3][i][0])){
+					tempdata[3][i][1]=true;
+				}
+				else{
+					tempdata[3][i][1]=false;
+				}
+				//listLeftTransitionsSelected[tempdata2[i][0]]=0
+			}
+			for (var i=0; i<list2Duplicates.length;i++){
+				var tmpnb=1;
+				for (var j=0;j<tempdata[3].length;j++){
+					if (list2Duplicates[i]==tempdata[3][j][0]){
+						tempdata[3][j][0]=tempdata[3][j][0]+""+tmpnb;
+						tmpnb++;
+					}
+				}
+			}
+			//console.log(tempdata1)
+		}
+		if (activetabNb==1){
+			tempdata[3]=new Array(dataJson["places"].length);
+			for (var i=0, j=dataJson["places"].length; i<j;i++){
+				tempdata[3][i]=new Array(2);
+				tempdata[3][i][0]=dataJson["places"][i]["place"]["name"];
+				if (listPSelected[3].hasOwnProperty(tempdata[3][i][0])){
+					tempdata[3][i][1]=true;
+				}
+				else{
+					tempdata[3][i][1]=false;
+				}
+				//listLeftTransitionsSelected[tempdata2[i][0]]=0
+			}
+			for (var i=0; i<list1Duplicates.length;i++){
+				var tmpnb=1;
+				for (var j=0;j<tempdata[3].length;j++){
+					if (list1Duplicates[i]==tempdata[3][j][0]){
+						tempdata[3][j][0]=tempdata[3][j][0]+""+tmpnb;
+						tmpnb++;
+					}
+				}
+			}
+			//console.log(tempdata1)
+			
+		}
+		var ht2 = $('#tab6id').handsontable('getInstance');
+		if ($.isArray(tempdata[3]) && tempdata[3][0] && $.isArray(tempdata[3][0])){
+				ht2.populateFromArray (0, 0, tempdata[3],tempdata[3].length-1, 1);
+		}
+		if (Object.keys(listLeftPlacesSelected).length>0 || Object.keys(listLeftTransitionsSelected).length>0){
+			var hot = $('#tab6id').handsontable('getInstance');
+			hot.sort(1, false); //will sort table using values from the first column in descending order
+		}
+		$('#tab6id').handsontable('render');
+	}); 
+//}
+
+
+
+$('#searchgrid2').on('keyup',function(event){
+	var value = ('' + this.value).toLowerCase(),row,col,r_len,c_len,td;
+	//console.log(value)
+	var example;
+	for (var m=0;m<4;m++){  
+		if(rightActiveTable==m){
+			var exName='#tab'+(m+3)+'id'
+			example = $(exName);
+			//console.log(exName)
+			if (activetabNb==0){
+				tempdata[m]=new Array(dataJson["transitions"].length);
+				for (var i=0, j=dataJson["transitions"].length; i<j;i++){
+					tempdata[m][i]=new Array(2);
+					tempdata[m][i][0]=dataJson["transitions"][i]["transition"]["name"];
+					if (listTSelected[m].hasOwnProperty(tempdata[m][i][0])){
+						tempdata[m][i][1]=true;
+					}
+					else{
+						tempdata[m][i][1]=false;
+					}
+					//listLeftTransitionsSelected[tempdata2[i][0]]=0
+				}
+				for (var i=0; i<list2Duplicates.length;i++){
+					var tmpnb=1;
+					for (var j=0;j<tempdata[m].length;j++){
+						if (list2Duplicates[i]==tempdata[m][j][0]){
+							tempdata[m][j][0]=tempdata[m][j][0]+""+tmpnb;
+							tmpnb++;
+						}
+					}
+				}
+				//console.log(tempdata1)
+			}
+			if (activetabNb==1){
+				tempdata[m]=new Array(dataJson["places"].length);
+				for (var i=0, j=dataJson["places"].length; i<j;i++){
+					tempdata[m][i]=new Array(2);
+					tempdata[m][i][0]=dataJson["places"][i]["place"]["name"];
+					if (listPSelected[m].hasOwnProperty(tempdata[m][i][0])){
+						tempdata[m][i][1]=true;
+					}
+					else{
+						tempdata[m][i][1]=false;
+					}
+					//listLeftTransitionsSelected[tempdata2[i][0]]=0
+				}
+				for (var i=0; i<list1Duplicates.length;i++){
+					var tmpnb=1;
+					for (var j=0;j<tempdata[m].length;j++){
+						if (list1Duplicates[i]==tempdata[m][j][0]){
+							tempdata[m][j][0]=tempdata[m][j][0]+""+tmpnb;
+							tmpnb++;
+						}
+					}
+				}
+				//console.log(tempdata1)
+				
+			}
+			
+			
+			var data = tempdata[m];
+			//var data = $('#tab1id').handsontable('getData');
+			//console.log(data)
+			var searcharray = [];
+			if(value){
+				for(row=0,r_len = data.length;row< r_len;row++){
+					for(col=0,c_len = data[row].length;col < c_len-1; col++){
+						if(data[row][col] == null){
+							continue;
+						}
+						if(('' + data[row][col]).toLowerCase().indexOf(value) > -1){
+							searcharray.push(data[row]);
+							break;
+						}
+						else{
+						}
+					}
+				}
+				if (activetabNb==0){
+					//console.log(searcharray);
+					for (var j=0;j<searcharray.length;j++){
+						if (listTSelected[m].hasOwnProperty(searcharray[j][0])){
+							searcharray[j][1]=true;
+						}
+						else{
+							searcharray[j][1]=false;
+						}
+					}
+				}
+				if (activetabNb==1){
+					//console.log(searcharray);
+					for (var j=0;j<searcharray.length;j++){
+						if (listPSelected[m].hasOwnProperty(searcharray[j][0])){
+							searcharray[j][1]=true;
+						}
+						else{
+							searcharray[j][1]=false;
+						}
+					}
+				}
+				var ht = $(exName).handsontable('getInstance');
+				//ht.clear();
+				ht.alter('remove_row', 0, tempdata[m].length);
+				if ($.isArray(searcharray) && searcharray[0] && $.isArray(searcharray[0])){
+					ht.populateFromArray (0, 0, searcharray,searcharray.length-1, 1);
+				}
+				
+			}
+			else{
+				var ht = $(exName).handsontable('getInstance');
+				//ht.clear();
+				ht.alter('remove_row', 0, tempdata[m].length);
+				if (activetabNb==m){
+					tempdata[m]=new Array(dataJson["transitions"].length);
+					for (var i=0, j=dataJson["transitions"].length; i<j;i++){
+						tempdata[m][i]=new Array(2);
+						tempdata[m][i][0]=dataJson["transitions"][i]["transition"]["name"];
+						if (listTSelected[m].hasOwnProperty(tempdata[m][i][0])){
+							tempdata[m][i][1]=true;
+						}
+						else{
+							tempdata[m][i][1]=false;
+						}
+						//listLeftTransitionsSelected[tempdata2[i][0]]=0
+					}
+					for (var i=0; i<list2Duplicates.length;i++){
+						var tmpnb=1;
+						for (var j=0;j<tempdata[m].length;j++){
+							if (list2Duplicates[i]==tempdata[m][j][0]){
+								tempdata[m][j][0]=tempdata[m][j][0]+""+tmpnb;
+								tmpnb++;
+							}
+						}
+					}
+					for (var i=0, j=tempdata[m].length; i<j;i++){
+						if (listTSelected[m].hasOwnProperty(tempdata[m][i][0])){	
+							tempdata[m][i][1]=true;
+						}
+						else{
+							tempdata[m][i][1]=false;
+						}
+					}
+					//console.log(tempdata1)
+				}
+				if (activetabNb==1){
+					tempdata[m]=new Array(dataJson["places"].length);
+					for (var i=0, j=dataJson["places"].length; i<j;i++){
+						tempdata[m][i]=new Array(2);
+						tempdata[m][i][0]=dataJson["places"][i]["place"]["name"];
+						if (listPSelected[m].hasOwnProperty(tempdata[m][i][0])){
+							tempdata[m][i][1]=true;
+						}
+						else{
+							tempdata[m][i][1]=false;
+						}
+						//listLeftTransitionsSelected[tempdata2[i][0]]=0
+					}
+					for (var i=0; i<list1Duplicates.length;i++){
+						var tmpnb=1;
+						for (var j=0;j<tempdata[m].length;j++){
+							if (list1Duplicates[i]==tempdata[m][j][0]){
+								tempdata[m][j][0]=tempdata[m][j][0]+""+tmpnb;
+								tmpnb++;
+							}
+						}
+					}
+					for (var i=0, j=tempdata[m].length; i<j;i++){
+						if (listPSelected[m].hasOwnProperty(tempdata[m][i][0])){	
+							tempdata[m][i][1]=true;
+						}
+						else{
+							tempdata[m][i][1]=false;
+						}
+					}
+					//console.log(tempdata1)
+					
+				}
+				var ht2 = $(exName).handsontable('getInstance');
+				if ($.isArray(tempdata[m]) && tempdata[m][0] && $.isArray(tempdata[m][0])){
+						ht2.populateFromArray (0, 0, tempdata[m],tempdata[m].length-1, 1);
+				}
+				
+		
+		
+				
+			}
+			$(exName).handsontable('deselectCell');
+			
+		}
+	}
+	
+	document.getElementById("searchgrid2").focus();
+	
+});
+
+
+var $container7 = $("#tab7id");
+$container7.handsontable({
+  data: [],
+  width: 385,
+  height:500,
+  dataSchema: {name: null, select: null},
+  colWidths: [345, 25],
+  startRows: 1,
+  startCols: 2,
+  //currentRowClassName: 'currentRow',
+  //currentColClassName: 'currentCol',
+  columnSorting: true,
+  colHeaders: ['Name', 'y'],
+  columns: [
+    {data: "name"},
+    {data: "select",type: "checkbox",renderer: activeStateRenderer}
+  ],
+  afterChange: function(changes, source) {
+	var dt = this.getData();
+	if  (activetabNb==0){
+		for (var i=0, j= dt.length;i<j-1;i++){
+			if (dt[i]['select']==true){
+				listMtbSelected[dt[i]['name']]=true;
+				if (Object.keys(listLeftPlacesSelected).length==1){
+					var ky = Object.keys(listLeftPlacesSelected)[0];
+					//console.log(ky)
+					if (MetabolitesListPerPlace.hasOwnProperty(ky)){
+						if (MetabolitesListPerPlace[ky].indexOf(dt[i]['name'])==-1){
+							MetabolitesListPerPlace[ky].push(dt[i]['name']);
+						}
+					}
+				}
+				//MetabolitesListPerPlace[dataJson['qssf']['constraints'][i]['constraint']['name']].push(dt[i]['name']);
+			}
+			else{
+				if (listMtbSelected.hasOwnProperty(dt[i]['name']) && dt[i]['select']==false){
+					delete listMtbSelected[dt[i]['name']];
+					if (Object.keys(listLeftPlacesSelected).length==1){
+						var ky = Object.keys(listLeftPlacesSelected)[0];
+						//console.log(ky)
+						if (MetabolitesListPerPlace.hasOwnProperty(ky)){
+							if (MetabolitesListPerPlace[ky].indexOf(dt[i]['name'])>-1){
+								//console.log("erase index "+MetabolitesListPerPlace[ky].indexOf(dt[i]['name']))
+								MetabolitesListPerPlace[ky].splice(MetabolitesListPerPlace[ky].indexOf(dt[i]['name']), 1);
+							}
+						}
+					}
+				}
+			}
+		}
+		//console.log(listLeftPlacesSelected)
+	}
+	
+  },
+  
+  minSpareRows: 1
+});	
+
+var ht7 = $('#tab7id').handsontable('getInstance');
+if ($.isArray(listMtb) && listMtb[0] && $.isArray(listMtb[0])){
+	ht7.populateFromArray (0, 0, listMtb,listMtb.length-1, 1);
+}
+
+$('#searchgrid3').on('keyup',function(event){
+	var value = ('' + this.value).toLowerCase(),row,col,r_len,c_len,td;
+	//console.log(value)
+	//var example = $('#tab7id');
+		listMtb=new Array(dataJson2.length);
+		for (var i=0, j=dataJson2.length; i<j;i++){
+			listMtb[i]=new Array(2);
+			listMtb[i][0]=dataJson2[i][1];
+			if (listMtbSelected.hasOwnProperty(listMtb[i][0])){
+				listMtb[i][1]=true;
+			}
+			else{
+				listMtb[i][1]=false;
+			}
+		}
+		
+		
+		var data = listMtb;
+		//var data = $('#tab1id').handsontable('getData');
+		//console.log(data)
+		var searcharray = [];
+		if(value){
+			
+			
+			row=0;
+			r_len = data.length;
+			while(row< r_len){
+				var tmpval=data[row][0];
+				if(tmpval.toLowerCase().indexOf(value) > -1){	
+					if (listMtbSelected.hasOwnProperty(tmpval)){		
+						searcharray.push([tmpval,true]);
+					}
+					else{
+						searcharray.push([tmpval,false]);
+					}
+				}
+				row++;
+			}
+			//console.log(searcharray)
+			//var ht7 = $('#tab7id').handsontable('getInstance');
+			//ht7.clear();
+			ht7.alter('remove_row', 0, listMtb.length);
+			if ($.isArray(searcharray) && searcharray[0] && $.isArray(searcharray[0])){
+				ht7.populateFromArray (0, 0, searcharray,searcharray.length-1, 1);
+			}
+			
+			
+		
+			/*var tempsearch=[]
+			var row=0;
+			var r_len = data.length;
+			while(row< r_len){
+				if(data[row][0].toLowerCase().indexOf(value) > -1){
+					searcharray.push(data[row]);
+				}
+				row++;
+			}*/
+			
+			
+			/*for(row=0,r_len = data.length;row< r_len;row++){
+				for(col=0,c_len = data[row].length;col < c_len-1; col++){
+					if(data[row][col] == null){
+						continue;
+					}
+					if((data[row][col]).toLowerCase().indexOf(value) > -1){
+						searcharray.push(data[row]);
+						break;
+					}
+					else{
+					}
+				}
+			}*/
+			/*for(row=0,r_len = data.length;row< r_len;row++){
+				for(col=0,c_len = data[row].length;col < c_len-1; col++){
+					if(data[row][col] == null){
+						continue;
+					}
+					if(('' + data[row][col]).toLowerCase().indexOf(value) > -1){
+						searcharray.push(data[row]);
+						break;
+					}
+					else{
+					}
+				}
+			}*/
+			
+			//console.log(searcharray);
+			/*for (var j=0, k=searcharray.length;j<k;j++){
+				if (listMtbSelected.hasOwnProperty(searcharray[j][0])){
+					searcharray[j][1]=true;
+				}
+				else{
+					searcharray[j][1]=false;
+				}
+			}
+			var ht = $('#tab7id').handsontable('getInstance');
+			ht.clear();
+			
+			if ($.isArray(searcharray) && searcharray[0] && $.isArray(searcharray[0])){
+				ht.populateFromArray (0, 0, searcharray,searcharray.length-1, 1);
+			}*/
+			
+		}
+		else{
+			//var ht = $('#tab7id').handsontable('getInstance');
+			//ht.clear();
+			ht7.alter('remove_row', 0, listMtb.length);
+			listMtb=new Array(dataJson2.length);
+			for (var i=0, j=dataJson2.length; i<j;i++){
+				listMtb[i]=new Array(2);
+				listMtb[i][0]=dataJson2[i][1];
+				if (listMtbSelected.hasOwnProperty(listMtb[i][0])){
+					listMtb[i][1]=true;
+				}
+				else{
+					listMtb[i][1]=false;
+				}
+			}
+			
+			for (var i=0, j=listMtb.length; i<j;i++){
+				if (listMtbSelected.hasOwnProperty(listMtb[i][0])){	
+					listMtb[i][1]=true;
+				}
+				else{
+					listMtb[i][1]=false;
+				}
+			}
+			if ($.isArray(listMtb) && listMtb[0] && $.isArray(listMtb[0])){
+				ht7.populateFromArray (0, 0, listMtb,listMtb.length-1, 1);
+			}
+		}
+		$('#tab7id').handsontable('deselectCell');
+		
+	
+	
+	document.getElementById("searchgrid3").focus();
+	
+});
+/*
+var g = new Graph();
+ 
+g.addEdge("strawberry", "cherry");
+g.addEdge("strawberry", "apple");
+g.addEdge("strawberry", "tomato");
+ 
+g.addEdge("tomato", "apple");
+g.addEdge("tomato", "kiwi");
+ 
+g.addEdge("cherry", "apple");
+g.addEdge("cherry", "kiwi");
+ 
+var layouter = new Graph.Layout.Spring(g);
+layouter.layout();
+ 
+var renderer = new Graph.Renderer.Raphael('holder', g, 400, 300);
+renderer.draw();
+*/
+
+function update() {
+	if (activetabNb==0){
+		//console.log("places / transitions");
+		//console.log(listLeftPlacesSelected);
+		//console.log(listTSelected[0]);
+		//console.log(listTSelected[1]);
+		//console.log(listTSelected[2]);
+		//console.log(listTSelected[3]);
+		//console.log(listMtbSelected);
+		for(elem in listLeftPlacesSelected){
+			if (listLeftPlacesSelected.hasOwnProperty(elem)){
+				if (transitionsTypesListPerPlace.hasOwnProperty(elem)){
+					// add activators to transitionsTypesListPerPlace
+					transitionsTypesListPerPlace[elem]['activators']=[];
+					for (elem2 in listTSelected[0]){
+						if(listTSelected[0].hasOwnProperty(elem2)){
+							if (transitionsTypesListPerPlace[elem]['activators'].indexOf(elem2)==-1){
+								transitionsTypesListPerPlace[elem]['activators'].push(elem2)
+							}
+						}
+					}
+					if (transitionsTypesListPerPlace[elem]['activators'].length==0){
+						delete transitionsTypesListPerPlace[elem]['activators']
+					}
+					// add suppressors to transitionsTypesListPerPlace					
+					transitionsTypesListPerPlace[elem]['suppressors']=[];
+					for (elem2 in listTSelected[1]){
+						if(listTSelected[1].hasOwnProperty(elem2)){
+							if (transitionsTypesListPerPlace[elem]['suppressors'].indexOf(elem2)==-1){
+								transitionsTypesListPerPlace[elem]['suppressors'].push(elem2)
+							}
+						}
+					}
+					if (transitionsTypesListPerPlace[elem]['suppressors'].length==0){
+						delete transitionsTypesListPerPlace[elem]['suppressors']
+					}					
+					// add produced to transitionsTypesListPerPlace
+					transitionsTypesListPerPlace[elem]['postplaces']=[];
+					for (elem2 in listTSelected[2]){
+						if(listTSelected[2].hasOwnProperty(elem2)){
+							if (transitionsTypesListPerPlace[elem]['postplaces'].indexOf(elem2)==-1){
+								transitionsTypesListPerPlace[elem]['postplaces'].push(elem2)
+							}
+						}
+					}
+					if (transitionsTypesListPerPlace[elem]['postplaces'].length==0){
+						delete transitionsTypesListPerPlace[elem]['postplaces']
+					}
+					// add consumed to transitionsTypesListPerPlace
+					transitionsTypesListPerPlace[elem]['consumed']=[];
+					for (elem2 in listTSelected[3]){
+						if(listTSelected[3].hasOwnProperty(elem2)){
+							if (transitionsTypesListPerPlace[elem]['consumed'].indexOf(elem2)==-1){
+								transitionsTypesListPerPlace[elem]['consumed'].push(elem2)
+							}
+						}
+					}
+					if (transitionsTypesListPerPlace[elem]['consumed'].length==0){
+						delete transitionsTypesListPerPlace[elem]['consumed']
+					}
+					
+					
+				}
+			}
+		}
+		//console.log(transitionsTypesListPerPlace);
+		// update placesTypesListPerTransition
+		placesTypesListPerTransition={};
+		for(elem in transitionsTypesListPerPlace){
+			if (transitionsTypesListPerPlace.hasOwnProperty(elem)){
+				if (transitionsTypesListPerPlace[elem].hasOwnProperty('activators')){
+					for (var nm=0; nm< transitionsTypesListPerPlace[elem]['activators'].length;nm++){
+						if (placesTypesListPerTransition.hasOwnProperty(transitionsTypesListPerPlace[elem]['activators'][nm])){
+							if (placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['activators'][nm]].hasOwnProperty('activators')){
+								placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['activators'][nm]]['activators'].push(elem);
+							}
+							else{
+								placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['activators'][nm]]['activators']=[];
+								placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['activators'][nm]]['activators'].push(elem);
+							}
+						}
+						else{
+							placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['activators'][nm]]={};
+							placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['activators'][nm]]['activators']=[];
+							placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['activators'][nm]]['activators'].push(elem);
+						}
+						
+					}
+				}
+				if (transitionsTypesListPerPlace[elem].hasOwnProperty('suppressors')){
+					for (var nm=0; nm< transitionsTypesListPerPlace[elem]['suppressors'].length;nm++){
+						if (placesTypesListPerTransition.hasOwnProperty(transitionsTypesListPerPlace[elem]['suppressors'][nm])){
+							if (placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['suppressors'][nm]].hasOwnProperty('suppressors')){
+								placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['suppressors'][nm]]['suppressors'].push(elem);
+							}
+							else{
+								placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['suppressors'][nm]]['suppressors']=[];
+								placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['suppressors'][nm]]['suppressors'].push(elem);
+							}
+						}
+						else{
+							placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['suppressors'][nm]]={};
+							placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['suppressors'][nm]]['suppressors']=[];
+							placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['suppressors'][nm]]['suppressors'].push(elem);
+						}
+						
+					}
+				}
+				if (transitionsTypesListPerPlace[elem].hasOwnProperty('postplaces')){
+					for (var nm=0; nm< transitionsTypesListPerPlace[elem]['postplaces'].length;nm++){
+						if (placesTypesListPerTransition.hasOwnProperty(transitionsTypesListPerPlace[elem]['postplaces'][nm])){
+							if (placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['postplaces'][nm]].hasOwnProperty('postplaces')){
+								placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['postplaces'][nm]]['postplaces'].push(elem);
+							}
+							else{
+								placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['postplaces'][nm]]['postplaces']=[];
+								placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['postplaces'][nm]]['postplaces'].push(elem);
+							}
+						}
+						else{
+							placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['postplaces'][nm]]={};
+							placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['postplaces'][nm]]['postplaces']=[];
+							placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['postplaces'][nm]]['postplaces'].push(elem);
+						}
+						
+					}
+				}
+				if (transitionsTypesListPerPlace[elem].hasOwnProperty('consumed')){
+					for (var nm=0; nm< transitionsTypesListPerPlace[elem]['consumed'].length;nm++){
+						if (placesTypesListPerTransition.hasOwnProperty(transitionsTypesListPerPlace[elem]['consumed'][nm])){
+							if (placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['consumed'][nm]].hasOwnProperty('consumed')){
+								placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['consumed'][nm]]['consumed'].push(elem);
+							}
+							else{
+								placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['consumed'][nm]]['consumed']=[];
+								placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['consumed'][nm]]['consumed'].push(elem);
+							}
+						}
+						else{
+							placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['consumed'][nm]]={};
+							placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['consumed'][nm]]['consumed']=[];
+							placesTypesListPerTransition[transitionsTypesListPerPlace[elem]['consumed'][nm]]['consumed'].push(elem);
+						}
+						
+					}
+				}
+			}
+		}
+		//console.log(placesTypesListPerTransition);
+	}
+	
+	if (activetabNb==1){
+		console.log("transitions / places");
+		console.log(listLeftTransitionsSelected);
+		console.log(listPSelected[0]);
+		console.log(listPSelected[1]);
+		console.log(listPSelected[2]);
+		console.log(listPSelected[3]);
+		console.log(listMtbSelected);
+		for(elem in listLeftTransitionsSelected){
+			if (listLeftTransitionsSelected.hasOwnProperty(elem)){
+				if (placesTypesListPerTransition.hasOwnProperty(elem)){
+					// add activators to transitionsTypesListPerPlace
+					placesTypesListPerTransition[elem]['activators']=[];
+					for (elem2 in listPSelected[0]){
+						if(listPSelected[0].hasOwnProperty(elem2)){
+							if (placesTypesListPerTransition[elem]['activators'].indexOf(elem2)==-1){
+								placesTypesListPerTransition[elem]['activators'].push(elem2)
+							}
+						}
+					}
+					if (placesTypesListPerTransition[elem]['activators'].length==0){
+						delete placesTypesListPerTransition[elem]['activators']
+					}
+					// add suppressors to transitionsTypesListPerPlace					
+					placesTypesListPerTransition[elem]['suppressors']=[];
+					for (elem2 in listPSelected[1]){
+						if(listPSelected[1].hasOwnProperty(elem2)){
+							if (placesTypesListPerTransition[elem]['suppressors'].indexOf(elem2)==-1){
+								placesTypesListPerTransition[elem]['suppressors'].push(elem2)
+							}
+						}
+					}
+					if (placesTypesListPerTransition[elem]['suppressors'].length==0){
+						delete placesTypesListPerTransition[elem]['suppressors']
+					}					
+					// add produced to transitionsTypesListPerPlace
+					placesTypesListPerTransition[elem]['postplaces']=[];
+					for (elem2 in listPSelected[2]){
+						if(listPSelected[2].hasOwnProperty(elem2)){
+							if (placesTypesListPerTransition[elem]['postplaces'].indexOf(elem2)==-1){
+								placesTypesListPerTransition[elem]['postplaces'].push(elem2)
+							}
+						}
+					}
+					if (placesTypesListPerTransition[elem]['postplaces'].length==0){
+						delete placesTypesListPerTransition[elem]['postplaces']
+					}
+					// add consumed to transitionsTypesListPerPlace
+					placesTypesListPerTransition[elem]['consumed']=[];
+					for (elem2 in listPSelected[3]){
+						if(listPSelected[3].hasOwnProperty(elem2)){
+							if (placesTypesListPerTransition[elem]['consumed'].indexOf(elem2)==-1){
+								placesTypesListPerTransition[elem]['consumed'].push(elem2)
+							}
+						}
+					}
+					if (placesTypesListPerTransition[elem]['consumed'].length==0){
+						delete placesTypesListPerTransition[elem]['consumed']
+					}
+					
+					
+				}
+			}
+		}
+		//console.log(placesTypesListPerTransition);
+		transitionsTypesListPerPlace={};
+		for(elem in placesTypesListPerTransition){
+			if (placesTypesListPerTransition.hasOwnProperty(elem)){
+				if (placesTypesListPerTransition[elem].hasOwnProperty('activators')){
+					for (var nm=0; nm< placesTypesListPerTransition[elem]['activators'].length;nm++){
+						if (transitionsTypesListPerPlace.hasOwnProperty(placesTypesListPerTransition[elem]['activators'][nm])){
+							if (transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['activators'][nm]].hasOwnProperty('activators')){
+								transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['activators'][nm]]['activators'].push(elem);
+							}
+							else{
+								transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['activators'][nm]]['activators']=[];
+								transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['activators'][nm]]['activators'].push(elem);
+							}
+						}
+						else{
+							transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['activators'][nm]]={};
+							transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['activators'][nm]]['activators']=[];
+							transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['activators'][nm]]['activators'].push(elem);
+						}
+						
+					}
+				}
+				if (placesTypesListPerTransition[elem].hasOwnProperty('suppressors')){
+					for (var nm=0; nm< placesTypesListPerTransition[elem]['suppressors'].length;nm++){
+						if (transitionsTypesListPerPlace.hasOwnProperty(placesTypesListPerTransition[elem]['suppressors'][nm])){
+							if (transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['suppressors'][nm]].hasOwnProperty('suppressors')){
+								transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['suppressors'][nm]]['suppressors'].push(elem);
+							}
+							else{
+								transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['suppressors'][nm]]['suppressors']=[];
+								transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['suppressors'][nm]]['suppressors'].push(elem);
+							}
+						}
+						else{
+							transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['suppressors'][nm]]={};
+							transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['suppressors'][nm]]['suppressors']=[];
+							transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['suppressors'][nm]]['suppressors'].push(elem);
+						}
+						
+					}
+				}
+				if (placesTypesListPerTransition[elem].hasOwnProperty('postplaces')){
+					for (var nm=0; nm< placesTypesListPerTransition[elem]['postplaces'].length;nm++){
+						if (transitionsTypesListPerPlace.hasOwnProperty(placesTypesListPerTransition[elem]['postplaces'][nm])){
+							if (transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['postplaces'][nm]].hasOwnProperty('postplaces')){
+								transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['postplaces'][nm]]['postplaces'].push(elem);
+							}
+							else{
+								transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['postplaces'][nm]]['postplaces']=[];
+								transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['postplaces'][nm]]['postplaces'].push(elem);
+							}
+						}
+						else{
+							transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['postplaces'][nm]]={};
+							transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['postplaces'][nm]]['postplaces']=[];
+							transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['postplaces'][nm]]['postplaces'].push(elem);
+						}
+						
+					}
+				}
+				if (placesTypesListPerTransition[elem].hasOwnProperty('consumed')){
+					for (var nm=0; nm< placesTypesListPerTransition[elem]['consumed'].length;nm++){
+						if (transitionsTypesListPerPlace.hasOwnProperty(placesTypesListPerTransition[elem]['consumed'][nm])){
+							if (transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['consumed'][nm]].hasOwnProperty('consumed')){
+								transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['consumed'][nm]]['consumed'].push(elem);
+							}
+							else{
+								transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['consumed'][nm]]['consumed']=[];
+								transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['consumed'][nm]]['consumed'].push(elem);
+							}
+						}
+						else{
+							transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['consumed'][nm]]={};
+							transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['consumed'][nm]]['consumed']=[];
+							transitionsTypesListPerPlace[placesTypesListPerTransition[elem]['consumed'][nm]]['consumed'].push(elem);
+						}
+						
+					}
+				}
+				
+			}
+		}
+	}
+	var rulesData=[];
+	for (elem in placesTypesListPerTransition){
+		if (placesTypesListPerTransition.hasOwnProperty(elem)){
+			var ruleString="";
+			if (placesTypesListPerTransition[elem].hasOwnProperty('consumed')){
+				for (var i=0; i<placesTypesListPerTransition[elem]['consumed'].length;i++){
+					if (ruleString==""){
+						ruleString+= placesTypesListPerTransition[elem]['consumed'][i];
+					}
+					else{
+						ruleString+= " + "+placesTypesListPerTransition[elem]['consumed'][i];
+					}
+				}
+			}
+			if (placesTypesListPerTransition[elem].hasOwnProperty('activators')){
+				//console("activator : "+ elem)
+				for (var i=0; i<placesTypesListPerTransition[elem]['activators'].length;i++){
+					if (ruleString==""){
+						ruleString+= " & "+placesTypesListPerTransition[elem]['activators'][i];
+					}
+					else{
+						ruleString+= " + & "+placesTypesListPerTransition[elem]['activators'][i];
+					}
+				}
+			}
+			if (placesTypesListPerTransition[elem].hasOwnProperty('suppressors')){
+				for (var i=0; i<placesTypesListPerTransition[elem]['suppressors'].length;i++){
+					if (ruleString==""){
+						ruleString+= " ~ "+placesTypesListPerTransition[elem]['suppressors'][i];
+					}
+					else{
+						ruleString+= " + ~ "+placesTypesListPerTransition[elem]['suppressors'][i];
+					}
+				}
+			}
+			ruleString+=" -> ";
+			
+			if (placesTypesListPerTransition[elem].hasOwnProperty('postplaces')){
+				for (var i=0; i<placesTypesListPerTransition[elem]['postplaces'].length;i++){
+					if (ruleString.substr( -4 )==" -> "){
+						ruleString+= placesTypesListPerTransition[elem]['postplaces'][i];
+					}
+					else{
+						ruleString+= " + "+placesTypesListPerTransition[elem]['postplaces'][i];
+					}
+				}
+			}
+			
+			rulesData.push([elem,ruleString])
+		}
+	}
+
+	var ht8 = $('#tab8id').handsontable('getInstance');
+	if ($.isArray(rulesData) && rulesData[0] && $.isArray(rulesData[0])){
+		ht8.populateFromArray (0, 0, rulesData,rulesData.length-1, 1);
+	}
+	
+	
+	
+	
+	/*
+	var g = new Graph();
+ 
+g.addEdge("strawberry", "cherry");
+g.addEdge("strawberry", "apple");
+g.addEdge("strawberry", "tomato");
+ 
+g.addEdge("tomato", "apple");
+g.addEdge("tomato", "kiwi");
+ 
+g.addEdge("cherry", "apple");
+g.addEdge("cherry", "kiwi");
+ 
+var layouter = new Graph.Layout.Spring(g);
+layouter.layout();
+document.getElementById('holder').innerHTML = ""; 
+renderer = new Graph.Renderer.Raphael('holder', g, 400, 300);
+renderer.draw();
+	*/
+	
+	
+}
+
+
+//var mydata1 =new Array(dataJson2.length);
+//for (var i=0, j=dataJson2.length;i<j;i++){
+//	mydata1.push({chkBoxState:false,"name":dataJson2[i][1] });
+//}
+
+
+
+
+//$("#dataTable").css({top:  $("#container").height()+$("#container").position().top+40, left:0, width:$("#container").width()});
+/*
+var idsOfSelectedRows = [];
+var mydata = [];
+
+//for(var i=0;i<=20000;i++){
+//mydata.push({id: ""+i,invdate:"2007-10-01",name:"test",note:"note",amount:"200.00",tax:"10.00",total:"210.00"});
+//}
+
+var mydata1 =[];
+for (var i=0, j=dataJson2.length;i<j;i++){
+	mydata1.push({chkBoxState:false,"id":i,"name":dataJson2[i][1]});
+}
+
+
+//$("#dataTable").css({top:  $("#container").height()+$("#container").position().top+40, left:0, width:$("#container").width()});
+
+
+jQuery("#mtbl").jqGrid({
+	datatype: "local",
+	data: mydata1,
+	height: 250,
+	width: 250,
+   	colNames:["id","name"],
+   	colModel:[
+		
+   		{name:'id',index:'id', width:60, sorttype:"int",hidden:true},
+   		{name:'name',index:'name', width:100,sorttype:'string', searchoptions:{sopt:['cn']},editable:false},
+		//{name:'description',index:'description', width:100,sorttype:'string', searchoptions:{sopt:['eq','bw','bn','cn','nc','ew','en']},editable:true},
+   		//{name:'comp',index:'comp', width:100,sorttype:'string', searchoptions:{sopt:['eq','bw','bn','cn','nc','ew','en']},editable:true},
+   		//{name:'type',index:'type', width:100,sorttype:'string', searchoptions:{sopt:['eq','bw','bn','cn','nc','ew','en']},editable:true},
+   		//{name:'sub-system',index:'sub-system', width:100,sorttype:'string', searchoptions:{sopt:['eq','bw','bn','cn','nc','ew','en']},editable:true},
+   	],
+   	recordpos: 'left',
+	scroll: 1,
+  //enable npage request parameter
+  //prmNames: { npage: 'npage' },
+	scrollrows: true, 
+	rowNum: 12,
+	rowList:[],
+    viewrecords: true,
+    sortorder: "desc",
+	
+	multiselect: true,
+	multiboxonly: true,
+	onSelectRow: function (id, isSelected) {
+		var p = this.p, item = p.data[p._index[id]], i = $.inArray(id, idsOfSelectedRows);
+		item.cb = isSelected;
+		if (!isSelected && i >= 0) {
+			idsOfSelectedRows.splice(i,1); // remove id from the list
+		} else if (i < 0) {
+			idsOfSelectedRows.push(id);
+		}
+	},
+	loadComplete: function () {
+		var p = this.p, data = p.data, item, $this = $(this), index = p._index, rowid, i, selCount;
+		for (i = 0, selCount = idsOfSelectedRows.length; i < selCount; i++) {
+			rowid = idsOfSelectedRows[i];
+			item = data[index[rowid]];
+			if ('cb' in item && item.cb) {
+				$this.jqGrid('setSelection', rowid, false);
+			}
+		}
+	},
+	ignoreCase: true,
+	gridview: true,
+	//cellEdit: true,
+	loadonce: true,
+   	caption: "Metabolic network: list of nodes (metabolites and reactions)"
+});
+jQuery("#mtbl").jqGrid('filterToolbar',{searchOperators : true});
+*/
+
+;(function($$){ 'use strict';
+  
+  var defaults = {
+    fit: true, // whether to fit the viewport to the graph
+    ready: undefined, // callback on layoutready
+    stop: undefined, // callback on layoutstop
+    directed: false, // whether the tree is directed downwards (or edges can point in any direction if false)
+    padding: 30, // padding on fit
+    circle: false, // put depths in concentric circles if true, put depths top down if false
+    roots: undefined, // the roots of the trees
+    maximalAdjustments: 0 // how many times to try to position the nodes in a maximal way (i.e. no backtracking)
+  };
+  
+  function BreadthFirstLayout2( options ){
+    this.options = $$.util.extend({}, defaults, options);
+  }
+  
+  BreadthFirstLayout2.prototype.run = function(){
+    var params = this.options;
+    var options = params;
+    
+    var cy = params.cy;
+    var nodes = cy.nodes();
+    var edges = cy.edges();
+    var graph = nodes.add(edges);
+    var container = cy.container();
+    
+    var width = container.clientWidth;
+    var height = container.clientHeight;
+
+    var roots;
+    if( $$.is.elementOrCollection(options.roots) ){
+      roots = options.roots;
+    } else if( $$.is.array(options.roots) ){
+      var rootsArray = [];
+
+      for( var i = 0; i < options.roots.length; i++ ){
+        var id = options.roots[i];
+        var ele = cy.getElementById( id );
+        rootsArray.push( ele );
+      }
+
+      roots = new $$.Collection( cy, rootsArray );
+    } else if( $$.is.string(options.roots) ){
+      roots = cy.$( options.roots );
+
+    } else {
+      if( options.directed ){
+        roots = nodes.roots();
+      } else {
+        var maxDegree = nodes.maxDegree( false );
+        roots = nodes.filter(function(){
+          return this.degree() === maxDegree;
+        });
+      }
+    }
+
+
+    var depths = [];
+    var foundByBfs = {};
+    var id2depth = {};
+
+    // find the depths of the nodes
+    graph.bfs(roots, function(i, depth){
+      var ele = this[0];
+
+      if( !depths[depth] ){
+        depths[depth] = [];
+      }
+
+      depths[depth].push( ele );
+      foundByBfs[ ele.id() ] = true;
+      id2depth[ ele.id() ] = depth;
+    }, options.directed);
+
+    // check for nodes not found by bfs
+    var orphanNodes = [];
+    for( var i = 0; i < nodes.length; i++ ){
+      var ele = nodes[i];
+
+      if( foundByBfs[ ele.id() ] ){
+        continue;
+      } else {
+        orphanNodes.push( ele );
+      }
+    }
+
+    // assign orphan nodes a depth from their neighborhood
+    var maxChecks = orphanNodes.length * 3;
+    var checks = 0;
+    while( orphanNodes.length !== 0 && checks < maxChecks ){
+      var node = orphanNodes.shift();
+      var neighbors = node.neighborhood().nodes();
+      var assignedDepth = false;
+
+      for( var i = 0; i < neighbors.length; i++ ){
+        var depth = id2depth[ neighbors[i].id() ];
+
+        if( depth !== undefined ){
+          depths[depth].push( node );
+          assignedDepth = true;
+          break;
+        }
+      }
+
+      if( !assignedDepth ){
+        orphanNodes.push( node );
+      }
+
+      checks++;
+    }
+
+    // assign orphan nodes that are still left to the depth of their subgraph
+    while( orphanNodes.length !== 0 ){
+      var node = orphanNodes.shift();
+      //var subgraph = graph.bfs( node ).path;
+      var assignedDepth = false;
+
+      // for( var i = 0; i < subgraph.length; i++ ){
+      //   var depth = id2depth[ subgraph[i].id() ];
+
+      //   if( depth !== undefined ){
+      //     depths[depth].push( node );
+      //     assignedDepth = true;
+      //     break;
+      //   }
+      // }
+
+      if( !assignedDepth ){ // worst case if the graph really isn't tree friendly, then just dump it in 0
+        if( depths.length === 0 ){
+          depths.push([]);
+        }
+        
+        depths[0].push( node );
+      }
+    }
+
+    // assign the nodes a depth and index
+    var assignDepthsToEles = function(){
+      for( var i = 0; i < depths.length; i++ ){
+        var eles = depths[i];
+
+        for( var j = 0; j < eles.length; j++ ){
+          var ele = eles[j];
+
+          ele._private.scratch.BreadthFirstLayout = {
+            depth: i,
+            index: j
+          };
+        }
+      }
+    };
+    assignDepthsToEles();
+
+
+    var intersectsDepth = function( node ){ // returns true if has edges pointing in from a higher depth
+      var edges = node.connectedEdges(function(){
+        return this.data('target') === node.id();
+      });
+      var thisInfo = node._private.scratch.BreadthFirstLayout;
+      var highestDepthOfOther = 0;
+      var highestOther;
+      for( var i = 0; i < edges.length; i++ ){
+        var edge = edges[i];
+        var otherNode = edge.source()[0];
+        var otherInfo = otherNode._private.scratch.BreadthFirstLayout;
+
+        if( thisInfo.depth <= otherInfo.depth && highestDepthOfOther < otherInfo.depth ){
+          highestDepthOfOther = otherInfo.depth;
+          highestOther = otherNode;
+        }
+      }
+
+      return highestOther;
+    };
+
+     // make maximal if so set by adjusting depths
+    for( var adj = 0; adj < options.maximalAdjustments; adj++ ){
+
+      var nDepths = depths.length;
+      var elesToMove = [];
+      for( var i = 0; i < nDepths; i++ ){
+        var depth = depths[i];
+
+        var nDepth = depth.length;
+        for( var j = 0; j < nDepth; j++ ){
+          var ele = depth[j];
+          var info = ele._private.scratch.BreadthFirstLayout;
+          var intEle = intersectsDepth(ele);
+
+          if( intEle ){
+            info.intEle = intEle;
+            elesToMove.push( ele );
+          }
+        }
+      }
+
+      for( var i = 0; i < elesToMove.length; i++ ){ 
+        var ele = elesToMove[i];
+        var info = ele._private.scratch.BreadthFirstLayout;
+        var intEle = info.intEle;
+        var intInfo = intEle._private.scratch.BreadthFirstLayout;
+
+        depths[ info.depth ].splice( info.index, 1 ); // remove from old depth & index
+
+        // add to end of new depth
+        var newDepth = intInfo.depth + 1;
+        while( newDepth > depths.length - 1 ){
+          depths.push([]);
+        }
+        depths[ newDepth ].push( ele );
+
+        info.depth = newDepth;
+        info.index = depths[newDepth].length - 1;
+      }
+
+      assignDepthsToEles();
+    }
+
+    // find min distance we need to leave between nodes
+    var minDistance = 0;
+    for( var i = 0; i < nodes.length; i++ ){
+      var w = nodes[i].outerWidth();
+      var h = nodes[i].outerHeight();
+      
+      minDistance = Math.max(minDistance, w, h);
+    }
+    minDistance *= 1.75; // just to have some nice spacing
+
+    // get the weighted percent for an element based on its connectivity to other levels
+    var cachedWeightedPercent = {};
+    var getWeightedPercent = function( ele ){
+      if( cachedWeightedPercent[ ele.id() ] ){
+        return cachedWeightedPercent[ ele.id() ];
+      }
+
+      var eleDepth = ele._private.scratch.BreadthFirstLayout.depth;
+      var neighbors = ele.neighborhood().nodes();
+      var percent = 0;
+      var samples = 0;
+
+      for( var i = 0; i < neighbors.length; i++ ){
+        var neighbor = neighbors[i];
+        var index = neighbor._private.scratch.BreadthFirstLayout.index;
+        var depth = neighbor._private.scratch.BreadthFirstLayout.depth;
+        var nDepth = depths[depth].length;
+
+        if( eleDepth > depth || eleDepth === 0 ){ // only get influenced by elements above
+          percent += index / nDepth;
+          samples++;
+        }
+      }
+
+      samples = Math.max(1, samples);
+      percent = percent / samples;
+
+      if( samples === 0 ){ // so lone nodes have a "don't care" state in sorting
+        percent = undefined;
+      }
+
+      cachedWeightedPercent[ ele.id() ] = percent;
+      return percent;
+    };
+
+
+    // rearrange the indices in each depth level based on connectivity
+
+    var sortFn = function(a, b){
+      var apct = getWeightedPercent( a );
+      var bpct = getWeightedPercent( b );
+
+      return apct - bpct;
+    };
+
+    for( var times = 0; times < 3; times++ ){ // do it a few times b/c the depths are dynamic and we want a more stable result
+
+      for( var i = 0; i < depths.length; i++ ){
+        depths[i] = depths[i].sort( sortFn );
+      }
+      assignDepthsToEles(); // and update
+
+    }
+
+    var center = {
+      x: width/2,
+      y: height/2
+    };
+    nodes.positions(function(){
+      var ele = this[0];
+      var info = ele._private.scratch.BreadthFirstLayout;
+      var depth = info.depth;
+      var index = info.index;
+      var depthSize = depths[depth].length;
+
+      var distanceX = Math.max( width / (depthSize + 1), minDistance );
+      var distanceY = Math.max( height / (depths.length + 1), minDistance );
+      var radiusStepSize = Math.min( width / 2 / depths.length, height / 2 / depths.length );
+      radiusStepSize = Math.max( radiusStepSize, minDistance );
+
+      if( options.circle ){
+        var radius = radiusStepSize * depth + radiusStepSize - (depths.length > 0 && depths[0].length <= 3 ? radiusStepSize/2 : 0);
+        var theta = 2 * Math.PI / depths[depth].length * index;
+
+        if( depth === 0 && depths[0].length === 1 ){
+          radius = 1;
+        }
+
+        return {
+          x: center.x + radius * Math.cos(theta),
+          y: center.y + radius * Math.sin(theta)
+        };
+
+      } else {
+        return {
+          x: center.x + (index + 1 - (depthSize + 1)/2) * distanceX*2,
+          y: (depths.length <= 6) ? (depth + 1) * distanceY: (depth + 1) * distanceY*6,
+        };
+      }
+      
+    });
+    
+    if( params.fit ){
+      cy.fit( options.padding );
+    } 
+    
+    cy.one('layoutready', params.ready);
+    cy.trigger('layoutready');
+    
+    cy.one('layoutstop', params.stop);
+    cy.trigger('layoutstop');
+  };
+
+  BreadthFirstLayout2.prototype.stop = function(){
+    // not a continuous layout
+  };
+  
+  $$('layout', 'breadthfirst2', BreadthFirstLayout2);
+  
+})( cytoscape );
+
+
+;(function($$){ 'use strict';
+  
+  var defaults = {
+    fit: true, // whether to fit the viewport to the graph
+    padding: 30, // padding used on fit
+    rows: undefined, // force num of rows in the grid
+    columns: undefined, // force num of cols in the grid
+    position: function( node ){}, // returns { row, col } for element
+    ready: undefined, // callback on layoutready
+    stop: undefined // callback on layoutstop
+  };
+  
+  function GridLayout2( options ){
+    this.options = $$.util.extend({}, defaults, options);
+  }
+  
+  GridLayout2.prototype.run = function(){
+    var params = this.options;
+    var options = params;
+    
+    var cy = params.cy;
+    var nodes = cy.nodes();
+    var container = cy.container();
+    
+    var width = container.clientWidth;
+    var height = container.clientHeight;
+
+    if( height === 0 || width === 0){
+      nodes.positions(function(){
+        return { x: 0, y: 0 };
+      });
+      
+    } else {
+      
+      // width/height * splits^2 = cells where splits is number of times to split width
+      var cells = nodes.size();
+      var splits = Math.sqrt( cells * height/width );
+      var rows = Math.round( splits );
+      var cols = Math.round( width/height * splits );
+
+      var small = function(val){
+        if( val == null ){
+          return Math.min(rows, cols);
+        } else {
+          var min = Math.min(rows, cols);
+          if( min == rows ){
+            rows = val;
+          } else {
+            cols = val;
+          }
+        }
+      };
+      
+      var large = function(val){
+        if( val == null ){
+          return Math.max(rows, cols);
+        } else {
+          var max = Math.max(rows, cols);
+          if( max == rows ){
+            rows = val;
+          } else {
+            cols = val;
+          }
+        }
+      };
+      
+      // if rows or columns were set in options, use those values
+      if( options.rows != null && options.columns != null ){
+        rows = options.rows;
+        cols = options.columns;
+      } else if( options.rows != null && options.columns == null ){
+        rows = options.rows;
+        cols = Math.ceil( cells / rows );
+      } else if( options.rows == null && options.columns != null ){
+        cols = options.columns;
+        rows = Math.ceil( cells / cols );
+      }
+      
+      // otherwise use the automatic values and adjust accordingly
+      
+      // if rounding was up, see if we can reduce rows or columns
+      else if( cols * rows > cells ){
+        var sm = small();
+        var lg = large();
+        
+        // reducing the small side takes away the most cells, so try it first
+        if( (sm - 1) * lg >= cells ){
+          small(sm - 1);
+        } else if( (lg - 1) * sm >= cells ){
+          large(lg - 1);
+        } 
+      } else {
+        
+        // if rounding was too low, add rows or columns
+        while( cols * rows < cells ){
+          var sm = small();
+          var lg = large();
+          
+          // try to add to larger side first (adds less in multiplication)
+          if( (lg + 1) * sm >= cells ){
+            large(lg + 1);
+          } else {
+            small(sm + 1);
+          }
+        }
+      }
+      
+      var cellWidth = width / cols;
+      var cellHeight = height / rows;
+
+      for( var i = 0; i < nodes.length; i++ ){
+        var node = nodes[i];
+        var w = node.outerWidth();
+        var h = node.outerHeight();
+
+        cellWidth = Math.max( cellWidth, w );
+        cellHeight = Math.max( cellHeight, h );
+      }
+      
+      var cellUsed = {}; // e.g. 'c-0-2' => true
+      
+      var used = function(row, col){
+        return cellUsed['c-' + row + '-' + col] ? true : false;
+      };
+      
+      var use = function(row, col){
+        cellUsed['c-' + row + '-' + col] = true;
+      };
+
+      // to keep track of current cell position
+      var row = 0;
+      var col = 0;
+      var moveToNextCell = function(){
+        col++;
+        if( col >= cols ){
+          col = 0;
+          row++;
+        }
+      };
+
+      // get a cache of all the manual positions
+      var id2manPos = {};
+      for( var i = 0; i < nodes.length; i++ ){
+        var node = nodes[i];
+        var rcPos = options.position( node );
+
+        if( rcPos && (rcPos.row !== undefined || rcPos.col !== undefined) ){ // must have at least row or col def'd
+          var pos = {
+            row: rcPos.row,
+            col: rcPos.col
+          };
+
+          if( pos.col === undefined ){ // find unused col
+            pos.col = 0;
+
+            while( used(pos.row, pos.col) ){
+              pos.col++;
+            }
+          } else if( pos.row === undefined ){ // find unused row
+            pos.row = 0;
+
+            while( used(pos.row, pos.col) ){
+              pos.row++;
+            }
+          }
+
+          id2manPos[ node.id() ] = pos;
+          use( pos.row, pos.col );
+        }
+      }
+
+      nodes.positions(function(i, element){
+        var x, y;
+
+        if( element.locked() || element.isFullAutoParent() ){
+          return false;
+        }
+
+        // see if we have a manual position set
+        var rcPos = id2manPos[ element.id() ];
+        if( rcPos ){
+          x = rcPos.col * cellWidth + cellWidth/2;
+          y = rcPos.row * cellHeight + cellHeight/2;
+        
+        } else { // otherwise set automatically
+        
+          while( used(row, col) ){
+            moveToNextCell();
+          }
+
+          x = (cols <= 10) ? col * cellWidth + cellWidth/2 : col * cellWidth*4 + cellWidth/2;//col * cellWidth*4 + cellWidth/2; 
+          y = (rows <= 10) ? row * cellHeight + cellHeight/2 : row * cellHeight*4 + cellHeight/2;//row * cellHeight*4 + cellHeight/2;
+          use( row, col );
+          
+          moveToNextCell();
+        }
+        
+        return { x: x, y: y };
+        
+      });
+    }
+    
+    if( params.fit ){
+      cy.fit( options.padding );
+    } 
+    
+    cy.one('layoutready', params.ready);
+    cy.trigger('layoutready');
+    
+    cy.one('layoutstop', params.stop);
+    cy.trigger('layoutstop');
+  };
+
+  GridLayout2.prototype.stop = function(){
+    // not a continuous layout
+  };
+  
+  $$('layout', 'grid2', GridLayout2);
+  
+})( cytoscape );
+
+
+
+var $container8 = $("#tab8id");
+$container8.handsontable({
+  data: [],
+  width: 1020,
+  height:500,
+  dataSchema: {name: null, rule: null},
+  colWidths: [200, 800],
+  startRows: 1,
+  startCols: 2,
+  columnSorting: false,
+  colHeaders: ['Transition name','Rule'],
+  currentRowClassName: 'currentRow',
+  afterSelection : function(rowNb, colNb, rowNb2, colNb2) {
+	/*if(typeof $("#tab8id").handsontable('getInstance').sortIndex[rowNb]!=='undefined'){
+		var sortToPhysicalIndex = $("#tab8id").handsontable('getInstance').sortIndex[rowNb][0];
+		//console.log(sortToPhysicalIndex)
+		rowNb=sortToPhysicalIndex;
+	}
+	if(typeof $("#tab8id").handsontable('getInstance').sortIndex[rowNb2]!=='undefined'){
+		var sortToPhysicalIndex = $("#tab8id").handsontable('getInstance').sortIndex[rowNb2][0];
+		//console.log(sortToPhysicalIndex)
+		rowNb2=sortToPhysicalIndex;
+	}*/
+	//if(typeof $("#tab8id").handsontable('getInstance').sortIndex[rowNb2]!=='undefined'){
+	//	var sortToPhysicalIndex = $("#tab8d").handsontable('getInstance').sortIndex[rowNb2][0];
+	//	rowNb2=sortToPhysicalIndex;
+	//}
+	//console.log(rowNb +" "+colNb)
+	//console.log(placesTypesListPerTransition[dt[rowNb]['name']])
+	document.getElementById("selectLayout").value="0";
+	var dt = this.getData();
+	//console.log(rowNb + ""+ rowNb2);
+	//console.log(placesTypesListPerTransition[dt[rowNb]['name']]);
+	//cy.removeData();
+	var allElements = cy.elements();
+	//var allEdges  = allElements.filter('edge');                
+	//var allNodes = allElements.filter('node');
+    cy.remove(allElements);
+    var myelems=[];
+	var idEdge=0;
+	for (var nb=rowNb;nb<=rowNb2;nb++){
+		myelems.push({ group: "nodes", data: { id: dt[nb]['name'], name: dt[nb]['name'] ,faveColor: '#ffffff', faveShape: 'rectangle'} });
+		
+		if (placesTypesListPerTransition[dt[nb]['name']].hasOwnProperty('activators')){
+			for(var i=0, j=placesTypesListPerTransition[dt[nb]['name']]['activators'].length; i<j;i++){
+				myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[dt[nb]['name']]['activators'][i], name: placesTypesListPerTransition[dt[nb]['name']]['activators'][i] ,faveColor: '#ffffff', faveShape: 'circle'} });
+				myelems.push({ group: "edges", data: { id: "e"+idEdge, source: placesTypesListPerTransition[dt[nb]['name']]['activators'][i], target: dt[nb]['name'] ,faveColor: '#000000', faveShape: 'circle', faveWidth: 2} });
+				idEdge++;
+			}
+		}
+		if (placesTypesListPerTransition[dt[nb]['name']].hasOwnProperty('suppressors')){
+			for(var i=0, j=placesTypesListPerTransition[dt[nb]['name']]['suppressors'].length; i<j;i++){
+				myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[dt[nb]['name']]['suppressors'][i], name: placesTypesListPerTransition[dt[nb]['name']]['suppressors'][i] ,faveColor: '#ffffff', faveShape: 'circle'} });
+				myelems.push({ group: "edges", data: { id: "e"+idEdge, source: placesTypesListPerTransition[dt[nb]['name']]['suppressors'][i], target: dt[nb]['name'] ,faveColor: '#000000', faveShape: 'tee', faveWidth: 2} });
+				idEdge++;
+			}
+		}
+		if (placesTypesListPerTransition[dt[nb]['name']].hasOwnProperty('consumed')){
+			for(var i=0, j=placesTypesListPerTransition[dt[nb]['name']]['consumed'].length; i<j;i++){
+				myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[dt[nb]['name']]['consumed'][i], name: placesTypesListPerTransition[dt[nb]['name']]['consumed'][i],faveColor: '#ffffff', faveShape: 'circle' } });
+				myelems.push({ group: "edges", data: { id: "e"+idEdge, source: placesTypesListPerTransition[dt[nb]['name']]['consumed'][i], target: dt[nb]['name'],faveColor: '#000000' , faveShape: 'triangle', faveWidth: 2} });
+				idEdge++;
+			}
+		}
+		if (placesTypesListPerTransition[dt[nb]['name']].hasOwnProperty('postplaces')){
+			for(var i=0, j=placesTypesListPerTransition[dt[nb]['name']]['postplaces'].length; i<j;i++){
+				myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[dt[nb]['name']]['postplaces'][i], name: placesTypesListPerTransition[dt[nb]['name']]['postplaces'][i],faveColor: '#ffffff', faveShape: 'circle' } });
+				myelems.push({ group: "edges", data: { id: "e"+idEdge, source: dt[nb]['name'], target: placesTypesListPerTransition[dt[nb]['name']]['postplaces'][i] ,faveColor: '#000000', faveShape: 'triangle', faveWidth: 2} });
+				idEdge++;
+			}
+		}
+	}
+	cy.add( myelems);
+	
+	/*options = {
+    name: 'grid',
+
+    fit: true, // whether to fit the viewport to the graph
+    padding: 30, // padding used on fit
+    rows: undefined, // force num of rows in the grid
+    columns: undefined, // force num of cols in the grid
+    position: function( node ){}, // returns { row, col } for element
+    ready: undefined, // callback on layoutready
+    stop: undefined // callback on layoutstop
+};*/
+/*
+options = {
+    name: 'circle',
+
+    fit: true, // whether to fit the viewport to the graph
+    ready: undefined, // callback on layoutready
+    stop: undefined, // callback on layoutstop
+    rStepSize: 10, // the step size for increasing the radius if the nodes don't fit on screen
+    padding: 30, // the padding on fit
+    startAngle: 3/2 * Math.PI, // the position of the first node
+    counterclockwise: false // whether the layout should go counterclockwise (true) or clockwise (false)
+};*/
+/*options = {
+    name: 'concentric',
+
+    fit: true, // whether to fit the viewport to the graph
+    ready: undefined, // callback on layoutready
+    stop: undefined, // callback on layoutstop
+    padding: 30, // the padding on fit
+    startAngle: 3/2 * Math.PI, // the position of the first node
+    counterclockwise: false, // whether the layout should go counterclockwise (true) or clockwise (false)
+    minNodeSpacing: 60, // min spacing between outside of nodes (used for radius adjustment)
+    height: undefined, // height of layout area (overrides container height)
+    width: undefined, // width of layout area (overrides container width)
+    concentric: function(){ // returns numeric value for each node, placing higher nodes in levels towards the centre
+		//console.log(this._private.data['faveShape'])
+		var val =0;
+		if (this._private.data['faveShape']=="rectangle"){
+			val =10;
+		}
+      return val;
+    },
+    levelWidth: function(nodes){ // the variation of concentric values in each level
+      return 0.5//nodes.maxDegree() / 4;
+    }
+};*/
+	options = {
+    name: 'breadthfirst2',
+
+    fit: true, // whether to fit the viewport to the graph
+    ready: undefined, // callback on layoutready
+    stop: undefined, // callback on layoutstop
+    directed: true, // whether the tree is directed downwards (or edges can point in any direction if false)
+	pan: true, 
+	textureOnViewport: false,
+    padding: 30, // padding on fit
+    circle: false, // put depths in concentric circles if true, put depths top down if false
+    roots: undefined, // the roots of the trees
+    maximalAdjustments: 5 // how many times to try to position the nodes in a maximal way (i.e. no backtracking)
+};
+/*options = {
+    name: 'cose',
+
+    // Called on `layoutready`
+    ready               : function() {},
+
+    // Called on `layoutstop`
+    stop                : function() {},
+
+    // Number of iterations between consecutive screen positions update (0 -> only updated on the end)
+    refresh             : 0,
+
+    // Whether to fit the network view after when done
+    fit                 : true, 
+
+    // Padding on fit
+    padding             : 30, 
+
+
+    // Whether to randomize node positions on the beginning
+    randomize           : true,
+
+    // Whether to use the JS console to print debug messages
+    debug               : false,
+
+    // Node repulsion (non overlapping) multiplier
+    nodeRepulsion       : 10000,
+
+    // Node repulsion (overlapping) multiplier
+    nodeOverlap         : 10000,
+
+    // Ideal edge (non nested) length
+    idealEdgeLength     : 50,
+
+    // Divisor to compute edge forces
+    edgeElasticity      : 100,
+
+    // Nesting factor (multiplier) to compute ideal edge length for nested edges
+    nestingFactor       : 5, 
+
+    // Gravity force (constant)
+    gravity             : 25, 
+
+    // Maximum number of iterations to perform
+    numIter             : 10,
+
+    // Initial temperature (maximum node displacement)
+    initialTemp         : 200,
+
+    // Cooling factor (how the temperature is reduced between consecutive iterations
+    coolingFactor       : 0.95, 
+
+    // Lower temperature threshold (below this point the layout will end)
+    minTemp             : 1
+};*/
+
+/*options = {
+    name: 'arbor',
+
+    liveUpdate: false, // whether to show the layout as it's running
+    ready: undefined, // callback on layoutready 
+    stop: undefined, // callback on layoutstop
+    maxSimulationTime: 4000, // max length in ms to run the layout
+    fit: true, // reset viewport to fit default simulationBounds
+    padding: [ 50, 50, 50, 50 ], // top, right, bottom, left
+    simulationBounds: undefined, // [x1, y1, x2, y2]; [0, 0, width, height] by default
+    ungrabifyWhileSimulating: true, // so you can't drag nodes during layout
+
+    // forces used by arbor (use arbor default on undefined)
+    repulsion: 100,
+    stiffness: undefined,
+    friction: undefined,
+    gravity: true,
+    fps: undefined,
+    precision: undefined,
+
+    // static numbers or functions that dynamically return what these
+    // values should be for each element
+    nodeMass: undefined, 
+    edgeLength: 60,
+
+    stepSize: 1, // size of timestep in simulation
+
+    // function that returns true if the system is stable to indicate
+    // that the layout can be stopped
+    stableEnergy: function( energy ){
+      var e = energy; 
+      return (e.max <= 0.5) || (e.mean <= 0.3);
+    }
+};*/
+	cy.layout( options );
+	//cy.reset();
+	
+  },
+  
+  columns: [
+    {data: "name"},
+	{data: "rule"},
+    //{data: "select",type: "checkbox"}
+  ],
+  
+  minSpareRows: 1
+});
+
+
+$('#searchgrid4').on('keyup',function(event){
+	var value = ('' + this.value).toLowerCase(),row,col,r_len,c_len,td;
+	//console.log(value)
+	var example = $('#tab8id');
+	var rulesData=[];
+	for (elem in placesTypesListPerTransition){
+		if (placesTypesListPerTransition.hasOwnProperty(elem)){
+			var ruleString="";
+			if (placesTypesListPerTransition[elem].hasOwnProperty('consumed')){
+				for (var i=0; i<placesTypesListPerTransition[elem]['consumed'].length;i++){
+					if (ruleString==""){
+						ruleString+= placesTypesListPerTransition[elem]['consumed'][i];
+					}
+					else{
+						ruleString+= " + "+placesTypesListPerTransition[elem]['consumed'][i];
+					}
+				}
+			}
+			if (placesTypesListPerTransition[elem].hasOwnProperty('activators')){
+				//console("activator : "+ elem)
+				for (var i=0; i<placesTypesListPerTransition[elem]['activators'].length;i++){
+					if (ruleString==""){
+						ruleString+= " & "+placesTypesListPerTransition[elem]['activators'][i];
+					}
+					else{
+						ruleString+= " + & "+placesTypesListPerTransition[elem]['activators'][i];
+					}
+				}
+			}
+			if (placesTypesListPerTransition[elem].hasOwnProperty('suppressors')){
+				for (var i=0; i<placesTypesListPerTransition[elem]['suppressors'].length;i++){
+					if (ruleString==""){
+						ruleString+= " ~ "+placesTypesListPerTransition[elem]['suppressors'][i];
+					}
+					else{
+						ruleString+= " + ~ "+placesTypesListPerTransition[elem]['suppressors'][i];
+					}
+				}
+			}
+			ruleString+=" -> ";
+			
+			if (placesTypesListPerTransition[elem].hasOwnProperty('postplaces')){
+				for (var i=0; i<placesTypesListPerTransition[elem]['postplaces'].length;i++){
+					if (ruleString.substr( -4 )==" -> "){
+						ruleString+= placesTypesListPerTransition[elem]['postplaces'][i];
+					}
+					else{
+						ruleString+= " + "+placesTypesListPerTransition[elem]['postplaces'][i];
+					}
+				}
+			}
+			
+			rulesData.push([elem,ruleString])
+		}
+	}
+	var data = rulesData;
+	
+	//var data = $('#tab2id').handsontable('getData');
+	//console.log(data)
+	var searcharray = [];
+	if(value){
+		for(row=0,r_len = data.length;row< r_len;row++){
+			for(col=0,c_len = data[row].length;col < c_len; col++){
+				if(data[row][col] == null){
+					continue;
+				}
+				if(('' + data[row][col]).toLowerCase().indexOf(value) > -1){
+					searcharray.push(data[row]);
+					break;
+				}
+				else{
+				}
+			}
+		}
+		
+		var ht = $('#tab8id').handsontable('getInstance');
+		//ht.clear();
+		ht.alter('remove_row', 0, rulesData.length);
+		//console.log(searcharray)
+		
+		if ($.isArray(searcharray) && searcharray[0] && $.isArray(searcharray[0])){
+			ht.populateFromArray (0, 0, searcharray,searcharray.length-1, 1);
+		}
+	}
+	else{
+	
+	var rulesData=[];
+	for (elem in placesTypesListPerTransition){
+		if (placesTypesListPerTransition.hasOwnProperty(elem)){
+			var ruleString="";
+			if (placesTypesListPerTransition[elem].hasOwnProperty('consumed')){
+				for (var i=0; i<placesTypesListPerTransition[elem]['consumed'].length;i++){
+					if (ruleString==""){
+						ruleString+= placesTypesListPerTransition[elem]['consumed'][i];
+					}
+					else{
+						ruleString+= " + "+placesTypesListPerTransition[elem]['consumed'][i];
+					}
+				}
+			}
+			if (placesTypesListPerTransition[elem].hasOwnProperty('activators')){
+				//console("activator : "+ elem)
+				for (var i=0; i<placesTypesListPerTransition[elem]['activators'].length;i++){
+					if (ruleString==""){
+						ruleString+= " & "+placesTypesListPerTransition[elem]['activators'][i];
+					}
+					else{
+						ruleString+= " + & "+placesTypesListPerTransition[elem]['activators'][i];
+					}
+				}
+			}
+			if (placesTypesListPerTransition[elem].hasOwnProperty('suppressors')){
+				for (var i=0; i<placesTypesListPerTransition[elem]['suppressors'].length;i++){
+					if (ruleString==""){
+						ruleString+= " ~ "+placesTypesListPerTransition[elem]['suppressors'][i];
+					}
+					else{
+						ruleString+= " + ~ "+placesTypesListPerTransition[elem]['suppressors'][i];
+					}
+				}
+			}
+			ruleString+=" -> ";
+			
+			if (placesTypesListPerTransition[elem].hasOwnProperty('postplaces')){
+				for (var i=0; i<placesTypesListPerTransition[elem]['postplaces'].length;i++){
+					if (ruleString.substr( -4 )==" -> "){
+						ruleString+= placesTypesListPerTransition[elem]['postplaces'][i];
+					}
+					else{
+						ruleString+= " + "+placesTypesListPerTransition[elem]['postplaces'][i];
+					}
+				}
+			}
+			
+			rulesData.push([elem,ruleString])
+		}
+	}
+	var ht8 = $('#tab8id').handsontable('getInstance');
+	ht8.alter('remove_row', 0, rulesData.length);
+	if ($.isArray(rulesData) && rulesData[0] && $.isArray(rulesData[0])){
+		ht8.populateFromArray (0, 0, rulesData,rulesData.length-1, 1);
+	}
+		
+	}
+	$('#tab8id').handsontable('deselectCell');
+		
+	
+	
+	document.getElementById("searchgrid4").focus();
+	
+});
+
+
+
+//console.log(tempdata1)
+//var ht = $('#tab8id').handsontable('getInstance');
+//if ($.isArray(tempdata1) && tempdata1[0] && $.isArray(tempdata1[0])){
+//	ht.populateFromArray (0, 0, tempdata1,tempdata1.length-1, 1);
+//}
+
+var rulesData=[];
+for (elem in placesTypesListPerTransition){
+	if (placesTypesListPerTransition.hasOwnProperty(elem)){
+		var ruleString="";
+		if (placesTypesListPerTransition[elem].hasOwnProperty('consumed')){
+			for (var i=0; i<placesTypesListPerTransition[elem]['consumed'].length;i++){
+				if (ruleString==""){
+					ruleString+= placesTypesListPerTransition[elem]['consumed'][i];
+				}
+				else{
+					ruleString+= " + "+placesTypesListPerTransition[elem]['consumed'][i];
+				}
+			}
+		}
+		if (placesTypesListPerTransition[elem].hasOwnProperty('activators')){
+			//console("activator : "+ elem)
+			for (var i=0; i<placesTypesListPerTransition[elem]['activators'].length;i++){
+				if (ruleString==""){
+					ruleString+= " & "+placesTypesListPerTransition[elem]['activators'][i];
+				}
+				else{
+					ruleString+= " + & "+placesTypesListPerTransition[elem]['activators'][i];
+				}
+			}
+		}
+		if (placesTypesListPerTransition[elem].hasOwnProperty('suppressors')){
+			for (var i=0; i<placesTypesListPerTransition[elem]['suppressors'].length;i++){
+				if (ruleString==""){
+					ruleString+= " ~ "+placesTypesListPerTransition[elem]['suppressors'][i];
+				}
+				else{
+					ruleString+= " + ~ "+placesTypesListPerTransition[elem]['suppressors'][i];
+				}
+			}
+		}
+		ruleString+=" -> ";
+		
+		if (placesTypesListPerTransition[elem].hasOwnProperty('postplaces')){
+			for (var i=0; i<placesTypesListPerTransition[elem]['postplaces'].length;i++){
+				if (ruleString.substr( -4 )==" -> "){
+					ruleString+= placesTypesListPerTransition[elem]['postplaces'][i];
+				}
+				else{
+					ruleString+= " + "+placesTypesListPerTransition[elem]['postplaces'][i];
+				}
+			}
+		}
+		
+		rulesData.push([elem,ruleString])
+	}
+}
+//console.log(transitionsTypesListPerPlace)
+//console.log(placesTypesListPerTransition)
+var ht8 = $('#tab8id').handsontable('getInstance');
+if ($.isArray(rulesData) && rulesData[0] && $.isArray(rulesData[0])){
+	ht8.populateFromArray (0, 0, rulesData,rulesData.length-1, 1);
+}
+
+
+//cy.style.border="thick solid #0000FF";
+$("#cy").css({top:  $("#tab8id").height()+$("#tab8id").position().top+80, left:0, width:"80%",height:'400pt', border:"thin solid #000000"});
+//$("#cy").css({top:  $("#tab8id").height()+$("#tab8id").position().top, left:$("#tab8id").height()+$("#tab8id").width()+20, width:$("#container").width(),  z_index: -1000});
+
+
+// initialise cytoscape.js on a html dom element with some options:
+cy = cytoscape( options = {
+  container: document.getElementById('cy'),
+ 
+  minZoom: 0.0,
+  maxZoom: 10,
+
+  // style can be specified as plain JSON, a stylesheet string (probably a CSS-like
+  // file pulled from the server), or in a functional format
+  style: [
+    {
+      selector: 'node',
+      css: {
+        'content': 'data(name)',
+		'shape': 'data(faveShape)',
+		'background-color': 'data(faveColor)',
+		'border-width': 1,
+        //'font-family': 'helvetica',
+        'font-size': 10,
+        //'text-outline-width': 3,
+        //'text-outline-color': '#888',
+        //'text-valign': 'center',
+        'color': '#61210B',
+        //'width': 'mapData(weight, 30, 80, 20, 50)',
+        //'height': 'mapData(height, 0, 200, 10, 45)',
+        //'border-color': '#fff'
+      }
+    },
+
+    {
+      selector: 'node:selected',
+      css: {
+        'background-color': '#5555ff',
+        
+		//'width': 4,
+        
+        //'text-outline-color': '#000'
+      }
+    },
+	{
+      selector: 'edge:selected',
+      css: {
+        'background-color': '#5555ff',
+        'line-color': '#5555ff',
+		'width': 4,
+        'target-arrow-color': '#5555ff',
+        //'text-outline-color': '#000'
+      }
+    },
+
+    {
+      selector: 'edge',
+      css: {
+        'width': 'data(faveWidth)',
+		'line-color': 'data(faveColor)',
+		'target-arrow-shape': 'data(faveShape)',
+        //'curve-style': 'haystack',
+		//'control-point-weight': 0.8,
+		'target-arrow-color': 'data(faveColor)'
+      }
+    }
+  ],
+
+  // specify the elements in the graph
+  elements: {
+    nodes: [
+      //{ data: { id: 'j', name: 'Jerry', weight: 65, height: 174 } },
+      //{ data: { id: 'e', name: 'Elaine', weight: 48, height: 160 } },
+      //{ data: { id: 'k', name: 'Kramer', weight: 75, height: 185 } },
+      //{ data: { id: 'g', name: 'George', weight: 70, height: 150 } }
+    ],
+
+    edges: [
+      //{ data: { source: 'j', target: 'e' } },
+      //{ data: { source: 'j', target: 'k' } },
+      //{ data: { source: 'j', target: 'g' } },
+
+      //{ data: { source: 'e', target: 'j' } },
+     // { data: { source: 'e', target: 'k' } },
+
+      //{ data: { source: 'k', target: 'j' } },
+      //{ data: { source: 'k', target: 'e' } },
+      //{ data: { source: 'k', target: 'g' } },
+
+      //{ data: { source: 'g', target: 'j' } }
+    ],
+  },
+
+  
+  
+} );
+//cy.panningEnabled();
+
+
+  
+var nodeClicked = cy.on('click', 'node', function(e) {
+	// get json of graph
+	// console.log(cy.elements().jsons())
+	// load json of graph
+	// cy.add( the json object of elements )
+	
+	//console.log(e.cyTarget._private.position)
+	clearTimeout( timeout );
+   var timeout = setTimeout(function(){
+     //window["selectedNodes"] = cy.$('node:selected');
+
+   
+	e.cyTarget._private.selected=true;
+	for (elem in e.cyTarget._private.ids){
+		if (e.cyTarget._private.ids.hasOwnProperty(elem)){
+			var edgesFromNode = cy.elements('edge[source="'+elem+'"], edge[target = "'+elem+'"]');
+			//console.log(edgesFromNode)
+			edgesFromNode.select();
+			
+		}
+	}
+	
+	  // and so on...
+   }, 1); // may have to adjust this val
+	
+	
+	
+	
+});
+
+var layoutJSON={}
+function save() {
+	var layoutname =  document.getElementById("layoutName").value
+	if (layoutname==null || layoutname=="" || layoutname==="undefined" || layoutJSON.hasOwnProperty(layoutname)){}
+	else{
+		
+		layoutJSON[layoutname] = cy.elements().jsons();
+		if (dataLayout.hasOwnProperty(layoutname)){
+			alert("Layout name already exists!! Please enter a different name");
+		}
+		else{
+			var mlength=JSON.stringify(layoutJSON).length;
+			var nbArrays=1;
+			if (mlength>524288){
+				nbArrays=parseInt(Math.ceil(mlength/524288.0));
+			}
+			if (nbArrays==1){
+				document.getElementById("layouts0").value=JSON.stringify(layoutJSON);
+			}
+			else{
+				var stringSfba=JSON.stringify(layoutJSON);
+				var chunksize=524288;
+				var stringChunks=[];
+				//console.log(mlength)
+				for (var i=0;i<nbArrays;i++){
+					stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+					document.getElementById("layouts"+i).value=stringChunks[i];
+					//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+					console.log(document.getElementById("layouts"+i).value.length)
+				}
+				//console.log(stringChunks)
+			}
+		
+			//console.log(JSON.stringify(layoutJSON).length)
+			//document.getElementById("layouts0").value= JSON.stringify(layoutJSON);
+		}
+		$('#selectLayout').append("<option>"+layoutname+"</option>")
+	}
+
+}
+
+//function load() {
+//	var allElements = cy.elements();
+//    cy.remove(allElements);
+//	cy.add( layoutJSON )
+//	cy.fit(30)
+//}
+
+function selectValue(el){
+	//console.log(el.value)
+	if (parseInt(el.value)==0){
+		var options = {
+			name: 'breadthfirst2',
+
+			fit: true, // whether to fit the viewport to the graph
+			ready: undefined, // callback on layoutready
+			stop: undefined, // callback on layoutstop
+			directed: true, // whether the tree is directed downwards (or edges can point in any direction if false)
+			pan: true, 
+			textureOnViewport: false,
+			padding: 30, // padding on fit
+			circle: false, // put depths in concentric circles if true, put depths top down if false
+			roots: undefined, // the roots of the trees
+			maximalAdjustments: 5 // how many times to try to position the nodes in a maximal way (i.e. no backtracking)
+		};
+		cy.layout( options );
+		cy.fit(30);
+	}
+	else if (parseInt(el.value)==1){
+		var options = {
+			name: 'circle',
+
+			fit: true, // whether to fit the viewport to the graph
+			ready: undefined, // callback on layoutready
+			stop: undefined, // callback on layoutstop
+			rStepSize: 10, // the step size for increasing the radius if the nodes don't fit on screen
+			padding: 30, // the padding on fit
+			startAngle: 3/2 * Math.PI, // the position of the first node
+			counterclockwise: false // whether the layout should go counterclockwise (true) or clockwise (false)
+		};
+		cy.layout( options );
+		cy.fit(30);
+	}
+	else if (parseInt(el.value)==2){
+		var options = {
+			name: 'concentric',
+
+			fit: true, // whether to fit the viewport to the graph
+			ready: undefined, // callback on layoutready
+			stop: undefined, // callback on layoutstop
+			padding: 30, // the padding on fit
+			startAngle: 3/2 * Math.PI, // the position of the first node
+			counterclockwise: false, // whether the layout should go counterclockwise (true) or clockwise (false)
+			minNodeSpacing: 60, // min spacing between outside of nodes (used for radius adjustment)
+			height: undefined, // height of layout area (overrides container height)
+			width: undefined, // width of layout area (overrides container width)
+			concentric: function(){ // returns numeric value for each node, placing higher nodes in levels towards the centre
+				//console.log(this._private.data['faveShape'])
+				var val =0;
+				if (this._private.data['faveShape']=="rectangle"){
+					val =10;
+				}
+			  return val;
+			},
+			levelWidth: function(nodes){ // the variation of concentric values in each level
+			  return 0.5//nodes.maxDegree() / 4;
+			}
+		}
+		cy.layout( options );
+		cy.fit(30);
+	}
+	else if (parseInt(el.value)==3){
+		var options = {
+			name: 'grid2',
+
+			fit: true, // whether to fit the viewport to the graph
+			padding: 30, // padding used on fit
+			rows: undefined, // force num of rows in the grid
+			columns: undefined, // force num of cols in the grid
+			position: function( node ){}, // returns { row, col } for element
+			ready: undefined, // callback on layoutready
+			stop: undefined // callback on layoutstop
+		};
+		cy.layout( options );
+		cy.fit(30);
+	}
+	else{
+		var allElements = cy.elements();
+		cy.remove(allElements);
+		cy.add( layoutJSON[el.value] )
+		cy.fit(30)
+	}
+	
+}
+
+
+//cy.style.backgroundColor="white";
+$("#qsspn-model-edit-form").css({top:  $("#cy").height()+$("#cy").position().top+500});
+
+
+function save2(){
+	
+	if (list1Duplicates.length>0 || list2Duplicates.length>0){
+		alert("cannot save data because there are duplicate names: transitions or places should have a unique name...")
+	}
+	else{
+		console.log("saving data");
+		//console.log(dataJson)
+		//for (elem in placesTypesListPerTransition){
+		//	if (placesTypesListPerTransition.hasOwnProperty(elem)){
+		//		if 
+		//	}
+		//}
+		
+		var listTransitions=[];
+		for (var i=0, j=dataJson['transitions'].length;i<j;i++){
+			listTransitions.push(dataJson['transitions'][i]['transition']['name']);	
+		}
+		
+		var listPlaces=[];
+		for (var i=0, j=dataJson['places'].length;i<j;i++){
+			listPlaces.push(dataJson['places'][i]['place']['name']);	
+		}
+			
+		for (elem in placesTypesListPerTransition){
+			if (placesTypesListPerTransition.hasOwnProperty(elem)){
+				var ind = listTransitions.indexOf(elem);
+				if (ind==-1){
+					console.log("new transition "+ elem)
+					var listConsumed = [];
+					var listPreplaces=[];
+					var listPostplaces=[];
+					if (placesTypesListPerTransition[elem].hasOwnProperty('consumed')){
+						for (var i=0, j =placesTypesListPerTransition[elem]['consumed'].length;i<j;i++){
+							listConsumed.push({'consumed_preplace':{'name': placesTypesListPerTransition[elem]['consumed'][i]}});
+							listPreplaces.push({'preplace':{'name': placesTypesListPerTransition[elem]['consumed'][i] , 'activity':[{'a':0,'t':0},{'a':1,'t':1}], 'stoichiometry':1}});
+						}
+					}
+					if (placesTypesListPerTransition[elem].hasOwnProperty('activators')){
+						for (var i=0, j =placesTypesListPerTransition[elem]['activators'].length;i<j;i++){
+							listPreplaces.push({'preplace':{'name': placesTypesListPerTransition[elem]['activators'][i] , 'activity':[{'a':0,'t':0},{'a':1,'t':1}], 'stoichiometry':1}});
+						}
+					}
+					if (placesTypesListPerTransition[elem].hasOwnProperty('suppressors')){
+						for (var i=0, j =placesTypesListPerTransition[elem]['suppressors'].length;i<j;i++){
+							listPreplaces.push({'preplace':{'name': placesTypesListPerTransition[elem]['suppressors'][i] , 'activity':[{'a':0,'t':1},{'a':1,'t':0}], 'stoichiometry':1}});
+						}
+					}
+					if (placesTypesListPerTransition[elem].hasOwnProperty('postplaces')){
+						for (var i=0, j =placesTypesListPerTransition[elem]['postplaces'].length;i<j;i++){
+							listPostplaces.push({'postplace':{'name': placesTypesListPerTransition[elem]['postplaces'][i] , 'stoichiometry':1}});
+						}
+					}
+					dataJson['transitions'].push({'transition':{'c':1 , 'consumed':[], 'delay': 0, 'name': elem, 'postplaces':listPostplaces, 'preplaces':listPreplaces, 'type':'SLOW'}});
+				}
+				else{
+					var listConsumed = [];
+					var listPreplaces=[];
+					var listPostplaces=[];
+					
+					
+					if (placesTypesListPerTransition[elem].hasOwnProperty('consumed')){
+						for (var i=0, j =placesTypesListPerTransition[elem]['consumed'].length;i<j;i++){
+							var isInside=false;
+							for (var i1=0, j1 =dataJson['transitions'][ind]['transition']['consumed'].length;i1<j1;i1++){
+								if (dataJson['transitions'][ind]['transition']['consumed'][i1]['consumed_preplace']['name']==placesTypesListPerTransition[elem]['consumed'][i]){
+									listConsumed.push(dataJson['transitions'][ind]['transition']['consumed'][i1]);
+									isInside=true;
+								}
+							}
+							if(isInside==false){
+								listConsumed.push({'consumed_preplace':{'name': placesTypesListPerTransition[elem]['consumed'][i]}});
+								//listPreplaces.push({'preplace':{'name': placesTypesListPerTransition[elem]['consumed'][i] , 'activity':[{'a':0,'t':0},{'a':1,'t':1}], 'stoichiometry':1}});
+							}
+							isInside=false;
+							for (var i1=0, j1 =dataJson['transitions'][ind]['transition']['preplaces'].length;i1<j1;i1++){
+								if (dataJson['transitions'][ind]['transition']['preplaces'][i1]['preplace']['name']==placesTypesListPerTransition[elem]['consumed'][i]){
+									listPreplaces.push(dataJson['transitions'][ind]['transition']['preplaces'][i1]);
+									isInside=true;
+								}
+							}
+							if(isInside==false){
+								listPreplaces.push({'preplace':{'name': placesTypesListPerTransition[elem]['consumed'][i], 'activity':[{'a':0,'t':0},{'a':1,'t':1}], 'stoichiometry':1}});
+								//listPreplaces.push({'preplace':{'name': placesTypesListPerTransition[elem]['consumed'][i] , 'activity':[{'a':0,'t':0},{'a':1,'t':1}], 'stoichiometry':1}});
+							}
+							//listConsumed.push({'consumed_preplace':{'name': placesTypesListPerTransition[elem]['consumed'][i]}});
+							//listPreplaces.push({'preplace':{'name': placesTypesListPerTransition[elem]['consumed'][i] , 'activity':[{'a':0,'t':0},{'a':1,'t':1}], 'stoichiometry':1}});
+						}
+					}
+					
+					if (placesTypesListPerTransition[elem].hasOwnProperty('activators')){
+						for (var i=0, j =placesTypesListPerTransition[elem]['activators'].length;i<j;i++){
+							var isInside=false;
+							for (var i1=0, j1 =dataJson['transitions'][ind]['transition']['preplaces'].length;i1<j1;i1++){
+								if (dataJson['transitions'][ind]['transition']['preplaces'][i1]['preplace']['name']==placesTypesListPerTransition[elem]['activators'][i]){
+									listPreplaces.push(dataJson['transitions'][ind]['transition']['preplaces'][i1]);
+									isInside=true;
+								}
+							}
+							if(isInside==false){
+								listPreplaces.push({'preplace':{'name': placesTypesListPerTransition[elem]['activators'][i], 'activity':[{'a':0,'t':0},{'a':1,'t':1}], 'stoichiometry':1}});
+								
+							}						
+						}
+					}			
+					if (placesTypesListPerTransition[elem].hasOwnProperty('suppressors')){
+						for (var i=0, j =placesTypesListPerTransition[elem]['suppressors'].length;i<j;i++){
+							var isInside=false;
+							for (var i1=0, j1 =dataJson['transitions'][ind]['transition']['preplaces'].length;i1<j1;i1++){
+								if (dataJson['transitions'][ind]['transition']['preplaces'][i1]['preplace']['name']==placesTypesListPerTransition[elem]['suppressors'][i]){
+									listPreplaces.push(dataJson['transitions'][ind]['transition']['preplaces'][i1]);
+									isInside=true;
+								}
+							}
+							if(isInside==false){
+								listPreplaces.push({'preplace':{'name': placesTypesListPerTransition[elem]['suppressors'][i], 'activity':[{'a':0,'t':1},{'a':1,'t':0}], 'stoichiometry':1}});
+							}						
+						}
+					}
+					if (placesTypesListPerTransition[elem].hasOwnProperty('postplaces')){
+						for (var i=0, j =placesTypesListPerTransition[elem]['postplaces'].length;i<j;i++){
+							var isInside=false;
+							for (var i1=0, j1 =dataJson['transitions'][ind]['transition']['postplaces'].length;i1<j1;i1++){
+								if (dataJson['transitions'][ind]['transition']['postplaces'][i1]['postplace']['name']==placesTypesListPerTransition[elem]['postplaces'][i]){
+									listPostplaces.push(dataJson['transitions'][ind]['transition']['postplaces'][i1]);
+									isInside=true;
+								}
+							}
+							if(isInside==false){
+								listPostplaces.push({'postplace':{'name': placesTypesListPerTransition[elem]['postplaces'][i],'stoichiometry':1}});
+							}						
+						}
+					}
+					for (var i=0, j =dataJson['transitions'].length;i<j;i++){
+						if (dataJson['transitions'][i]['transition']['name']==elem){
+							dataJson['transitions'][i]['transition']['consumed']=listConsumed;
+							dataJson['transitions'][i]['transition']['preplaces']=listPreplaces;
+							dataJson['transitions'][i]['transition']['postplaces']=listPostplaces;
+						}
+					}
+					//dataJson['transitions'].push({'transition':{'c':1 , 'consumed':[], 'delay': 0, 'name': elem, 'postplaces':listPostplaces, 'preplaces':listPreplaces, 'type':'SLOW'}});
+					
+					/*
+					if (placesTypesListPerTransition[elem].hasOwnProperty('consumed')){
+						for (var i=0, j =placesTypesListPerTransition[elem]['consumed'].length;i<j;i++){
+							var isInside=false;
+							for (var i1=0, j1 =dataJson['transitions'][ind]['transition']['consumed'].length;i1<j1;i1++){
+								if (dataJson['transitions'][ind]['transition']['consumed'][i1]['consumed_preplace']['name']==placesTypesListPerTransition[elem]['consumed'][i]){
+									isInside=true;
+								}
+							}
+							if(isInside==false){
+								dataJson['transitions'][ind]['transition']['consumed'].push({'consumed_preplace':{'name': placesTypesListPerTransition[elem]['consumed'][i]}});
+								//listPreplaces.push({'preplace':{'name': placesTypesListPerTransition[elem]['consumed'][i] , 'activity':[{'a':0,'t':0},{'a':1,'t':1}], 'stoichiometry':1}});
+							}
+							isInside=false;
+							for (var i1=0, j1 =dataJson['transitions'][ind]['transition']['preplaces'].length;i1<j1;i1++){
+								if (dataJson['transitions'][ind]['transition']['preplaces'][i1]['preplace']['name']==placesTypesListPerTransition[elem]['consumed'][i]){
+									isInside=true;
+								}
+							}
+							if(isInside==false){
+								dataJson['transitions'][ind]['transition']['preplaces'].push({'preplace':{'name': placesTypesListPerTransition[elem]['consumed'][i], 'activity':[{'a':0,'t':0},{'a':1,'t':1}], 'stoichiometry':1}});
+								//listPreplaces.push({'preplace':{'name': placesTypesListPerTransition[elem]['consumed'][i] , 'activity':[{'a':0,'t':0},{'a':1,'t':1}], 'stoichiometry':1}});
+							}
+							//listConsumed.push({'consumed_preplace':{'name': placesTypesListPerTransition[elem]['consumed'][i]}});
+							//listPreplaces.push({'preplace':{'name': placesTypesListPerTransition[elem]['consumed'][i] , 'activity':[{'a':0,'t':0},{'a':1,'t':1}], 'stoichiometry':1}});
+						}
+					}
+					
+					if (placesTypesListPerTransition[elem].hasOwnProperty('activators')){
+						for (var i=0, j =placesTypesListPerTransition[elem]['activators'].length;i<j;i++){
+							var isInside=false;
+							for (var i1=0, j1 =dataJson['transitions'][ind]['transition']['preplaces'].length;i1<j1;i1++){
+								if (dataJson['transitions'][ind]['transition']['preplaces'][i1]['preplace']['name']==placesTypesListPerTransition[elem]['activators'][i]){
+									isInside=true;
+								}
+							}
+							if(isInside==false){
+								dataJson['transitions'][ind]['transition']['preplaces'].push({'preplace':{'name': placesTypesListPerTransition[elem]['activators'][i], 'activity':[{'a':0,'t':0},{'a':1,'t':1}], 'stoichiometry':1}});
+							}						
+						}
+					}			
+					if (placesTypesListPerTransition[elem].hasOwnProperty('suppressors')){
+						for (var i=0, j =placesTypesListPerTransition[elem]['suppressors'].length;i<j;i++){
+							var isInside=false;
+							for (var i1=0, j1 =dataJson['transitions'][ind]['transition']['preplaces'].length;i1<j1;i1++){
+								if (dataJson['transitions'][ind]['transition']['preplaces'][i1]['preplace']['name']==placesTypesListPerTransition[elem]['suppressors'][i]){
+									isInside=true;
+								}
+							}
+							if(isInside==false){
+								dataJson['transitions'][ind]['transition']['preplaces'].push({'preplace':{'name': placesTypesListPerTransition[elem]['suppressors'][i], 'activity':[{'a':0,'t':1},{'a':1,'t':0}], 'stoichiometry':1}});
+							}						
+						}
+					}
+					if (placesTypesListPerTransition[elem].hasOwnProperty('postplaces')){
+						for (var i=0, j =placesTypesListPerTransition[elem]['postplaces'].length;i<j;i++){
+							var isInside=false;
+							for (var i1=0, j1 =dataJson['transitions'][ind]['transition']['postplaces'].length;i1<j1;i1++){
+								if (dataJson['transitions'][ind]['transition']['postplaces'][i1]['postplace']['name']==placesTypesListPerTransition[elem]['postplaces'][i]){
+									isInside=true;
+								}
+							}
+							if(isInside==false){
+								dataJson['transitions'][ind]['transition']['postplaces'].push({'postplace':{'name': placesTypesListPerTransition[elem]['postplaces'][i],'stoichiometry':1}});
+							}						
+						}
+					}*/					
+				}
+			}
+		}
+		// change dataJson['places']
+		
+		
+		for (elem in transitionsTypesListPerPlace){
+			if (transitionsTypesListPerPlace.hasOwnProperty(elem)){
+				var isInside=false;
+				for (var i=0, j=dataJson['places'].length;i<j;i++){
+					if(dataJson['places'][i]['place']['name']==elem){
+						isInside=true;
+					}
+				}
+				if(isInside==false){
+					dataJson['places'].push({'place':{'max':1, 'name':elem, 'state':0, 'type':1}})
+				}
+			}
+		}
+		// deletion of places 
+		/*for (var i =0, j=listPlaces.length;i<j;i++){
+			if (!transitionsTypesListPerPlace.hasOwnProperty(listPlaces[i])){
+				for (var i1=0, j1=dataJson['places'].length;i1<j1;i1++){
+					if ( typeof dataJson['places'][i1]!='undefined'){
+						if(dataJson['places'][i1]['place']['name']==listPlaces[i]){
+							dataJson['places'].splice(i1,1)
+						}
+					}
+				}
+			}
+		}*/
+		// delete activators, suppressors, consumed and postplaces
+		/*for (var i =0, j=listPlaces.length;i<j;i++){
+			for (var i1=0, j1=dataJson['transitions'].length;i1<j1;i1++){
+				if (typeof dataJson['transitions'][i1]['transition']!='undefined'){
+					var newConsumed=[];
+					for (var i2=0, j2=dataJson['transitions'][i1]['transition']['consumed'].length;i2<j2;i2++){
+						if (typeof dataJson['transitions'][i1]['transition']['consumed'][i2]!='undefined'){
+							if (dataJson['transitions'][i1]['transition']['consumed'][i2]['consumed_preplace']['name']==listPlaces[i]){
+								//dataJson['transitions'][i1]['transition']['consumed'].splice(i2,1)
+							}
+							else{
+								newConsumed.push(dataJson['transitions'][i1]['transition']['consumed'][i2]);
+							}
+						}
+					}
+					dataJson['transitions'][i1]['transition']['consumed']=newConsumed;
+					var newPreplaces=[];
+					for (var i2=0, j2=dataJson['transitions'][i1]['transition']['preplaces'].length;i2<j2;i2++){
+						if (typeof dataJson['transitions'][i1]['transition']['preplaces'][i2]!='undefined'){
+							if (dataJson['transitions'][i1]['transition']['preplaces'][i2]['preplace']['name']==listPlaces[i]){
+								//dataJson['transitions'][i1]['transition']['preplaces'].splice(i2,1)
+							}
+							else{
+								newPreplaces.push(dataJson['transitions'][i1]['transition']['preplaces'][i2]);
+							}
+						}
+					}
+					dataJson['transitions'][i1]['transition']['preplaces']=newPreplaces;
+					var newPostplaces=[];
+					for (var i2=0, j2=dataJson['transitions'][i1]['transition']['postplaces'].length;i2<j2;i2++){
+						if (typeof dataJson['transitions'][i1]['transition']['postplaces'][i2]!='undefined'){
+							if (dataJson['transitions'][i1]['transition']['postplaces'][i2]['postplace']['name']==listPlaces[i]){
+								//dataJson['transitions'][i1]['transition']['postplaces'].splice(i2,1)
+							}
+							else{
+								newPostplaces.push(dataJson['transitions'][i1]['transition']['postplaces'][i2]);
+							}
+						}
+					}
+					dataJson['transitions'][i1]['transition']['postplaces']=newPostplaces;
+					
+				}
+			}
+		}*/
+		
+		/*for (var i =0, j=listPlaces.length;i<j;i++){
+			if (!transitionsTypesListPerPlace.hasOwnProperty(listPlaces[i])){
+				for (var i1=0, j1=dataJson['places'].length;i1<j1;i1++){
+					if ( typeof dataJson['places'][i1]!='undefined'){
+						if(dataJson['places'][i1]['place']['name']==listPlaces[i]){
+							dataJson['places'].splice(i1,1)
+						}
+					}
+				}
+				
+				// delete activators, suppressors, consumed and postplaces
+				//
+				for (var i1=0, j1=dataJson['transitions'].length;i1<j1;i1++){
+					if (typeof dataJson['transitions'][i1]['transition']!='undefined'){
+					for (var i2=0, j2=dataJson['transitions'][i1]['transition']['consumed'].length;i2<j2;i2++){
+						if (typeof dataJson['transitions'][i1]['transition']['consumed'][i2]!='undefined'){
+							if (dataJson['transitions'][i1]['transition']['consumed'][i2]['consumed_preplace']['name']==listPlaces[i]){
+								dataJson['transitions'][i1]['transition']['consumed'].splice(i2,1)
+							}
+						}
+					}
+					
+					for (var i2=0, j2=dataJson['transitions'][i1]['transition']['preplaces'].length;i2<j2;i2++){
+						if (typeof dataJson['transitions'][i1]['transition']['preplaces'][i2]!='undefined'){
+							if (dataJson['transitions'][i1]['transition']['preplaces'][i2]['preplace']['name']==listPlaces[i]){
+								dataJson['transitions'][i1]['transition']['preplaces'].splice(i2,1)
+							}
+						}
+					}
+					for (var i2=0, j2=dataJson['transitions'][i1]['transition']['postplaces'].length;i2<j2;i2++){
+						if (typeof dataJson['transitions'][i1]['transition']['postplaces'][i2]!='undefined'){
+							if (dataJson['transitions'][i1]['transition']['postplaces'][i2]['postplace']['name']==listPlaces[i]){
+								dataJson['transitions'][i1]['transition']['postplaces'].splice(i2,1)
+							}
+						}
+					}
+					}
+				}
+			}
+		}
+		// deletion of transitions
+		for (var i =0, j=listTransitions.length;i<j;i++){
+			if (!transitionsTypesListPerPlace.hasOwnProperty(listTransitions[i])){
+				for (var i1=0, j1=dataJson['transitions'].length;i1<j1;i1++){
+					if ( typeof dataJson['transitions'][i1]!='undefined'){
+						if(dataJson['transitions'][i1]['transition']['name']==listTransitions[i]){
+							dataJson['transitions'].splice(i1,1)
+						}
+					}
+				}
+				
+			}
+		}*/
+		
+		//console.log(dataJson)
+		// save dataJson['transitions'] , 
+		document.getElementById('mjsondata').value=JSON.stringify({'places':dataJson['places'],'transitions':dataJson['transitions']});
+		
+		
+	}
+}
+
+</script>
+	
+	

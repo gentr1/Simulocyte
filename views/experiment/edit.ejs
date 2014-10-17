@@ -1,0 +1,340 @@
+<br><br>
+<form action="/experiment/update/<%= exp.id %>" id="experiment-edit-form" method="POST" class="form-signin">
+	<h1>Experiment </h1>
+	<hr>
+	<h2>Name: <%= exp.name %> </h2>
+	<hr>
+	<h3>Comment: </h3>
+	<%= exp.comment %>
+	<hr>
+	
+	
+	
+	<h2 class="form-signin-heading">Add simulation with new conditions</h2>
+	<%
+	var resultsMessage=" - No results yet.";
+	var lResults=JSON.stringify([]);
+	var expID=exp.id;
+	%>
+	<input type="text" name="newresults" id ="newresults" style="visibility: hidden;" value=<%=lResults%>>
+	<input type="text" name="expid" id ="expid" style="visibility: hidden;" value=<%=expID%>>
+	<div class="tbl_container" style="overflow:auto; height: 300px;">
+	<table class='table table-bordered' style="text-align:left" id="mytable">
+		<tr>
+			
+			<th>Simulation: Result Nb<%if (JSON.stringify(exp.results)=="[]") {%><%= resultsMessage %><%}%></th>
+			<th>Status</th><th></th>
+			<!-- <th style="width:150"><button type="button" class="btn btn-primary btn-sm  btn-block" id="createNewSimButton" onclick="createNewSimRow()">Add New Experimental Condition</button></th> -->
+		</tr>
+		
+
+		<% _.each(exp.results, function(res,ind) { %>
+		<tr>
+			
+			<td style="font-size:15px;"><b>Simulation nb <%= res.nb %></b></td>
+			<td style="font-size:15px;"><%= res.status %></td>
+			<td>
+				<a href="/experiment/showresult/<%= exp.id %>" class="btn btn-sm btn-success" id="<%= res.nb %>" onclick="showRes(<%= res.nb %>)">Show</a>
+				
+			</td>
+		</tr> 
+
+		<% }) %>
+	</table>
+	</div>
+	<br><b>Experiment parameters:</b>
+	<br>
+	<br><b>1. General Simulation Parameters:</b><div id="parametersTable1"></div>
+	<br>
+	<br><b>2. List of initial states:</b><div id="parametersTable3"></div>
+	<br>
+	<br><b>3. List of monitored petri-nets:</b><div id="parametersTable2"></div>
+	<br>
+	<br><b>4. List of reset functions:</b><div id="parametersTable4"></div>
+	<br>
+	<% 
+		var InputParameters=JSON.stringify(exp.parameters);
+	%>
+	<input type="text" name="newParameters" id ="newParameters" style="visibility: hidden;" value=<%=InputParameters%>>
+	
+	
+	
+	
+<script>
+var isAdded=false;
+
+function showRes(myid) {
+	localStorage.setItem('myCurrentResult',myid);
+     //window.myCurrentResult = myid;
+	 //console.log(localStorage.getItem('myCurrentResult'));
+}
+var dataParam1=[];
+var dataParam2=[];
+var dataParam3=[];
+var dataParam4=[];
+var tempdt=<%- JSON.stringify(exp.parameters)%>;	
+var initialResultsLength=tempdt['simulations_p'].length;
+var dataJson=<%-JSON.stringify(exp.qsspn_model_instance)%>;		
+
+var listOutputResults=<%-JSON.stringify(exp.results)%>;
+//console.log(listOutputResults)
+function createNewSimRow(){
+	if (isAdded==false){
+	var mtable=document.getElementById("mytable");
+	
+	var row = mtable.insertRow(parseInt(mtable.rows.length));
+
+	// Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
+	var cell1 = row.insertCell(0);
+	var cell2 = row.insertCell(1);
+	var cell3 = row.insertCell(2);
+	var isIn=-1;
+	var newnb=-1;
+	var listn=[];
+	for (var i=0;i<listOutputResults.length;i++){
+		
+			listOutputResults[i]['nb']=i;
+		
+	}
+	//var mymax = Math.max.apply(null, listn);
+	//if (listn==[]){
+	//	newnb = mtable.rows.length;
+	//}
+	//else{
+	//	newnb = mymax+1;
+	//}
+	
+	
+	cell1.innerHTML = "Simulation nb "+listOutputResults.length;
+	cell2.innerHTML = "Not started yet";
+	cell3.innerHTML = "Update parameters and press 'Proceed' or 'Cancel'"
+	
+	listOutputResults.push({'nb': listOutputResults.length, 'status': "Not started yet"})
+	document.getElementById("newresults").value=JSON.stringify(listOutputResults);
+	//console.log(listOutputResults)
+	isAdded=true;
+	}
+	
+}
+createNewSimRow();
+function deleteSimRow(nb){
+	var mtable=document.getElementById("mytable");
+	//console.log(listNewTrajectories.indexOf(nb))
+	//listOutputResults.splice(nb-1,1);
+	//mtable.deleteRow(nb-1);
+	//for (var i=0;i<listOutputResults.length;i++){
+	//	if (listOutputResults[i]['nb'] && listOutputResults[i]['nb']==nb){
+	//	console.log(listOutputResults[i])
+	//		listOutputResults.splice(i,1);
+	//		mtable.deleteRow(i+1);
+	//	}
+	
+	//console.log(listOutputResults)
+	//console.log(nb)
+	//}
+	for (var i=0;i<listOutputResults.length;i++){
+		if (listOutputResults[i]['nb'] && listOutputResults[i]['nb']==nb){
+			listOutputResults.splice(i,1);
+			mtable.deleteRow(i+1);
+		}
+	}
+	console.log(listOutputResults)
+	//console.log(nb)
+	//listOutputResults.splice(listNewTrajectories.indexOf(nb),1);
+	document.getElementById("newresults").value=JSON.stringify(listOutputResults);
+}
+dataParam1=tempdt['default_p'][0];
+dataParam2=tempdt['default_p'][1];
+dataParam3=tempdt['default_p'][2];
+dataParam4=tempdt['default_p'][3];
+
+var $container01 = $("#parametersTable1");
+$container01.handsontable({
+  data: [],
+  width: $("#showthing").width(),
+  height:50,
+  dataSchema: {name: null, nb_samples: null, seed: null, time_max:null, max_timestep:null ,max_change:null, output:null, log:null, monitor:null, progress:null , target_name:null, target_quantity:null},
+  startRows: 1,
+  startCols: 12,
+  maxRows: 1,
+  colHeaders: ['Model SFBA Name', 'Nb Samples', 'Seed','Time_Max','Max_Timestep','Max_change','Output','Log','Monitor','Progress','Target name', 'Target Qty'],
+  columns: [
+    {data: "name"},
+    {data: "nb_samples"},
+    {data: "seed"},
+    {data: "time_max"},
+	{data: "max_timestep"},
+	{data: "max_change"},
+	{data: "output"},
+	{data: "log"},
+	{data: "monitor"},
+	{data: "progress"},
+	{data: "target_name"},
+	{data: "target_quantity"}
+  ],
+  afterChange: function(changes, source) {
+	var dt = this.getData();
+	dataParam1=[dt[0].name , dt[0].nb_samples, dt[0].seed, dt[0].time_max, dt[0].max_timestep,dt[0].max_change, dt[0].output, dt[0].log, dt[0].monitor, dt[0].progress, dt[0].target_name, dt[0].target_quantity];
+	if (tempdt['simulations_p'].length==initialResultsLength){
+		tempdt['simulations_p'].push([dataParam1,dataParam2,dataParam3,dataParam4]);
+	}
+	else{
+		tempdt['simulations_p'][initialResultsLength]=[dataParam1,dataParam2,dataParam3,dataParam4];
+	}
+	document.getElementById("newParameters").value=JSON.stringify(tempdt);
+  },
+  minSpareRows: 1
+});
+
+var tempdata0=tempdt['default_p'];
+
+var tempdata01=[tempdata0[0]]
+var ht = $('#parametersTable1').handsontable('getInstance');
+if ($.isArray(tempdata01) && tempdata01[0] && $.isArray(tempdata01[0])){
+	ht.populateFromArray (0, 0, tempdata01,tempdata01.length-1, 11);
+}
+
+var $container02 = $("#parametersTable2");
+$container02.handsontable({
+  data: [],
+  width: $("#experiment-edit-form").width(),
+  height:200,
+  dataSchema: {petri_name: null},
+  startRows: 1,
+  startCols: 1,
+  colHeaders: ['Petri-Net Monitored'],
+  columns: [
+    {data: "petri_name"}
+  ],
+  afterChange: function(changes, source) {
+	var dt = this.getData();
+	
+	dataParam2=[];
+	for (var i=0, j= dt.length;i<j-1;i++){
+		dataParam2.push(dt[i].petri_name);
+	}
+	if (tempdt['simulations_p'].length==initialResultsLength){
+		tempdt['simulations_p'].push([dataParam1,dataParam2,dataParam3,dataParam4]);
+	}
+	else{
+		tempdt['simulations_p'][initialResultsLength]=[dataParam1,dataParam2,dataParam3,dataParam4];
+	}
+	document.getElementById("newParameters").value=JSON.stringify(tempdt);
+  },
+  minSpareRows: 1
+});
+
+var tempdata02=[];
+for (var i=0,j=tempdata0[1].length;i<j;i++){
+	tempdata02.push([tempdata0[1][i]])
+}
+
+var ht = $('#parametersTable2').handsontable('getInstance');
+if ($.isArray(tempdata02) && tempdata02[0] && $.isArray(tempdata02[0])){
+	ht.populateFromArray (0, 0, tempdata02,tempdata02.length-1, 0);
+}
+
+var $container03 = $("#parametersTable3");
+$container03.handsontable({
+  data: [],
+  width: $("#experiment-creation-form").width(),
+  height:100,
+  dataSchema: {petri_name: null, state: null},
+  startRows: 1,
+  startCols: 2,
+  colHeaders: ['Petri-Net','Initial State'],
+  columns: [
+    {data: "petri_name"},
+	{data: "state"}
+  ],
+  afterChange: function(changes, source) {
+	var dt = this.getData();
+	
+	dataParam3=[];
+	for (var i=0, j= dt.length;i<j-1;i++){
+		dataParam3.push([dt[i].petri_name,dt[i].state]);
+	}
+	if (tempdt['simulations_p'].length==initialResultsLength){
+		tempdt['simulations_p'].push([dataParam1,dataParam2,dataParam3,dataParam4]);
+	}
+	else{
+		tempdt['simulations_p'][initialResultsLength]=[dataParam1,dataParam2,dataParam3,dataParam4];
+	}
+	document.getElementById("newParameters").value=JSON.stringify(tempdt);
+  },
+  minSpareRows: 1
+});
+var tempdata03=[];
+for (var i=0,j=tempdata0[2].length;i<j;i++){
+	tempdata03.push(tempdata0[2][i])
+}
+//console.log(tempdata03)
+
+var ht = $('#parametersTable3').handsontable('getInstance');
+if ($.isArray(tempdata03) && tempdata03[0] && $.isArray(tempdata03[0])){
+	ht.populateFromArray (0, 0, tempdata03,tempdata03.length-1, 1);
+}
+
+var $container04 = $("#parametersTable4");
+$container04.handsontable({
+  data: [],
+  width: $("#experiment-creation-form").width(),
+  height:100,
+  dataSchema: {fn_name: null, equation: null},
+  startRows: 1,
+  startCols: 2,
+  colHeaders: ['Reset function name','Equation'],
+  columns: [
+    {data: "fn_name"},
+	{data: "equation"}
+  ],
+  afterChange: function(changes, source) {
+	var dt = this.getData();
+	
+	dataParam4=[];
+	for (var i=0, j= dt.length;i<j-1;i++){
+		dataParam4.push([dt[i].fn_name,dt[i].equation]);
+	}
+	if (tempdt['simulations_p'].length==initialResultsLength){
+		tempdt['simulations_p'].push([dataParam1,dataParam2,dataParam3,dataParam4]);
+	}
+	else{
+		tempdt['simulations_p'][initialResultsLength]=[dataParam1,dataParam2,dataParam3,dataParam4];
+	}
+	//tempdt['simulations_p']
+	document.getElementById("newParameters").value=JSON.stringify(tempdt);
+  },
+  minSpareRows: 1
+});
+var tempdata04=[];
+for (var i=0,j=tempdata0[3].length;i<j;i++){
+	tempdata04.push(tempdata0[3][i])
+}
+
+var ht = $('#parametersTable4').handsontable('getInstance');
+if ($.isArray(tempdata04) && tempdata04[0] && $.isArray(tempdata04[0])){
+	ht.populateFromArray (0, 0, tempdata04,tempdata04.length-1, 1);
+}
+
+
+		
+		
+
+var opsys=navigator.platform;
+if (opsys.substring(0,3)=="Win"){
+	console.log("windoz")
+}
+else if (opsys.substring(0,3)=="Mac"){
+	console.log("mac")
+}
+else if (opsys.substring(0,3)=="Lin"){
+	console.log("linux")
+}
+else{
+	console.log("other os")
+}
+		
+</script>
+<input type="submit" value="Proceed" class="btn btn-lg btn-primary"/> <a href="/experiment/show/<%= exp.id %>" class="btn btn-lg btn-primary">Cancel</a>
+<input type="hidden" name="_csrf" value="<%= _csrf %>" />
+</form>	

@@ -1,0 +1,11 @@
+#!/bin/sh
+cd "`dirname "$0"`"
+/home/mk0027/programming/v2.1distr/bin/spept2qsspn /home/mk0027/programming/models/$1/$1.spept 2 > /home/mk0027/programming/models/$1/$1.qsspn
+/home/mk0027/programming/v2.1distr/bin/qsspn /home/mk0027/programming/models/$1/$1.qsspn /home/mk0027/programming/models/$1/printJson.ctrl.txt > /home/mk0027/programming/models/$1/$1.json
+rm /home/mk0027/programming/models/$1/$1.qsspn
+time /home/mk0027/programming/v2.1distr/bin/qsspn /home/mk0027/programming/models/$1/$1.json /home/mk0027/programming/models/$1/$1.ctrl.txt
+echo
+/home/mk0027/programming/v2.1distr/bin/qsspn
+echo
+echo 'Press ENTER to exit'
+read $a
