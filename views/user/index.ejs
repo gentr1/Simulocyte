@@ -282,6 +282,7 @@ var w = 960, h = 500;
 			var projector = new THREE.Projector();
 			var raycaster = new THREE.Raycaster();
 			var directionalLight;
+			var controls;
 			init();
 			animate();
 
@@ -445,7 +446,14 @@ var w = 960, h = 500;
 				projector = new THREE.Projector();
 				raycaster = new THREE.Raycaster();
 				//
-
+				controls = new THREE.OrbitControls( camera, container  );
+				controls.rotateSpeed = 1.0;
+				controls.zoomSpeed = 1.2;
+				controls.panSpeed = 0.8;
+				controls.noZoom = false;
+				controls.noPan = false;
+				controls.staticMoving = true;
+				controls.dynamicDampingFactor = 0.3;
 				window.addEventListener( 'resize', onWindowResize, false );
 
 			}
@@ -514,9 +522,9 @@ var w = 960, h = 500;
 			}
 
 			function render() {
-
+				controls.update();
 				//camera.position.x += ( mouseX - camera.position.x ) * .01;
-				camera.position.y += ( - mouseY + 200 - camera.position.y ) * .01;
+				//camera.position.y += ( - mouseY + 200 - camera.position.y ) * .01;
 
 				camera.lookAt( scene.position );
 				var vector = new THREE.Vector3( mouse.x, mouse.y, 1 );

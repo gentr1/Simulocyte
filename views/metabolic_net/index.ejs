@@ -104,7 +104,7 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				
 
 				ground = new THREE.Mesh( new THREE.PlaneGeometry( 50000, 50000 ), groundBasic );
-				ground.position.y = - 215;
+				ground.position.y = 0;
 				ground.rotation.x = - Math.PI / 2;
 				scene.add( ground );
 
@@ -136,7 +136,13 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				
 				//createScene();
 				
-				
+				//var geo2 = new THREE.IcosahedronGeometry(200,1);
+				var geo2 = new THREE.CylinderGeometry( 100, 100, 50, 50 )
+				select_mesh= new THREE.Mesh( geo2, new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: false } )  );
+				select_mesh.position.x =9999999;
+				select_mesh.position.y = 9999999;
+				select_mesh.position.z =-9999999;
+				scene.add(select_mesh );
 				
 				// LIGHTS
 				ambientLight = new THREE.AmbientLight( 0x555555 );
@@ -233,7 +239,7 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				hblur = new THREE.ShaderPass( THREE.HorizontalTiltShiftShader );
 				vblur = new THREE.ShaderPass( THREE.VerticalTiltShiftShader );
 
-				var bluriness = 7;
+				var bluriness = 2.5;
 
 				hblur.uniforms[ 'h' ].value = bluriness / SCREEN_WIDTH;
 				vblur.uniforms[ 'v' ].value = bluriness / SCREEN_HEIGHT;
@@ -358,9 +364,9 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 						if ( INTERSECTED.name) {	
 							selectedModelName=INTERSECTED.name;	
 							console.log(INTERSECTED.name)
-							//select_mesh.position.x=INTERSECTED.position.x;
-							//select_mesh.position.y=INTERSECTED.position.y;
-							//select_mesh.position.z=INTERSECTED.position.z;
+							select_mesh.position.x=INTERSECTED.position.x;
+							select_mesh.position.y=INTERSECTED.position.y*2+250;
+							select_mesh.position.z=INTERSECTED.position.z;
 							
 							text0.style.top = $("#container").position().top+150 + 'px';								
 							text0.style.left = window.innerWidth*0.75+ 'px';
