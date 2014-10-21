@@ -357,8 +357,9 @@ function initObjects() {
         .attr('height', rh)
 		.style("fill", function(d, i) { if (d==1) {return "rgb("+(parseInt(255*d))+",0,0)"} else return "transparent"})
 
-		
-		
+	document.getElementById("democ0").style.top=$("#mcontainer").position().top+150 + 'px';
+	document.getElementById("democ0").style.left=window.innerWidth*0.05+ 'px';	
+	document.getElementById("democ0").style.visibility="hidden";	
 	
 	var material = new THREE.MeshPhongMaterial( { color: 0xffaa55, specular: 0x888888, shininess: 200} );
 	var object = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 1000 ), material );
@@ -369,12 +370,17 @@ function initObjects() {
 	// create plane meshes of models  
 	
 	var tempXIncrement=0
+	var lasttemp=0;
 	for (model in results ){
 		if (results.hasOwnProperty(model)) {			
 			arrayMeshes.push(new THREE.Mesh( new THREE.PlaneGeometry( (results[model][0].length)/5, (results[model].length)/10 ), new THREE.MeshPhongMaterial( { color: '#'+Math.floor(Math.random()*16777215).toString(16), specular: 0xffffff, shininess: 1} ) ));
 			arrayMeshes[arrayMeshes.length-1].rotation.x = -Math.PI/2 ;
+			tempXIncrement+=((results[model][0].length)/10)+0.5;
 			arrayMeshes[arrayMeshes.length-1].position.set(tempXIncrement,1, -8+(results[model].length)/20 );
-			tempXIncrement+=(((results[model][0].length)/10)+3);
+			tempXIncrement+=((results[model][0].length)/10)+0.5;
+			//lasttemp =((results[model][0].length)/5)
+			//console.log(tempXIncrement)
+			
 			arrayMeshes[arrayMeshes.length-1].name="m"+(arrayMeshes.length-1);
 			scene.add( arrayMeshes[arrayMeshes.length-1] );
 		}
@@ -526,14 +532,24 @@ function render() {
 				select_mesh.position.set(INTERSECTED.position.x,0.99, INTERSECTED.position.z );
 				//select_mesh.scale.x=(INTERSECTED.geometry.vertices[1]-INTERSECTED.geometry.vertices[0]);
 				
-				select_mesh.geometry.vertices[0]=INTERSECTED.geometry.vertices[0];
-				
-				select_mesh.geometry.vertices[1]=INTERSECTED.geometry.vertices[1];
-				
-				select_mesh.geometry.vertices[2]=INTERSECTED.geometry.vertices[2];
-				select_mesh.geometry.vertices[3]=INTERSECTED.geometry.vertices[3];
-				select_mesh.scale.x=1.15;
-				select_mesh.scale.y=1.05;
+				select_mesh.geometry.vertices[0].x=INTERSECTED.geometry.vertices[0].x-0.25;
+				select_mesh.geometry.vertices[0].y=INTERSECTED.geometry.vertices[0].y+0.25;
+				select_mesh.geometry.vertices[0].z=INTERSECTED.geometry.vertices[0].z;
+				//select_mesh.geometry.vertices[0].x=INTERSECTED.geometry.vertices[0].x-0.25;
+				select_mesh.geometry.vertices[1].x=INTERSECTED.geometry.vertices[1].x+0.25;
+				select_mesh.geometry.vertices[1].y=INTERSECTED.geometry.vertices[1].y+0.25;
+				select_mesh.geometry.vertices[1].z=INTERSECTED.geometry.vertices[1].z;
+				//select_mesh.geometry.vertices[1].x=INTERSECTED.geometry.vertices[1].x+0.25;
+				select_mesh.geometry.vertices[2].x=INTERSECTED.geometry.vertices[2].x-0.25;
+				select_mesh.geometry.vertices[2].y=INTERSECTED.geometry.vertices[2].y-0.25;
+				select_mesh.geometry.vertices[2].z=INTERSECTED.geometry.vertices[2].z;
+				//select_mesh.geometry.vertices[2].x=INTERSECTED.geometry.vertices[2].x-0.25;
+				select_mesh.geometry.vertices[3].x=INTERSECTED.geometry.vertices[3].x+0.25;
+				select_mesh.geometry.vertices[3].y=INTERSECTED.geometry.vertices[3].y-0.25;
+				select_mesh.geometry.vertices[3].z=INTERSECTED.geometry.vertices[3].z;
+				//select_mesh.geometry.vertices[3].x=INTERSECTED.geometry.vertices[3].x+0.25;
+				//select_mesh.scale.x=1.1;
+				//select_mesh.scale.y=1.1;
 				select_mesh.geometry.verticesNeedUpdate = true;
 				
 				text0.style.top = $("#mcontainer").position().top+150 + 'px';								
@@ -542,6 +558,7 @@ function render() {
 				text0.innerHTML="<div style='width:400px;height:"+$("#mcontainer").css( "height" )*0.7+"px;border:1px solid #ffffff;'><h2 class='mytab1'>"+nm+"</h2><h3 class='mytab1'>"+listMTNs[nm][0]+"</h3><br><p class='mytab1'>"+results[nm][0].length+" model nodes linked to "+results[nm].length+" metabolic network nodes.</p><p class='mytab1'>Links between the model and the metabolic network are shown with an ("+results[nm][0].length+" x "+results[nm].length+") adjacency matrix.</p></div>";
 				document.getElementById("democ0").style.top=$("#mcontainer").position().top+150 + 'px';
 				document.getElementById("democ0").style.left=window.innerWidth*0.05+ 'px';
+				document.getElementById("democ0").style.visibility="visible";	
 				updateD3jsData();
 				//console.log(INTERSECTED.scale)
 				//select_mesh.scale.y = INTERSECTED.scale.y*2;

@@ -3233,7 +3233,7 @@
 				//if (selectedModel[0][0]=="Ecoli2.0"){
 									
 				//}
-				
+				KeggMapPlan.position.y+=1000;
 				nucleus.position.set( 0, yStartDisplacement+1000, 0 );
 				cytoplasm.position.set( 0, yStartDisplacement-1000, 0 );
 				ECM.position.set( 0, yStartDisplacement-3000, 0 );
@@ -3673,6 +3673,7 @@
 					for (var i=0;i<nbOrganelles;i++){
 						organelles[i].position.set( 0, yStartDisplacement, 0 );
 					}
+					KeggMapPlan.position.y-=1000;
 					nucleus.position.set( 0, yStartDisplacement, 0 );
 					cytoplasm.position.set( 0, yStartDisplacement, 0 );
 					ECM.position.set( 0, yStartDisplacement, 0 );
