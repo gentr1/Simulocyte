@@ -29,12 +29,13 @@
 				
 				<input type="hidden" name="r<%= res.nb %>" id="r<%= res.nb %>"/>
 				<input type="hidden" name="t<%= res.nb %>" id="t<%= res.nb %>"/>
-				
+				<input type="hidden" name="l<%= res.nb %>" id="l<%= res.nb %>" value="<%= exp.parameters['simulations_p'][res.nb][0][1] %>"/>
 				Trajectory: <select class="form-control" id="trajectoryChoice<%= res.nb %>" style="width: 60px;" onclick="showTraj(<%= res.nb %>)">
 				<% for (var i=0;i<exp.parameters['simulations_p'][res.nb][0][1];i++) {%>
 					<option><%= i %></option>
 				<% } %>
 				</select> 
+				
 				<input type="submit" value="Show Trajectory" class="btn btn-sm btn-success" onclick="showRes(<%= res.nb %>)"/>
 				
 			</td>

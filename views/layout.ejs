@@ -31,6 +31,7 @@
     <link rel="stylesheet" href="/linker/styles/bootstrap.css">
     <link rel="stylesheet" href="/linker/styles/custom.css">
     <link rel="stylesheet" href="/linker/styles/d3-ex1.css">
+	
     <link rel="stylesheet" href="/linker/styles/jquery-ui-1.10.4.custom.min.css">
     <link rel="stylesheet" href="/linker/styles/jquery-ui-1.10.4.min.css">
     <link rel="stylesheet" href="/linker/styles/jquery.handsontable.full.css">
@@ -40,6 +41,9 @@
     <link rel="stylesheet" href="/linker/styles/smoothness/jquery-ui-1.10.4.custom.min.css">
     <link rel="stylesheet" href="/linker/styles/ui.jqgrid.css">
     <link rel="stylesheet" href="/linker/styles/ui.multiselect.css">
+	<link rel="stylesheet" href="/linker/styles/bootstrap-multiselect.css">
+	<link rel="stylesheet" href="/linker/styles/bootstrap-multiselect.less">
+	
     <!--STYLES END-->
 
     <!--Added this so the client has access to the csrf tag and it's grabbed first service side on every page -->
@@ -79,6 +83,7 @@
             <li><a href="/metabolic_net/index">Metabolic nets</a></li>
 			<li><a href="/qsspn_model/index">QSSPN models</a></li>
 			<li><a href="/experiment/index">QSSPN Experiments</a></li>
+			<li><a href="/fbaexperiment/index">FBA experiments</a></li>
             <% } %>
           </ul>
           <div class="navbar-right">
@@ -166,10 +171,12 @@
     <script src="/linker/js/socket.io.js"></script>
     <script src="/linker/js/sails.io.js"></script>
     <script src="/linker/js/jquery.js"></script>
+	<script src="/linker/js/papaparse.min.js"></script>
     <script src="/linker/js/jquery.validate.min.js"></script>
     <script src="/linker/js/jquery.jqGrid.min.js"></script>
     <script src="/linker/js/grid.locale-en.js"></script>
     <script src="/linker/js/jquery.handsontable.full.js"></script>
+	
     <script src="/linker/js/app.js"></script>
     <script src="/linker/js/three.js"></script>
     <script src="/linker/js/hilbert3D.js"></script>
@@ -204,6 +211,7 @@
     <script src="/linker/js/cubism.v1.min.js"></script>
     <script src="/linker/js/arbor.js"></script>
     <script src="/linker/js/cytoscape.min.js"></script>
+    <script src="/linker/js/Projector.js"></script>
     <script src="/linker/js/bootstrap.js"></script>
     <script src="/linker/js/customValidate.js"></script>
     <script src="/linker/js/d3.hive.v0.min.js"></script>
@@ -218,6 +226,8 @@
     <script src="/linker/js/jquery.tablednd.js"></script>
     <script src="/linker/js/raphael-min.js"></script>
     <script src="/linker/js/ui.multiselect.js"></script>
+	<script src="/linker/js/bootstrap-multiselect.js"></script>
+	
     <script src="/linker/js/underscore.js"></script>
     <!--SCRIPTS END-->
 	

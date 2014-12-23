@@ -497,7 +497,8 @@ function render() {
 	// find intersections
 
 	var vector = new THREE.Vector3( mouse.x, mouse.y, 1 );
-	projector.unprojectVector( vector, camera );
+	//projector.unprojectVector( vector, camera );
+	vector.unproject(camera);
 
 	raycaster.set( camera.position, vector.sub( camera.position ).normalize() );
 	

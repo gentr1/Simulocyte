@@ -94,6 +94,16 @@
 	<br><b id="qssf1.2">Flux List:</b><div id="fluxListActivityTable" ></div>
 	<br><b id="qssf2">Objective List:</b><div id="objectiveTable"></div>
 	<br><b id="qssf2.1">Activity Table:</b><div id="objectiveActivityTable"></div>
+	
+	<h2>SFBA data</h2>
+	<div id="sfbaTable"></div>
+	<br>Hive plot data: reactions and associated categories<br><div id="reactionCategoryTable"></div>
+	<br>
+	<div id="democ0" style="position: absolute;left: 0px; overflow: inherit" class="myborderclass2"></div>
+	<div id="mytooltip3"></div>
+	<div id="hivePlot" style="position: absolute;left: 0px; overflow: inherit" class="myborderclass2 Scrollable"></div>
+	<div id="mytooltip4"></div>
+	<button type="button" id="hiveplotColor" style="position: absolute;left: 0px; overflow: inherit" onclick="hiveplotAction()">White/Black Background</button>
 	</div>
 	<form action="/qsspn_model/update/<%= qm.id %>" id="qsspn-model-edit-form0" method="POST" class="form-inline" style="height: 80px;width: 200px;position: relative;">	
 	<%
@@ -331,17 +341,17 @@
 		
 		<script type="x-shader/x-vertex" id="vertexshader2">
 
-			uniform float amplitude;
-			attribute vec3 displacement;
+			//uniform float amplitude;
+			//attribute vec3 displacement;
 			attribute vec3 ca;
 			varying vec3 vColor;
 			varying float opacity;
 			attribute float op;
 			void main() {
-				vec3 newPosition = position + amplitude * displacement;
+				//vec3 newPosition = position + amplitude * displacement;
 				vColor = ca;
 				opacity =op;
-				gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
 			}
 			//uniform float amplitude;
 			//attribute vec3 displacement;
@@ -416,6 +426,34 @@
 	
 	<script>
 		
+		$('.Scrollable').on('DOMMouseScroll mousewheel', function(ev) {
+			var $this = $(this),
+				scrollTop = this.scrollTop,
+				scrollHeight = this.scrollHeight,
+				height = $this.height(),
+				delta = (ev.type == 'DOMMouseScroll' ?
+					ev.originalEvent.detail * -40 :
+					ev.originalEvent.wheelDelta),
+				up = delta > 0;
+
+			var prevent = function() {
+				ev.stopPropagation();
+				ev.preventDefault();
+				ev.returnValue = false;
+				return false;
+			}
+
+			if (!up && -delta > scrollHeight - height - scrollTop) {
+				// Scrolling down, but this will take us past the bottom.
+				$this.scrollTop(scrollHeight);
+				return prevent();
+			} else if (up && delta > scrollTop) {
+				// Scrolling up, but this will take us past the top.
+				$this.scrollTop(0);
+				return prevent();
+			}
+		});
+		
 		(function($){
 			$(document).ready(function(){
 			$('#menuToggle').click(function(e){
@@ -435,7 +473,14 @@
 		
 		var cbColModel, idsOfSelectedRows = [];
 		var idsOfModelSelectedRows=[];
+		var categoriesReactions={};
+		var reactionsCategories={};
+		var sfbaReacM={};
+		var nodes =[];
 		
+		var links = [];
+		
+		var hvBColor=true;
 		//var list_compartments=<%-JSON.stringify(data[0])%>;
 		//var list_nodes=<%-JSON.stringify(data[1])%>;
 		//var list_edges=<%-JSON.stringify(data[2])%>;
@@ -685,6 +730,11 @@
 		}
 		
 		else if (nameModel=="hepatonet1-msb201062-s5"){
+			mapComp = {'-1':-1, GolErMi:0 ,bile:1 ,lyso:2 ,mito:3 ,peroxy:4 ,nuc:5 ,cyto:6 ,ext:7 }
+			nameComp = ["GolErMi","bile","lysosome","mytochodria","peroxisome", "nucleus", "cytoplasm" ,"extra-cellular" ];	
+			//element1.src	= "slickgrid13HP.html"	
+		}
+		else if (nameModel=="msb201062-s5"){
 			mapComp = {'-1':-1, GolErMi:0 ,bile:1 ,lyso:2 ,mito:3 ,peroxy:4 ,nuc:5 ,cyto:6 ,ext:7 }
 			nameComp = ["GolErMi","bile","lysosome","mytochodria","peroxisome", "nucleus", "cytoplasm" ,"extra-cellular" ];	
 			//element1.src	= "slickgrid13HP.html"	
@@ -1066,7 +1116,10 @@
 				$('#selectLayout').append("<option>"+elem+"</option>")
 			}
 		}
-		//console.log(selectedModel)
+		
+		console.log(nbPlacesModel)
+		console.log(nbReactionsModel)
+		//console.log(nbEdgesModel)
 		init();
 		animate();
 		
@@ -1318,7 +1371,7 @@
 			// define shader attributes for group of lines
 			linesAttributes = {
 
-				displacement: {	type: 'v3', value: [] },
+				//displacement: {	type: 'v3', value: [] },
 				ca: {	type: 'c', value: [] },
 				op:{ type: "f", value: [] }
 
@@ -1326,7 +1379,7 @@
 
 			linesUniforms = {
 
-				amplitude: { type: "f", value: 1.0 },
+				//amplitude: { type: "f", value: 1.0 },
 				opacity:   { type: "f", value: 0.7 },
 				color:     { type: "c", value: new THREE.Color( 0xffffff ) }
 
@@ -1400,63 +1453,46 @@
 			bgeometryP1 = new THREE.BufferGeometry();
 			
 			bgeometryP1.dynamic = true;
-			bgeometryP1.attributes = {
-
-				position: {
-					itemSize: 3,
-					array: new Float32Array( nbDNAParticles * 3 )
-				},
-				ca: {
-					itemSize: 3,
-					array: new Float32Array( nbDNAParticles * 3 )
-				},
-				size: {
-					itemSize: 1,
-					array: new Float32Array( nbDNAParticles ),
-					dynamic: true
-				},
-				compartment: {
-					itemSize: 1,
-					array: new Float32Array( nbDNAParticles ),
-					dynamic: true
-				}
-
-			}
-			bgeometryP1.attributes.size.needsUpdate = true;
-			bgeometryP1.attributes.position.needsUpdate = true;
-			bgeometryP1.attributes.ca.needsUpdate = true;
-			bgeometryP1.attributes.compartment.needsUpdate = true;
-
-			b1values_size = bgeometryP1.attributes.size.array;
-			b1positions = bgeometryP1.attributes.position.array;
-			b1values_color = bgeometryP1.attributes.ca.array;
-			b1values_compartment = bgeometryP1.attributes.compartment.array;
+			var positionsP1 = new Float32Array( nbDNAParticles * 3 );
+			var values_colorP1 = new Float32Array( nbDNAParticles * 3 );
+			var values_sizeP1 = new Float32Array( nbDNAParticles );
+			var compartmentP1 = new Float32Array( nbDNAParticles );
 			
-			// populates first buffer geometry for particles with coordinates, colors, and size
+			
 			var color = new THREE.Color( 0xffffff );
 			var radius =400;
 			for( var bv = 0; bv < nbDNAParticles; bv++ ) {
 			
 
-				b1values_size[ bv ] = 10;
-				b1values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+				values_sizeP1[ bv ] = 10;
+				compartmentP1[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
 
-				b1positions[ (bv * 3) + 0 ] = (Math.random() * 2 - 1) * radius;
+				positionsP1[ (bv * 3) + 0 ] = (Math.random() * 2 - 1) * radius;
 				//b1positions[ (bv * 3) + 1 ] = (Math.random() * 2 - 1) * radius;
-				b1positions[ (bv * 3) + 1 ] = yStartDisplacement;
-				b1positions[ (bv * 3) + 2 ] = (Math.random() * 2 - 1) * radius;
+				positionsP1[ (bv * 3) + 1 ] = yStartDisplacement;
+				positionsP1[ (bv * 3) + 2 ] = (Math.random() * 2 - 1) * radius;
 				
 				
 				//if ( positions[ bv * 3 + 0 ] < 0 )
 				//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
 				//else
 				//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
-				b1values_color[ (bv * 3) + 0 ] = color.r;
-				b1values_color[ (bv * 3) + 1 ] = color.g;
-				b1values_color[ (bv * 3) + 2 ] = color.b;
+				values_colorP1[ (bv * 3) + 0 ] = color.r;
+				values_colorP1[ (bv * 3) + 1 ] = color.g;
+				values_colorP1[ (bv * 3) + 2 ] = color.b;
 
 			}
-			//console.log(bgeometryP1);
+			bgeometryP1.addAttribute( 'position', new THREE.BufferAttribute( positionsP1, 3 ) );
+			bgeometryP1.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP1, 3 ) );
+			bgeometryP1.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP1, 1 ) );
+			bgeometryP1.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP1, 1 ) );
+			
+			b1values_size = bgeometryP1.attributes.size.array;
+			b1positions = bgeometryP1.attributes.position.array;
+			b1values_color = bgeometryP1.attributes.ca.array;
+			b1values_compartment = bgeometryP1.attributes.compartment.array;
+			
+			
 			
 			// associate first particle system with bufferGeometry
 			PointCloud1 = new THREE.PointCloud( bgeometryP1, particle1ShaderMaterial );
@@ -1474,66 +1510,54 @@
 			bgeometryP2 = new THREE.BufferGeometry();
 			
 			bgeometryP2.dynamic = true;
-			bgeometryP2.attributes = {
-
-				position: {
-					itemSize: 3,
-					array: new Float32Array( nbRNAParticles * 3 )
-				},
-				ca: {
-					itemSize: 3,
-					array: new Float32Array( nbRNAParticles * 3 )
-				},
-				size: {
-					itemSize: 1,
-					array: new Float32Array( nbRNAParticles ),
-					dynamic: true
-				},
-				compartment: {
-					itemSize: 1,
-					array: new Float32Array( nbRNAParticles ),
-					dynamic: true
-				}
-				
-
-			}
-			bgeometryP2.attributes.size.needsUpdate = true;
-			bgeometryP2.attributes.position.needsUpdate = true;
-			bgeometryP2.attributes.ca.needsUpdate = true;
-			bgeometryP2.attributes.compartment.needsUpdate = true;
-
-			b2values_size = bgeometryP2.attributes.size.array;
-			b2positions = bgeometryP2.attributes.position.array;
-			b2values_color = bgeometryP2.attributes.ca.array;
-			b2values_compartment = bgeometryP2.attributes.compartment.array;
+			var positionsP2 = new Float32Array( nbRNAParticles * 3 );
+			var values_colorP2 = new Float32Array( nbRNAParticles * 3 );
+			var values_sizeP2 = new Float32Array( nbRNAParticles );
+			var compartmentP2 = new Float32Array( nbRNAParticles );
+									
+			//bgeometryP2.attributes.size.needsUpdate = true;
+			//bgeometryP2.attributes.position.needsUpdate = true;
+			//bgeometryP2.attributes.ca.needsUpdate = true;
+			//bgeometryP2.attributes.compartment.needsUpdate = true;
 			
-			// populates first buffer geometry for particles with coordinates, colors, and size
-			var color = new THREE.Color( 0xffffff );;
+			var color = new THREE.Color( 0xffffff );
 			var radius =400;
 			for( var bv = 0; bv < nbRNAParticles; bv++ ) {
 			
 
-				b2values_size[ bv ] = 10;
-				b2values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+				values_sizeP2[ bv ] = 10;
+				compartmentP2[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
 				
-				b2positions[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
+				positionsP2[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
 				//b2positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
-				b2positions[ bv * 3 + 1 ] = yStartDisplacement;
+				positionsP2[ bv * 3 + 1 ] = yStartDisplacement;
 				
-				b2positions[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
+				positionsP2[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
 				
 				
 				//if ( positions[ bv * 3 + 0 ] < 0 )
 				//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
 				//else
 				//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
-				b2values_color[ bv * 3 + 0 ] = color.r;
-				b2values_color[ bv * 3 + 1 ] = color.g;
-				b2values_color[ bv * 3 + 2 ] = color.b;
+				values_colorP2[ bv * 3 + 0 ] = color.r;
+				values_colorP2[ bv * 3 + 1 ] = color.g;
+				values_colorP2[ bv * 3 + 2 ] = color.b;
 
 			}
 			
 			
+			
+			
+			
+			bgeometryP2.addAttribute( 'position', new THREE.BufferAttribute( positionsP2, 3 ) );
+			bgeometryP2.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP2, 3 ) );
+			bgeometryP2.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP2, 1 ) );
+			bgeometryP2.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP2, 1 ) );
+			
+			b2values_size = bgeometryP2.attributes.size.array;
+			b2positions = bgeometryP2.attributes.position.array;
+			b2values_color = bgeometryP2.attributes.ca.array;
+			b2values_compartment = bgeometryP2.attributes.compartment.array;
 			// associate first particle system with bufferGeometry
 			PointCloud2 = new THREE.PointCloud( bgeometryP2, particle2ShaderMaterial );
 
@@ -1549,7 +1573,12 @@
 			bgeometryP3 = new THREE.BufferGeometry();
 			
 			bgeometryP3.dynamic = true;
-			bgeometryP3.attributes = {
+			var positionsP3 = new Float32Array( nbProtParticles * 3 );
+			var values_colorP3 = new Float32Array( nbProtParticles * 3 );
+			var values_sizeP3 = new Float32Array( nbProtParticles );
+			var compartmentP3 = new Float32Array( nbProtParticles );
+			
+			/*bgeometryP3.attributes = {
 
 				position: {
 					itemSize: 3,
@@ -1570,17 +1599,123 @@
 					dynamic: true
 				}
 
-			}
-			bgeometryP3.attributes.size.needsUpdate = true;
-			bgeometryP3.attributes.position.needsUpdate = true;
-			bgeometryP3.attributes.ca.needsUpdate = true;
-			bgeometryP3.attributes.compartment.needsUpdate = true;
-
-			b3values_size = bgeometryP3.attributes.size.array;
-			b3positions = bgeometryP3.attributes.position.array;
-			b3values_color = bgeometryP3.attributes.ca.array;
-			b3values_compartment = bgeometryP3.attributes.compartment.array;
+			}*/
+			//bgeometryP3.attributes.size.needsUpdate = true;
+			//bgeometryP3.attributes.position.needsUpdate = true;
+			//bgeometryP3.attributes.ca.needsUpdate = true;
+			//bgeometryP3.attributes.compartment.needsUpdate = true;
 			
+			// populates first buffer geometry for particles with coordinates, colors, and size
+			var color = new THREE.Color( 0xff9900 );;
+			var color2 = new THREE.Color( 0x55ff55 );
+			var radius =400;
+			var bv=0;
+			//for( var bv = 0; bv < nbProtParticles; bv++ ) {
+				for( var bw = 0 , bww= jsonObj1.length; bw < bww; bw++ ) {
+					if (jsonObj1[bw][6]==2){
+						values_sizeP3[ bv ] = 10;
+						//b3values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+						compartmentP3[ bv ] = mapComp[jsonObj1[bw][3]];
+						idMap[bw]=[2,bv];
+						typesMap[2][bv]=bw;
+						
+						var rm;
+						var rr;
+						
+						if (nameModel=="hepatonet1-msb201062-s5"){
+							rm=bv*0.078*2*Math.PI;
+							rr = ((bv*0.02)+0.35*radius)
+							positionsP3[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							positionsP3[ bv * 3 + 1 ] = yStartDisplacement+0+(bv*0.05);
+						}
+						if (nameModel=="msb201062-s5"){
+							rm=bv*0.078*2*Math.PI;
+							rr = ((bv*0.02)+0.35*radius)
+							positionsP3[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							positionsP3[ bv * 3 + 1 ] = yStartDisplacement+0+(bv*0.05);
+						}
+						else if (nameModel=="Ec_iAF1260_flux2"){
+							rm=bv*0.004*2*Math.PI;
+							rr = ((radius*1.08)-(bv*0.03)+1)
+							positionsP3[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							positionsP3[ bv * 3 + 1 ] = yStartDisplacement+0-(bv*0.03);
+
+						}
+						
+						else if (nameModel=="iTO977_v1.00_cobra"){
+							rm=bv*0.004*2*Math.PI;
+							rr = ((radius*1.08)-(bv*0.03)+1)
+							positionsP3[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							positionsP3[ bv * 3 + 1 ] = yStartDisplacement+0-(bv*0.03);
+
+						}
+						else{
+							rm=bv*0.008*2*Math.PI;
+							rr = ((bv*0.02)+0.05*radius);
+							positionsP3[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							positionsP3[ bv * 3 + 1 ] = yStartDisplacement+0+(bv*0.02);
+						}
+						
+						positionsP3[ bv * 3 + 2 ] = Math.sin(rm) *rr;
+						
+						values_colorP3[ bv * 3 + 0 ] = color.r;
+						values_colorP3[ bv * 3 + 1 ] = color.g;
+						values_colorP3[ bv * 3 + 2 ] = color.b;
+						bv++;
+					}
+				}
+				startModelPlaces=bv;
+				for( var bw = jsonObj1.length , bww= jsonObj1.length+5000; bw < bww; bw++ ) {
+						
+		
+					//if (jsonObj1[bw][6]==2){
+						values_sizeP3[ bv ] = 30;
+						//b3values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+						compartmentP3[ bv ] = -1;
+						//idMap[bw]=[2,bv];
+						//typesMap[2][bv]=bw;
+						idMap[bw]=[2,bv];
+						typesMap[2][bv]=bw;
+						//var rm=(bw-jsonObj1.length)*0.078*2*Math.PI;
+						//var	rr = (((bw-jsonObj1.length)*0.02)+0.95*radius)
+						//radius=900;
+						
+						var rm;
+						
+						var rr ;
+						
+						if (nbPlacesModel<2000){
+							rm=(bw-jsonObj1.length)*0.008*2*Math.PI;
+							rr == ((radius)-((bw-jsonObj1.length)*0.3)+1)
+						}
+						else{
+							rm=(bw-jsonObj1.length)*0.003*2*Math.PI;
+							rr == ((radius*1.8)-((bw-jsonObj1.length)*0.3)+1)
+						}
+						
+						positionsP3[ bv * 3 + 0 ] = (Math.cos(rm) *rr)+900;
+						//b3positions[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius+900;
+						//b3positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
+						positionsP3[ bv * 3 + 1 ] = yStartDisplacement/2;
+						positionsP3[ bv * 3 + 2 ] = ((Math.random() * 2 - 1) * radius)+150000;
+						//b3positions[ bv * 3 + 2 ] = (Math.sin(rm) *rr)+50000;
+						
+						//if ( positions[ bv * 3 + 0 ] < 0 )
+						//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
+						//else
+						//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
+						values_colorP3[ bv * 3 + 0 ] = color2.r;
+						values_colorP3[ bv * 3 + 1 ] = color2.g;
+						values_colorP3[ bv * 3 + 2 ] = color2.b;
+						bv++;
+					//}
+				}
+				endModelPlaces=bv;
+			
+			
+
+			
+			/*
 			// populates first buffer geometry for particles with coordinates, colors, and size
 			var color = new THREE.Color( 0xff9900 );;
 			var color2 = new THREE.Color( 0x55ff55 );
@@ -1605,6 +1740,14 @@
 							b3positions[ bv * 3 + 1 ] = yStartDisplacement+0+(bv*0.05);
 						}
 						else if (nameModel=="Ec_iAF1260_flux2"){
+							rm=bv*0.004*2*Math.PI;
+							rr = ((radius*1.08)-(bv*0.03)+1)
+							b3positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							b3positions[ bv * 3 + 1 ] = yStartDisplacement+0-(bv*0.03);
+
+						}
+						
+						else if (nameModel=="iTO977_v1.00_cobra"){
 							rm=bv*0.004*2*Math.PI;
 							rr = ((radius*1.08)-(bv*0.03)+1)
 							b3positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;
@@ -1642,12 +1785,12 @@
 						//var	rr = (((bw-jsonObj1.length)*0.02)+0.95*radius)
 						//radius=900;
 						var rm=(bw-jsonObj1.length)*0.008*2*Math.PI;
-						var rr = ((radius)-((bw-jsonObj1.length)*0.3)+1)
+						var rr = ((radius*1.08)-((bw-jsonObj1.length)*0.3)+1)
 						b3positions[ bv * 3 + 0 ] = (Math.cos(rm) *rr)+900;
 						//b3positions[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius+900;
 						//b3positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
-						b3positions[ bv * 3 + 1 ] = yStartDisplacement/2;
-						b3positions[ bv * 3 + 2 ] = ((Math.random() * 2 - 1) * radius)+150000;
+						b3positions[ bv * 3 + 1 ] = yStartDisplacement+80;
+						b3positions[ bv * 3 + 2 ] = ((Math.random() * 2 - 1) * radius)+50000;
 						//b3positions[ bv * 3 + 2 ] = (Math.sin(rm) *rr)+50000;
 						
 						//if ( positions[ bv * 3 + 0 ] < 0 )
@@ -1662,8 +1805,18 @@
 				}
 				endModelPlaces=bv;
 			//}
+			*/
+			bgeometryP3.addAttribute( 'position', new THREE.BufferAttribute( positionsP3, 3 ) );
+			bgeometryP3.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP3, 3 ) );
+			bgeometryP3.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP3, 1 ) );
+			bgeometryP3.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP3, 1 ) );
 			
+			b3values_size = bgeometryP3.attributes.size.array;
+			b3positions = bgeometryP3.attributes.position.array;
+			b3values_color = bgeometryP3.attributes.ca.array;
+			b3values_compartment = bgeometryP3.attributes.compartment.array;
 			
+			bgeometryP3.computeBoundingSphere();
 			// associate first particle system with bufferGeometry
 			PointCloud3 = new THREE.PointCloud( bgeometryP3, particle3ShaderMaterial );
 
@@ -1680,63 +1833,49 @@
 			bgeometryP4 = new THREE.BufferGeometry();
 			
 			bgeometryP4.dynamic = true;
-			bgeometryP4.attributes = {
-
-				position: {
-					itemSize: 3,
-					array: new Float32Array( nbDegradParticles * 3 )
-				},
-				ca: {
-					itemSize: 3,
-					array: new Float32Array( nbDegradParticles * 3 )
-				},
-				size: {
-					itemSize: 1,
-					array: new Float32Array( nbDegradParticles ),
-					dynamic: true
-				},
-				compartment: {
-					itemSize: 1,
-					array: new Float32Array( nbDegradParticles ),
-					dynamic: true
-				}
-
-			}
-			bgeometryP4.attributes.size.needsUpdate = true;
-			bgeometryP4.attributes.position.needsUpdate = true;
-			bgeometryP4.attributes.ca.needsUpdate = true;
-			bgeometryP4.attributes.compartment.needsUpdate = true;
-
-			b4values_size = bgeometryP4.attributes.size.array;
-			b4positions = bgeometryP4.attributes.position.array;
-			b4values_color = bgeometryP4.attributes.ca.array;
-			b4values_compartment = bgeometryP4.attributes.compartment.array;
+			var positionsP4 = new Float32Array( nbDegradParticles * 3 );
+			var values_colorP4 = new Float32Array( nbDegradParticles * 3 );
+			var values_sizeP4 = new Float32Array( nbDegradParticles );
+			var compartmentP4 = new Float32Array( nbDegradParticles );
 			
+			
+
 			// populates first buffer geometry for particles with coordinates, colors, and size
 			var color = new THREE.Color( 0xff66ff );;
 			var radius =400;
 			for( var bv = 0; bv < nbDegradParticles; bv++ ) {
 			
 
-				b4values_size[ bv ] = 10;
-				b4values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+				values_sizeP4[ bv ] = 10;
+				compartmentP4[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
 
-				b4positions[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
+				positionsP4[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
 				
 				//b4positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
-				b4positions[ bv * 3 + 1 ] = yStartDisplacement+0;
-				b4positions[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
+				positionsP4[ bv * 3 + 1 ] = yStartDisplacement+0;
+				positionsP4[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
 				
 				
 				//if ( positions[ bv * 3 + 0 ] < 0 )
 				//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
 				//else
 				//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
-				b4values_color[ bv * 3 + 0 ] = color.r;
-				b4values_color[ bv * 3 + 1 ] = color.g;
-				b4values_color[ bv * 3 + 2 ] = color.b;
+				values_colorP4[ bv * 3 + 0 ] = color.r;
+				values_colorP4[ bv * 3 + 1 ] = color.g;
+				values_colorP4[ bv * 3 + 2 ] = color.b;
 
 			}
+			bgeometryP4.addAttribute( 'position', new THREE.BufferAttribute( positionsP4, 3 ) );
+			bgeometryP4.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP4, 3 ) );
+			bgeometryP4.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP4, 1 ) );
+			bgeometryP4.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP4, 1 ) );
+			
+			b4values_size = bgeometryP4.attributes.size.array;
+			b4positions = bgeometryP4.attributes.position.array;
+			b4values_color = bgeometryP4.attributes.ca.array;
+			b4values_compartment = bgeometryP4.attributes.compartment.array;
+			
+			
 			
 			
 			// associate first particle system with bufferGeometry
@@ -1753,8 +1892,13 @@
 			// defines first buffergeometry for PN particles
 			bgeometryP5 = new THREE.BufferGeometry();
 			
+			var positionsP5 = new Float32Array( nbPNParticles * 3 );
+			var values_colorP5 = new Float32Array( nbPNParticles * 3 );
+			var values_sizeP5 = new Float32Array( nbPNParticles );
+			var compartmentP5 = new Float32Array( nbPNParticles );
+			
 			bgeometryP5.dynamic = true;
-			bgeometryP5.attributes = {
+			/*bgeometryP5.attributes = {
 
 				position: {
 					itemSize: 3,
@@ -1775,16 +1919,8 @@
 					dynamic: true
 				}
 
-			}
-			bgeometryP5.attributes.size.needsUpdate = true;
-			bgeometryP5.attributes.position.needsUpdate = true;
-			bgeometryP5.attributes.ca.needsUpdate = true;
-			bgeometryP5.attributes.compartment.needsUpdate = true;
-
-			b5values_size = bgeometryP5.attributes.size.array;
-			b5positions = bgeometryP5.attributes.position.array;
-			b5values_color = bgeometryP5.attributes.ca.array;
-			b5values_compartment = bgeometryP5.attributes.compartment.array;
+			}*/
+			
 			
 			var color = new THREE.Color( 0xffffff );
 					
@@ -1876,57 +2012,13 @@
 						}
 					}
 					
-					//console.log(totalWidth);
-					//console.log(listWidthSubSystems);
-					/*for (var key in subSystems) {
-						if (subSystems.hasOwnProperty(key)) {
-							var percentage= subSystems[key]/totalNbreactions;
-							if (percentage < minCircleFraction){
-								percentage= minCircleFraction;
-								
-							}
-							subSystems[key]=percentage;
-							totalPercentage+=percentage;
-							
-							//console.log(percentage);
-						}
-					}
-					console.log(totalPercentage);
-					var toDistribute=0;
-					if (totalPercentage>1){
-						toDistribute= totalPercentage-1;
-					}
-					var nbReducable=0;
-					for (var key in subSystems) {
-						if (subSystems.hasOwnProperty(key)) {
-							if((subSystems[key]*(1-toDistribute))>minCircleFraction){
-								nbReducable++;
-							}
-						}
-					}
-					console.log(nbReducable);
-					var sums=0;
-					for (var key in subSystems) {
-						if (subSystems.hasOwnProperty(key)) {
-							if((subSystems[key]*(1-toDistribute))>minCircleFraction){
-								var res=subSystems[key]*(1-(toDistribute));
-								subSystems[key]=res;
-								
-							}
-							sums+=subSystems[key];
-							
-							//toDistribute/nbReducable
-						}
-					}
-					console.log(subSystems+" total: "+sums);*/
-					//var cnt1=0
-					//var cnt2=0;
+					
 					var localRSeparator=0;
 					for( var bw = 0 , bww= jsonObj1.length; bw < bww; bw++ ) {
 						
 						if (jsonObj1[bw][6]==4){
 
-							b5values_size[ bv ] = 10;
+							values_sizeP5[ bv ] = 10;
 							//b5values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
 							
 							// try to assign the compartment of the majority of the products the reaction is linked to 
@@ -1946,9 +2038,9 @@
 										votes[mapComp[jsonObj1[listProducts[lp]][3]]]++;
 								}
 								var winner= votes.indexOf(Math.max.apply( Math, votes ));
-								b5values_compartment[ bv ] = winner;
+								compartmentP5[ bv ] = winner;
 								if (winner==-1){
-									b5values_compartment[ bv ] = mapComp[jsonObj1[bw][3]];
+									compartmentP5[ bv ] = mapComp[jsonObj1[bw][3]];
 								}
 							} 
 							else if (listModifiers.length>0){
@@ -1961,9 +2053,9 @@
 										votes[mapComp[jsonObj1[listModifiers[lp]][3]]]++;
 								}
 								var winner= votes.indexOf(Math.max.apply( Math, votes ));
-								b5values_compartment[ bv ] = winner;
+								compartmentP5[ bv ] = winner;
 								if (winner==-1){
-									b5values_compartment[ bv ] = mapComp[jsonObj1[bw][3]];
+									compartmentP5[ bv ] = mapComp[jsonObj1[bw][3]];
 								}
 							}
 							else if (listReactants.length>0){
@@ -1976,14 +2068,14 @@
 										votes[mapComp[jsonObj1[listReactants[lp]][3]]]++;
 								}
 								var winner= votes.indexOf(Math.max.apply( Math, votes ));
-								b5values_compartment[ bv ] = winner;
+								compartmentP5[ bv ] = winner;
 								if (winner==-1){
-									b5values_compartment[ bv ] = mapComp[jsonObj1[bw][3]];
+									compartmentP5[ bv ] = mapComp[jsonObj1[bw][3]];
 								}
 							}
 							else {
 								// if no species linked, put reaction in the center
-								b5values_compartment[ bv ] = mapComp[jsonObj1[bw][3]];
+								compartmentP5[ bv ] = mapComp[jsonObj1[bw][3]];
 							}
 							
 							idMap[bw]=[4,bv];
@@ -1995,11 +2087,11 @@
 							
 							
 							
-							if (nameModel=="Ec_iAF1260_flux2"){
+							if (nameModel=="Ec_iAF1260_flux2" || nameModel=="iTO977_v1.00_cobra"){
 								rm=bv*0.078*2*Math.PI;
 								rr = ((bv*0.02)+0.35*radius)
 								//b5positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;
-								b5positions[ bv * 3 + 1 ] = (yStartDisplacement/2)+(bv*0.04);
+								positionsP5[ bv * 3 + 1 ] = (yStartDisplacement/2)+(bv*0.04);
 							}
 							else{
 								var yModifier=0;
@@ -2099,16 +2191,16 @@
 								
 								//b5positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;
 								//b5positions[ bv * 3 + 1 ] = 0-(bv*0.03);
-								b5positions[ bv * 3 + 1 ] = yStartDisplacement-(mDepth*4)+(yModifier*4);
+								positionsP5[ bv * 3 + 1 ] = yStartDisplacement-(mDepth*4)+(yModifier*4);
 								//console.log(jsonObj1[bw][4][1][0])
 							}
-							b5positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;
-							b5positions[ bv * 3 + 2 ] = Math.sin(rm) *rr;
+							positionsP5[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							positionsP5[ bv * 3 + 2 ] = Math.sin(rm) *rr;
 							
 							
-							b5values_color[ bv * 3 + 0 ] = color.r;
-							b5values_color[ bv * 3 + 1 ] = color.g;
-							b5values_color[ bv * 3 + 2 ] = color.b;
+							values_colorP5[ bv * 3 + 0 ] = color.r;
+							values_colorP5[ bv * 3 + 1 ] = color.g;
+							values_colorP5[ bv * 3 + 2 ] = color.b;
 							bv++;
 						}
 					}
@@ -2116,36 +2208,64 @@
 					startModelReactions=bv;
 					for( var bw = jsonObj1.length , bww= jsonObj1.length+5000; bw < bww; bw++ ) {
 						
-						b5values_size[ bv ] = 30;
+						values_sizeP5[ bv ] = 30;
 						
-						b5values_compartment[ bv ] = -1;
+						compartmentP5[ bv ] = -1;
 						idMap[bw]=[4,bv];
 						typesMap[4][bv]=bw;
 						
 						
 						
 						//radius=900;
-						var rm=(bw-jsonObj1.length)*0.008*2*Math.PI;
-						var rr = ((radius)-((bw-jsonObj1.length)*0.3)+1)
-						//b5positions[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius+900;
-						b5positions[ bv * 3 + 0 ] = (Math.cos(rm) *rr)+1800;
-						//b5positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
-						b5positions[ bv * 3 + 1 ] = yStartDisplacement/2-180;
+						if (nbReactionsModel<2000){
+							rm=(bw-jsonObj1.length)*0.008*2*Math.PI;
+							rr == ((radius)-((bw-jsonObj1.length)*0.3)+1)
+						}
+						else{
+							rm=(bw-jsonObj1.length)*0.003*2*Math.PI;
+							rr == ((radius*1.8)-((bw-jsonObj1.length)*0.3)+1)
+						}
 						
-						b5positions[ bv * 3 + 2 ] = ((Math.random() * 2 - 1) * radius)+150000;
+						//var rm=(bw-jsonObj1.length)*0.008*2*Math.PI;
+						//var rr = ((radius)-((bw-jsonObj1.length)*0.3)+1)
+						//b5positions[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius+900;
+						positionsP5[ bv * 3 + 0 ] = (Math.cos(rm) *rr)+1800;
+						//b5positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
+						positionsP5[ bv * 3 + 1 ] = yStartDisplacement/2-180;
+						
+						positionsP5[ bv * 3 + 2 ] = ((Math.random() * 2 - 1) * radius)+150000;
 						
 						
 						//if ( positions[ bv * 3 + 0 ] < 0 )
 						//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
 						//else
 						//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
-						b5values_color[ bv * 3 + 0 ] = color2.r;
-						b5values_color[ bv * 3 + 1 ] = color2.g;
-						b5values_color[ bv * 3 + 2 ] = color2.b;
+						values_colorP5[ bv * 3 + 0 ] = color2.r;
+						values_colorP5[ bv * 3 + 1 ] = color2.g;
+						values_colorP5[ bv * 3 + 2 ] = color2.b;
 						bv++;
 					}
 					endModelReactions=bv;
 			
+			
+			
+			
+			
+			bgeometryP5.addAttribute( 'position', new THREE.BufferAttribute( positionsP5, 3 ) );
+			bgeometryP5.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP5, 3 ) );
+			bgeometryP5.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP5, 1 ) );
+			bgeometryP5.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP5, 1 ) );
+			
+			//bgeometryP5.attributes.size.needsUpdate = true;
+			//bgeometryP5.attributes.position.needsUpdate = true;
+			//bgeometryP5.attributes.ca.needsUpdate = true;
+			//bgeometryP5.attributes.compartment.needsUpdate = true;
+
+			b5values_size = bgeometryP5.attributes.size.array;
+			b5positions = bgeometryP5.attributes.position.array;
+			b5values_color = bgeometryP5.attributes.ca.array;
+			b5values_compartment = bgeometryP5.attributes.compartment.array;
+									
 			// associate first particle system with bufferGeometry
 			PointCloud5 = new THREE.PointCloud( bgeometryP5, particle5ShaderMaterial );
 
@@ -2161,37 +2281,11 @@
 			bgeometryP6 = new THREE.BufferGeometry();
 			
 			bgeometryP6.dynamic = true;
-			bgeometryP6.attributes = {
-
-				position: {
-					itemSize: 3,
-					array: new Float32Array( nbLogParticles * 3 )
-				},
-				ca: {
-					itemSize: 3,
-					array: new Float32Array( nbLogParticles * 3 )
-				},
-				size: {
-					itemSize: 1,
-					array: new Float32Array( nbLogParticles ),
-					dynamic: true
-				},
-				compartment: {
-					itemSize: 1,
-					array: new Float32Array( nbLogParticles ),
-					dynamic: true
-				}
-
-			}
-			bgeometryP6.attributes.size.needsUpdate = true;
-			bgeometryP6.attributes.position.needsUpdate = true;
-			bgeometryP6.attributes.ca.needsUpdate = true;
-			bgeometryP6.attributes.compartment.needsUpdate = true;
-
-			b6values_size = bgeometryP6.attributes.size.array;
-			b6positions = bgeometryP6.attributes.position.array;
-			b6values_color = bgeometryP6.attributes.ca.array;
-			b6values_compartment = bgeometryP6.attributes.compartment.array;
+			
+			var positionsP6 = new Float32Array( nbLogParticles * 3 );
+			var values_colorP6 = new Float32Array( nbLogParticles * 3 );
+			var values_sizeP6 = new Float32Array( nbLogParticles );
+			var compartmentP6 = new Float32Array( nbLogParticles );
 			
 			// populates first buffer geometry for particles with coordinates, colors, and size
 			var color = new THREE.Color( 0xffffff );;
@@ -2199,25 +2293,37 @@
 			for( var bv = 0; bv < nbLogParticles; bv++ ) {
 			
 
-				b6values_size[ bv ] = 10;
-				b6values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+				values_sizeP6[ bv ] = 10;
+				compartmentP6[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
 
-				b6positions[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
+				positionsP6[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
 				//b6positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
-				b6positions[ bv * 3 + 1 ] = yStartDisplacement;
+				positionsP6[ bv * 3 + 1 ] = yStartDisplacement;
 				
-				b6positions[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
+				positionsP6[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
 				
 				
 				//if ( positions[ bv * 3 + 0 ] < 0 )
 				//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
 				//else
 				//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
-				b6values_color[ bv * 3 + 0 ] = color.r;
-				b6values_color[ bv * 3 + 1 ] = color.g;
-				b6values_color[ bv * 3 + 2 ] = color.b;
+				values_colorP6[ bv * 3 + 0 ] = color.r;
+				values_colorP6[ bv * 3 + 1 ] = color.g;
+				values_colorP6[ bv * 3 + 2 ] = color.b;
 
 			}
+
+			bgeometryP6.addAttribute( 'position', new THREE.BufferAttribute( positionsP6, 3 ) );
+			bgeometryP6.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP6, 3 ) );
+			bgeometryP6.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP6, 1 ) );
+			bgeometryP6.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP6, 1 ) );
+			
+			b6values_size = bgeometryP6.attributes.size.array;
+			b6positions = bgeometryP6.attributes.position.array;
+			b6values_color = bgeometryP6.attributes.ca.array;
+			b6values_compartment = bgeometryP6.attributes.compartment.array;
+			
+			
 			
 			
 			// associate first particle system with bufferGeometry
@@ -2235,37 +2341,11 @@
 			bgeometryP7 = new THREE.BufferGeometry();
 			
 			bgeometryP7.dynamic = true;
-			bgeometryP7.attributes = {
-
-				position: {
-					itemSize: 3,
-					array: new Float32Array( nbCoarseParticles * 3 )
-				},
-				ca: {
-					itemSize: 3,
-					array: new Float32Array( nbCoarseParticles * 3 )
-				},
-				size: {
-					itemSize: 1,
-					array: new Float32Array( nbCoarseParticles ),
-					dynamic: true
-				},
-				compartment: {
-					itemSize: 1,
-					array: new Float32Array( nbCoarseParticles ),
-					dynamic: true
-				}
-
-			}
-			bgeometryP7.attributes.size.needsUpdate = true;
-			bgeometryP7.attributes.position.needsUpdate = true;
-			bgeometryP7.attributes.ca.needsUpdate = true;
-			bgeometryP7.attributes.compartment.needsUpdate = true;
-
-			b7values_size = bgeometryP7.attributes.size.array;
-			b7positions = bgeometryP7.attributes.position.array;
-			b7values_color = bgeometryP7.attributes.ca.array;
-			b7values_compartment = bgeometryP7.attributes.compartment.array;
+			
+			var positionsP7 = new Float32Array( nbCoarseParticles * 3 );
+			var values_colorP7 = new Float32Array( nbCoarseParticles * 3 );
+			var values_sizeP7 = new Float32Array( nbCoarseParticles );
+			var compartmentP7 = new Float32Array( nbCoarseParticles );
 			
 			// populates first buffer geometry for particles with coordinates, colors, and size
 			var color = new THREE.Color( 0xffffff );;
@@ -2273,25 +2353,37 @@
 			for( var bv = 0; bv < nbCoarseParticles; bv++ ) {
 			
 
-				b7values_size[ bv ] = 10;
-				b7values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+				values_sizeP7[ bv ] = 10;
+				compartmentP7[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
 
-				b7positions[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
+				positionsP7[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
 				//b7positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
-				b7positions[ bv * 3 + 1 ] = yStartDisplacement;
+				positionsP7[ bv * 3 + 1 ] = yStartDisplacement;
 				
-				b7positions[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
+				positionsP7[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
 				
 				
 				//if ( positions[ bv * 3 + 0 ] < 0 )
 				//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
 				//else
 				//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
-				b7values_color[ bv * 3 + 0 ] = color.r;
-				b7values_color[ bv * 3 + 1 ] = color.g;
-				b7values_color[ bv * 3 + 2 ] = color.b;
+				values_colorP7[ bv * 3 + 0 ] = color.r;
+				values_colorP7[ bv * 3 + 1 ] = color.g;
+				values_colorP7[ bv * 3 + 2 ] = color.b;
 
 			}
+
+			bgeometryP7.addAttribute( 'position', new THREE.BufferAttribute( positionsP7, 3 ) );
+			bgeometryP7.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP7, 3 ) );
+			bgeometryP7.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP7, 1 ) );
+			bgeometryP7.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP7, 1 ) );
+			
+			b7values_size = bgeometryP7.attributes.size.array;
+			b7positions = bgeometryP7.attributes.position.array;
+			b7values_color = bgeometryP7.attributes.ca.array;
+			b7values_compartment = bgeometryP7.attributes.compartment.array;
+			
+			
 			
 			
 			// associate first particle system with bufferGeometry
@@ -2306,42 +2398,143 @@
 			// populates second buffer geometry for lines  with coordinates, colors, and size
 			//segmentPts = 20000;
 			bgeometry2 = new THREE.BufferGeometry();
-			bgeometry2.attributes = {
+			
+			var positionsL1 = new Float32Array( (segmentPts+18000) * 3 );
+			var colorsL1 = new Float32Array( (segmentPts+18000) * 3 );
+			var opL1 = new Float32Array((segmentPts+18000));
+			var compartmentL1 = new Float32Array( (segments+9000)*2 );
+			var fluxL1 = new Float32Array( (segments+9000) );
+			var boundsL1= new Float32Array( (segments+9000) * 2 );
+			
+			/*bgeometry2.attributes = {
 				position: {
 					itemSize: 3,
-					array: new Float32Array((segmentPts+10000) * 3)
+					array: new Float32Array((segmentPts+5000) * 3)
 				},
 				ca: {
 					itemSize: 3,
-					array: new Float32Array((segmentPts+10000) * 3)
+					array: new Float32Array((segmentPts+5000) * 3)
 				},
 				op: {
 					itemSize: 1,
-					array: new Float32Array( segmentPts+10000  ),
+					array: new Float32Array( segmentPts+5000  ),
 					dynamic: true
 				},
 				compartment: {
 					itemSize: 2,
-					array: new Float32Array( (segments+5000) * 2 ),
+					array: new Float32Array( (segments+2500) * 2 ),
 					dynamic: true
 				}
 				,flux: {
 					itemSize: 1,
-					array: new Float32Array( segments+5000 ),
+					array: new Float32Array( segments+2500 ),
 					dynamic: true
 				}
 				,bounds: {
 					itemSize: 2,
-					array: new Float32Array( (segments+5000) * 2 ),
+					array: new Float32Array( (segments+2500) * 2 ),
 					dynamic: true
 				}
-			};
+			};*/
+			
+			var r = 800;
+			var col = new THREE.Color( 0x00ffff );
+			var col2 = new THREE.Color( 0x55ff55 );
+			
+			var iv=0;
+			for ( var i = 0; i < segments; i ++ ) {
+			
+				var t1 = jsonObj1[jsonObj2[i][0]][6]
+				var t2 = jsonObj1[jsonObj2[i][1]][6]
+				var ivList=[]
+				
+				if (t1==2){
+					positionsL1[ (iv * 3)+0 ] = b3positions[ (idMap[jsonObj2[i][0]][1] * 3) + 0 ]+0.0;
+					positionsL1[ (iv * 3) + 1 ] = b3positions[ (idMap[jsonObj2[i][0]][1] * 3) + 1 ]+0.0;
+					positionsL1[ (iv * 3) + 2 ] = b3positions[ (idMap[jsonObj2[i][0]][1] * 3) + 2 ]+0.0;
+					compartmentL1[ (i*2)+0 ] = b3values_compartment[ (idMap[jsonObj2[i][0]][1]) ];
+					opL1[iv]=0.25;
+					colorsL1[ iv * 3 ] = 0.0;
+					colorsL1[ iv * 3 + 1 ] = 1.0;
+					colorsL1[ iv * 3 + 2 ] = 1.0;
+					ivList.push(iv)
+					//linesMap[i]=iv
+					
+					iv++;
+				}
+				else if (t1==4){
+					positionsL1[ (iv * 3)+0 ] = b5positions[ (idMap[jsonObj2[i][0]][1] * 3) + 0 ]+0.0;
+					positionsL1[ (iv * 3) + 1 ] = b5positions[ (idMap[jsonObj2[i][0]][1] * 3) + 1 ]+0.0;
+					positionsL1[ (iv * 3) + 2 ] = b5positions[ (idMap[jsonObj2[i][0]][1] * 3) + 2 ]+0.0;
+					compartmentL1[ (i*2)+0 ] = b5values_compartment[ (idMap[jsonObj2[i][0]][1]) ];
+					opL1[iv]=0.25;
+					colorsL1[ iv * 3 ] = 0.0;
+					colorsL1[ iv * 3 + 1 ] = 1.0;
+					colorsL1[ iv * 3 + 2 ] = 1.0;
+					//linesMap[i]=iv
+					ivList.push(iv)
+					iv++;
+				}
+				if (t2 ==2){
+					positionsL1[ (iv * 3)+0 ] = b3positions[ (idMap[jsonObj2[i][1]][1] * 3) + 0 ]+0.0;
+					positionsL1[ (iv * 3) + 1 ] = b3positions[ (idMap[jsonObj2[i][1]][1] * 3) + 1 ]+0.0;
+					positionsL1[ (iv * 3) + 2 ] = b3positions[ (idMap[jsonObj2[i][1]][1] * 3) + 2 ]+0.0;
+					compartmentL1[ (i*2)+1 ] = b3values_compartment[ (idMap[jsonObj2[i][1]][1]) ];
+					opL1[iv]=0.25;
+					colorsL1[ iv * 3 ] = 0.0;
+					colorsL1[ iv * 3 + 1 ] = 1.0;
+					colorsL1[ iv * 3 + 2 ] = 1.0;
+					//linesMap[i]=iv
+					ivList.push(iv)
+					iv++;
+				}
+				else if (t2 ==4){
+					positionsL1[ (iv * 3)+0 ] = b5positions[ (idMap[jsonObj2[i][1]][1] * 3) + 0 ]+0.0;
+					positionsL1[ (iv * 3) + 1 ] = b5positions[ (idMap[jsonObj2[i][1]][1] * 3) + 1 ]+0.0;
+					positionsL1[ (iv * 3) + 2 ] = b5positions[ (idMap[jsonObj2[i][1]][1] * 3) + 2 ]+0.0;
+					compartmentL1[ (i*2)+1 ] = b5values_compartment[ (idMap[jsonObj2[i][1]][1]) ];
+					opL1[iv]=0.25;
+					colorsL1[ iv * 3 ] = 0.0;
+					colorsL1[ iv * 3 + 1 ] = 1.0;
+					colorsL1[ iv * 3 + 2 ] = 1.0;
+					//linesMap[i]=iv
+					ivList.push(iv)
+					iv++;
+				}
+				linesMap[i]=ivList
+			}
+			var radius=400;
+			extraLinesCnt=iv;
+			for ( var i = segments; i < segments+maxNbTokenModel; i ++ ) {
+				
+					positionsL1[ (iv * 3)+0 ] = (Math.random() * 2 - 1) * radius;
+					positionsL1[ (iv * 3) + 1 ] = 80;
+					positionsL1[ (iv * 3) + 2 ] = ((Math.random() * 2 - 1) * radius)+50000;
+					compartmentL1[ (i*2)+0 ] = -1;
+					opL1[iv]=0.25;
+					colorsL1[ iv * 3 ] = 0.33;
+					colorsL1[ iv * 3 + 1 ] = 1.0;
+					colorsL1[ iv * 3 + 2 ] = 0.33;
+					ivList.push(iv)
+					//linesMap[i]=iv
+					
+					iv++;
 				
 				
-			bgeometry2.attributes.position.needsUpdate = true;
-			bgeometry2.attributes.ca.needsUpdate = true;
-			bgeometry2.attributes.compartment.needsUpdate = true;
-			bgeometry2.attributes.op.needsUpdate = true;
+				
+			}
+
+			bgeometry2.addAttribute( 'position', new THREE.BufferAttribute( positionsL1, 3 ) );	
+			bgeometry2.addAttribute( 'ca', new THREE.BufferAttribute( colorsL1, 3 ) );
+			bgeometry2.addAttribute( 'op', new THREE.BufferAttribute( opL1, 1 ) );
+			bgeometry2.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentL1, 2 ) );
+
+			/*
+				
+			//bgeometry2.attributes.position.needsUpdate = true;
+			//bgeometry2.attributes.ca.needsUpdate = true;
+			//bgeometry2.attributes.compartment.needsUpdate = true;
+			//bgeometry2.attributes.op.needsUpdate = true;
 
 			b2lpositions = bgeometry2.attributes.position.array;
 				//var colors = bgeometry.attributes.color.array;
@@ -2420,7 +2613,7 @@
 				
 					b2lpositions[ (iv * 3)+0 ] = (Math.random() * 2 - 1) * radius;
 					b2lpositions[ (iv * 3) + 1 ] = 80;
-					b2lpositions[ (iv * 3) + 2 ] = ((Math.random() * 2 - 1) * radius)+150000;
+					b2lpositions[ (iv * 3) + 2 ] = ((Math.random() * 2 - 1) * radius)+50000;
 					b2lcompartments[ (i*2)+0 ] = -1;
 					b2lopacity[iv]=0.25;
 					b2lcolors[ iv * 3 ] = col2.r;
@@ -2433,7 +2626,7 @@
 				
 				
 				
-			}
+			}*/
 			//for ( var i = 0; i < segmentPts; i ++ ) {
 			//if (i<50)
 			//	console.log(i+" -- "+b1values_compartment[i]);
@@ -2443,6 +2636,11 @@
 		//console.log(bgeometry2);
 			mesh = new THREE.Line( bgeometry2, linesShaderMaterial,THREE.LinePieces );
 			scene.add( mesh );
+			b2lpositions = bgeometry2.attributes.position.array;
+				//var colors = bgeometry.attributes.color.array;
+			b2lcolors = bgeometry2.attributes.ca.array;
+			b2lcompartments=bgeometry2.attributes.compartment.array;
+			b2lopacity = bgeometry2.attributes.op.array;
 			
 			// create and populate geometry with token particles coordinates, colors, and size
 			var radius = 300;
@@ -2907,9 +3105,20 @@
 				for (var i= 0; i<selectedModelNodes.length;i++){
 					if (selectedModelNodes[i][5]==2 ){
 						//scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]=((Math.random() * 2 - 1) * 400);
-						var rm=cnt1*0.008*2*Math.PI;
+						var rm;
+						var rr;
+						if (nbReactionsModel<2000){
+							rm=cnt1*0.008*2*Math.PI;
+							rr=((radius*1.48)-(cnt1*0.2)+1);
+						}
+						else{
+							rm=cnt1*0.004*2*Math.PI;
+							rr=((radius*1.88)-(cnt1*0.09)+1);
+						}
+						//var rm=cnt1*0.008*2*Math.PI;
 						//radius=900;
-						var rr = ((radius*1.48)-(cnt1*0.2)+1)
+						//var rr = ((radius*1.48)-(cnt1*0.2)+1)
+						
 						scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+0]= (Math.cos(rm) *rr)+900;
 						scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]= (Math.sin(rm) *rr);
 						scene.children[2].geometry.attributes.compartment.array[(ln1+cnt1)]= selectedModelNodes[i][2];
@@ -2921,9 +3130,19 @@
 					}
 					else if (selectedModelNodes[i][5]==4 ){
 						//scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]=((Math.random() * 2 - 1) * 400);
-						var rm=cnt2*0.008*2*Math.PI;
+						var rm;
+						var rr;
+						if (nbReactionsModel<2000){
+							rm=cnt2*0.008*2*Math.PI;
+							rr =((radius*1.480)-(cnt2*0.2)+1);
+						}
+						else{
+							rm=rm=cnt2*0.004*2*Math.PI;
+							rr=((radius*1.880)-(cnt2*0.09)+1);
+						}
+						//var rm=cnt2*0.008*2*Math.PI;
 						//radius=600;
-						var rr = ((radius*1.480)-(cnt2*0.2)+1)
+						//var rr = ((radius*1.480)-(cnt2*0.2)+1)
 						scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+0]=(Math.cos(rm) *rr)+1800;
 						scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]=(Math.sin(rm) *rr);
 						scene.children[4].geometry.attributes.compartment.array[(ln2+cnt2)]= selectedModelNodes[i][2];
@@ -4957,7 +5176,8 @@
 		}
 		
 		function toXYCoords (pos) {
-			var vector = projector.projectVector(pos.clone(), camera);
+			//var vector = projector.projectVector(pos.clone(), camera);
+			var vector = pos.clone().project(camera);
 			vector.x = (vector.x + 1)/2 * window.innerWidth;
 			vector.y = -(vector.y - 1)/2 * window.innerHeight;
 			return vector;
@@ -5156,7 +5376,7 @@
 						}
 						
 					}
-					for ( var i = segments; i < segments+5000; i ++ ) {
+					for ( var i = segments; i < segments+18000; i ++ ) {
 							//b2lpositions[ (iv * 3)+0 ] = 0;
 							//b2lpositions[ (iv * 3) + 1 ] = 80;
 							b2lpositions[ (iv * 3) + 2 ] = 150000;
@@ -5864,7 +6084,7 @@
 					
 					var radius=400;
 					extraLinesCnt=iv;
-					for ( var i = segments; i < segments+5000; i ++ ) {
+					for ( var i = segments; i < segments+18000; i ++ ) {
 						
 							b2lpositions[ (iv * 3)+0 ] = (Math.random() * 2 - 1) * radius;
 							b2lpositions[ (iv * 3) + 1 ] = 80;
@@ -6442,7 +6662,8 @@
 			if (stopThreeJsMouseEvent==false){
 			if (flagPick==1){
 				var vector = new THREE.Vector3( mouse.x, mouse.y, 1 );
-				projector.unprojectVector( vector, camera );
+				//projector.unprojectVector( vector, camera );
+				vector.unproject(camera );
 				raycaster.set( camera.position, vector.sub( camera.position ).normalize() );
 				var distance=99999999;
 				var listretPointsIndexes=[];
@@ -8571,6 +8792,7 @@ arcs.append("svg:path")
 $("#modelSpreadSheet").css({top:  $("#dataTable").position().top + $("#list4").height()+170, width:$("#container").width()});
 //var dataJson={"places" : [], "qssf" : { "constraints" : [], "externality_tag" :null,"objectives" : []}, "transitions" : []};
 var dataJson=<%-JSON.stringify(qm.file)%>;
+var dataJsonSfba=<%-JSON.stringify(qm.sfba)%>;
 //console.log(JSON.stringify(dataJson).length)
 //console.log(dataJson)
 
@@ -9394,6 +9616,9 @@ for (var i=0, j=dataJson["qssf"]["constraints"].length; i<j;i++){
 	tempdata4[i]=new Array(1);
 	tempdata4[i][0]=dataJson["qssf"]["constraints"][i]["constraint"]["name"];
 }
+//for(var i=0, j=tempdata4.length; i<j;i++){
+//console.log(tempdata4[i][0])
+//}
 var ht = $('#constraintsTable').handsontable('getInstance');
 if ($.isArray(tempdata4) && tempdata4[0] && $.isArray(tempdata4[0])){
 	ht.populateFromArray (0, 0, tempdata4,tempdata4.length-1, 1);
@@ -9693,9 +9918,451 @@ $container12.handsontable({
   minSpareRows: 1
 });
 
+var $container13 = $("#sfbaTable");
+$container13.handsontable({
+  data: [],
+  width: ($("#container").width()*0.8),
+  height:200,
+  dataSchema: {name: null, formula: null, lb: null, ub:null,command:null, rule:null},
+  colWidths: [105, (($("#container").width()*0.6)-235)/2, 40, 40,100, (($("#container").width()*0.6)-235)/2],
+  startRows: 5,
+  startCols: 6,
+  colHeaders: ['Reaction name', 'Reaction Formula', 'Lb','Ub','Command','Gene/Reaction Rule'],
+  columns: [
+    {data: "name"},
+    {data: "formula"},
+    {data: "lb"},
+    {data: "ub"},
+	{data: "command"},
+	{data: "rule"}
+  ],
+  /*afterChange: function(changes, source) {
+    //console.log(this.getData());
+	var dt = this.getData();
+	
+	for (var i=0, j= dt.length;i<j-1;i++){
+		dataSfba[i]=new Array(5);
+		dataSfba[i][0]=dt[i].name;
+		dataSfba[i][1]=dt[i].formula;
+		dataSfba[i][2]=dt[i].lb;
+		dataSfba[i][3]=dt[i].ub;
+		dataSfba[i][4]=dt[i].rule;
+	}
+	
+		document.getElementById("mySfbaSpreadsheet").value=JSON.stringify(dataSfba);
+	
+	//console.log(JSON.stringify(dataSfba));
+	//dataJson.places.push()
+  },*/
+  minSpareRows: 1
+});
 
 
+var tempdata6=dataJsonSfba;
+var ht = $('#sfbaTable').handsontable('getInstance');
+//console.log(ht)
+if ($.isArray(tempdata6) && tempdata6[0] && $.isArray(tempdata6[0])){
+	ht.populateFromArray (0, 0, tempdata6,tempdata6.length-1, 5);
+}
+var tmpN="";
+var tmpS="";
+for (var i=0,j=dataJsonSfba.length;i<j;i++){
+	if(dataJsonSfba[i]){
+		tmpN=dataJsonSfba[i][0];
+		tmpS=dataJsonSfba[i][1];
+		var aString=tmpS.replace(/(\d+\.\d+)|(\+)|(\=)/g, "").split(/\s+/);
+		sfbaReacM[tmpN]=aString;
+		//console.log(rString)
+	}
+}
 
+var sfbaGeneralReactionMap={}
+var k_sfbaReacM=Object.keys(sfbaReacM);
+for (var i=0, j=k_sfbaReacM.length;i<j;i++){
+	var components = sfbaReacM[k_sfbaReacM[i]];
+	var cl =components.length;
+	for (var i1=0, j1=k_sfbaReacM.length;i1<j1;i1++){
+		if (i1!=i){
+			var components2 = sfbaReacM[k_sfbaReacM[i1]];
+			for (var c=0;c<cl;c++){
+				var ind = components2.indexOf(components[c]);
+				if (ind!=-1){
+					if (sfbaGeneralReactionMap.hasOwnProperty(k_sfbaReacM[i])){
+						if (sfbaGeneralReactionMap[k_sfbaReacM[i]].indexOf(k_sfbaReacM[i1])==-1){
+							sfbaGeneralReactionMap[k_sfbaReacM[i]].push(k_sfbaReacM[i1]);
+						}
+						
+					}
+					else{
+						sfbaGeneralReactionMap[k_sfbaReacM[i]]=[];
+						
+						sfbaGeneralReactionMap[k_sfbaReacM[i]].push(k_sfbaReacM[i1]);
+						
+					}
+				}
+			}
+		}	
+	}
+	
+}
+
+//console.log(sfbaGeneralReactionMap)
+
+
+var $container14 = $("#reactionCategoryTable");
+$container14.handsontable({
+	data: [],
+	width: 400,
+	height:150,
+	dataSchema: {reaction: null, category: null},
+	startRows: 5,
+	startCols: 4,
+	colHeaders: ['reaction', 'category', ],
+	columns: [
+	{data: "reaction"},
+	{data: "category"},
+	],
+	afterChange: function(changes, source) {
+		var dt = this.getData();	
+		categoriesReactions={};
+		reactionsCategories={};
+		var countPerCategory={};
+		for (var i=0, j= dt.length;i<j-1;i++){
+			var tmpReaction = dt[i].reaction;
+			var tmpCategory = dt[i].category;
+			//if (tmpCategory!="null"){
+				if (categoriesReactions.hasOwnProperty(tmpCategory)){
+					if (categoriesReactions[tmpCategory].indexOf(tmpReaction)==-1){
+						categoriesReactions[tmpCategory].push(tmpReaction);
+					}
+				}
+				else {
+					categoriesReactions[tmpCategory]=[];
+					categoriesReactions[tmpCategory].push(tmpReaction);
+				}
+			//}
+		}
+		//console.log(categoriesReactions)
+		for (var i=0, j= dt.length;i<j-1;i++){
+			var tmpReaction = dt[i].reaction;
+			var tmpCategory = dt[i].category;
+			//if (tmpCategory!="null"){
+				if (reactionsCategories.hasOwnProperty(tmpReaction)){
+					if (reactionsCategories[tmpReaction].indexOf(tmpCategory)==-1){
+						reactionsCategories[tmpReaction].push(tmpCategory);
+					}
+				}
+				else {
+					reactionsCategories[tmpReaction]=[];
+					reactionsCategories[tmpReaction].push(tmpCategory);
+				}
+			//}
+		}
+		
+		var listCategory = Object.keys(categoriesReactions);
+		for (var i=0, j=listCategory.length;i<j;i++){
+			countPerCategory[listCategory[i]]=0;
+		}
+		
+		
+		var listCloneCategory = [];
+		var nbCloneAxis=0;
+		var listReactions = Object.keys(reactionsCategories);
+		//console.log(listCategory)
+		var hwidth = (screen.width*0.5),
+		hheight = screen.height*0.9,
+		innerRadius = 40,
+		outerRadius = (screen.height*0.7)/2;
+		var nbAxis = listCategory.length;
+		
+		var angle = d3.scale.ordinal().domain(d3.range(nbAxis+1)).rangePoints([0, 2 * Math.PI]),
+		radius = d3.scale.linear().range([innerRadius, outerRadius]),
+		color = d3.scale.category10().domain(d3.range(20));
+		//console.log(angle)
+		//console.log(reactionsCategories)
+		nodes =[];
+		var listDisplayedNodes=[];
+		links = [];
+		for (var i=0,j=listReactions.length;i<j;i++){
+			if (sfbaGeneralReactionMap.hasOwnProperty(listReactions[i])) {
+				//var laxis=categoriesReactions[reactionsCategories[listReactions[i]][0]].length;
+				var indexSource;
+				var indexTarget;
+				if(listDisplayedNodes.indexOf(listReactions[i])==-1){
+					listDisplayedNodes.push(listReactions[i]);
+					indexSource=listDisplayedNodes.length-1;
+					//nodes.push({x: listCategory.indexOf(reactionsCategories[listReactions[i]][0]), y: (countPerCategory[reactionsCategories[listReactions[i]][0]]/(categoriesReactions[reactionsCategories[listReactions[i]][0]].length))*(categoriesReactions[reactionsCategories[listReactions[i]][0]].length/100)});
+					nodes.push({x: listCategory.indexOf(reactionsCategories[listReactions[i]][0]), y: (countPerCategory[reactionsCategories[listReactions[i]][0]]/(categoriesReactions[reactionsCategories[listReactions[i]][0]].length))*(categoriesReactions[reactionsCategories[listReactions[i]][0]].length/100), nname:listReactions[i]});
+					
+					countPerCategory[reactionsCategories[listReactions[i]][0]]+=1;
+				}
+				else{
+					indexSource=listDisplayedNodes.indexOf(listReactions[i]);
+				}
+				for(var i1=0,j1=sfbaGeneralReactionMap[listReactions[i]].length;i1<j1;i1++){
+					var nextNode= sfbaGeneralReactionMap[listReactions[i]][i1];
+					if(listDisplayedNodes.indexOf(nextNode)==-1){
+						if (reactionsCategories[nextNode]){
+							if (listCategory.indexOf(reactionsCategories[nextNode][0])!=-1){
+								if (listCategory.indexOf(reactionsCategories[nextNode][0])!=listCategory.indexOf(reactionsCategories[listReactions[i]][0])){
+									listDisplayedNodes.push(nextNode);
+									indexTarget=listDisplayedNodes.length-1;
+									//nodes.push({x: listCategory.indexOf(reactionsCategories[nextNode][0]), y: (countPerCategory[reactionsCategories[nextNode][0]]/(categoriesReactions[reactionsCategories[nextNode][0]].length))*(categoriesReactions[reactionsCategories[nextNode][0]].length/100)});
+									nodes.push({x: listCategory.indexOf(reactionsCategories[nextNode][0]), y: (countPerCategory[reactionsCategories[nextNode][0]]/(categoriesReactions[reactionsCategories[nextNode][0]].length))*(categoriesReactions[reactionsCategories[nextNode][0]].length/100), nname:nextNode});
+									
+									countPerCategory[reactionsCategories[nextNode][0]]+=1;
+									links.push({source: nodes[indexSource], target: nodes[indexTarget]})
+								}
+								else{
+									/*if (listCloneCategory.indexOf(reactionsCategories[nextNode][0])==-1){
+										listCloneCategory.push(reactionsCategories[nextNode][0]);
+										nbCloneAxis++;
+									}*/
+									//console.log(nbAxis+listCloneCategory.indexOf(reactionsCategories[nextNode][0]))
+									listDisplayedNodes.push(nextNode);
+									indexTarget=listDisplayedNodes.length-1;
+									//nodes.push({x: listCategory.indexOf(reactionsCategories[nextNode][0]), y: 1.0+(countPerCategory[reactionsCategories[nextNode][0]]/(categoriesReactions[reactionsCategories[nextNode][0]].length))*(categoriesReactions[reactionsCategories[nextNode][0]].length/100)});
+									nodes.push({x: listCategory.indexOf(reactionsCategories[nextNode][0]), y: (countPerCategory[reactionsCategories[nextNode][0]]/(categoriesReactions[reactionsCategories[nextNode][0]].length))*(categoriesReactions[reactionsCategories[nextNode][0]].length/100), nname:nextNode});
+									countPerCategory[reactionsCategories[nextNode][0]]+=1;
+									//nodes.push({x: (nbAxis+listCloneCategory.indexOf(reactionsCategories[nextNode][0])), y: Math.random()});
+									//nodes.push({x: nbAxis+listCloneCategory.indexOf(reactionsCategories[nextNode][0]), y: Math.random()});
+									
+									links.push({source: nodes[indexSource], target: nodes[indexTarget]})
+								}
+							}
+						}
+					}
+				}
+				//nodes.push({x: listCategory.indexOf(reactionsCategories[listReactions[i]]) Math.floor((Math.random() * nbAxis)), y: Math.random() });
+				//nodes.push({x: Math.floor((Math.random() * nbAxis)), y: Math.random() });
+				//links.push({source: nodes[nodes.length-2], target: nodes[nodes.length-1]})
+			}
+		}
+		//console.log(listCloneCategory)
+		//console.log(nbCloneAxis)
+		//for (var i=0,j=listReactions.length;i<j;i++){
+		//	if (sfbaGeneralReactionMap.hasOwnProperty(listReactions[i])) {
+		//		for(){
+				
+		//		}
+		//	}
+		//}
+		//console.log(nodes)
+		//console.log(links)
+		//for (elem in sfbaGeneralReactionMap){
+		//	if (sfbaGeneralReactionMap.hasOwnProperty(elem)) {
+				//sfbaGeneralReactionMap[elem]
+				//nodes.push({x: (Math.random() * nbAxis), y: Math.random() });
+				//nodes.push({x: (Math.random() * nbAxis), y: Math.random() });
+				//links.push({source: nodes[nodes.length-2], target: nodes[nodes.length-1]})
+		//	}
+		//}
+		
+		//var nbReactionsPerSub={};
+		// create nodes and links data
+		
+		/*for (elem in chartData){
+			//if (chartData.hasOwnProperty(elem)) {
+				//console.log(chartData[elem]/tnbReactions);
+				//for (var i=0, j=chartData[elem]; i<j;i++){
+					
+					nodes.push({x: (Math.random() * nbAxis), y: Math.random() });
+					nodes.push({x: (Math.random() * nbAxis), y: Math.random() });
+					links.push({source: nodes[nodes.length-2], target: nodes[nodes.length-1]})
+				//}
+			//}
+			nbElem++;
+		}*/
+		
+		
+		
+		
+		//$("#hivePlot").style.top = $("#democ0").position().top+$("#democ0").height()+150 + 'px';
+		document.getElementById("hivePlot").style.top =$("#democ0").position().top+(window.innerHeight *0.6)+150 + 'px';
+		
+		$("#hivePlot").html("");
+		
+		
+		var svg2 = d3.select("#hivePlot").append("svg")
+			.attr("width", hwidth)
+			.attr("height", hheight)	
+			
+			.append("g")
+			.call(d3.behavior.zoom().scaleExtent([0.01, 12]).on("zoom", zoom))
+			
+			.append("g")
+			.attr("transform", "translate(" + hwidth / 2 + "," + hheight / 2 + ")");
+		
+		svg2.append('rect')
+       .classed('background', true)
+       .attr('y',-100000)
+       .attr('x', -100000)
+       .attr('height', 200000)
+       .attr('width', 200000)
+       .attr('fill', 'white')
+		//console.log(d3.range(nbAxis))
+		svg2.selectAll(".hvaxis")
+			.data(d3.range(nbAxis+nbCloneAxis))
+		  .enter().append("line")
+			.attr("class", "hvaxis")
+			.attr("transform", function(d) {if (d<nbAxis) {return "rotate(" + degrees(angle(d)) + ")"} else{return "rotate(" + (degrees(angle(listCategory.indexOf(listCloneCategory[d-nbAxis])))+((360/nbAxis)/4)) + ")"  }})
+			.attr("x1", radius.range()[0])
+			.attr("x2", radius.range()[1]);
+		svg2.append("text")
+					.attr("id", "axislabel0")
+					.attr("x", 0)
+					.attr("y", 0)
+					.text("Reactions by category")
+					.attr("text-anchor", "middle")
+					.attr("style", "fill: black")
+					.attr("dy", -(hheight / 2)*0.90)
+					.attr("dx", 0);
+		
+		var mnbElem=0;
+		for (var i=0;i< listCategory.length;i++){		
+				svg2.append("text")
+					.attr("id", "axislabel"+(mnbElem))
+					.attr("x", Math.sin(((mnbElem)*(2.0*Math.PI/(nbAxis))))*(width / 1.0)*1.1)
+					.attr("y", -Math.cos(((mnbElem)*(2.0*Math.PI/(nbAxis))))*(width / 1.0)*1.1)
+					.text(""+listCategory[i].substring(0, 4))
+					.attr("text-anchor", "middle")
+					.attr("style", "fill: black;fontSize:5px");
+					//.attr("dy", )
+					//.attr("dx", );
+				//console.log(mnbElem+1)
+				//console.log(nbAxis)
+				mnbElem++;
+		}
+
+		
+		svg2.selectAll(".hvnode")
+			.data(nodes)
+		  .enter().append("circle")
+			.attr("class", "hvnode")
+			.attr("transform", function(d) { if (d.x<nbAxis) {return "rotate(" + degrees(angle(d.x)) + ")"; } else{return "rotate(" + (degrees(angle(listCategory.indexOf(listCloneCategory[d.x-nbAxis])))+((360/nbAxis)/4)) + ")";} })
+			.attr("cx", function(d) { return radius(d.y); })
+			.attr("r", 0.5)
+			.style("fill", function(d) { return color(d.x); })
+			.on("mouseover", nodeMouseover)
+			.on("mouseout", mouseout);
+			
+		svg2.selectAll(".hvlink")
+			.data(links)
+		  .enter().append("path")
+			.attr("class", "hvlink")
+			.attr("d", d3.hive.link(nbAxis+nbCloneAxis)
+				.angle(function(d) { return angle(d.x); })//return angle((angle(listCategory.indexOf(listCloneCategory[d.x-nbAxis])))+((2*Math.PI/nbAxis)/4));} })
+				.radius(function(d) { return radius(d.y); }))
+			.attr("stroke", function(d) { return color(d.source.x); })
+			.on("mouseover", linkMouseover)
+			.on("mouseout", mouseout);
+			//
+		
+		
+		function nodeMouseover(d) {
+			
+			var neiNodeList = [];
+			svg2.selectAll(".hvlink").classed("active", function (p) {
+				
+				if (p.source.x == d.x && p.source.y == d.y) {
+					neiNodeList.push(p.target);
+				}
+				if (p.target.x == d.x && p.target.y == d.y ) {
+					neiNodeList.push(p.source);
+				}
+				return p.source === d || p.target === d;
+			});
+			//nodename.text(""+d.nname);
+			//console.log(d.nname)
+			d3.select(this).classed("active", true);
+			$("#mytooltip4")
+                      .html("Reaction: <b>"+d.nname+"</b>")
+					  .css('left', window.event.clientX+40)
+                      .css('top', window.event.clientY)
+                      .show();
+			//if (Object.keys( nbReactionsPerSub )[d.x-1]){
+			//	nodename.text("Nodes from "+Object.keys( nbReactionsPerSub )[d.x-1] + ": "+ (d.y*tnbReactions));
+			//}
+			//else{
+			//	nodename.text("Metabolite nodes: "+ Math.floor(d.y*maxNBMetabolitesPerReaction));
+			//}
+			
+		}	
+		function linkMouseover(d) {
+					svg2.selectAll(".hvlink").classed("active", function (p) {
+						
+						return p === d;
+					});
+					//d3.select(this).classed("active", true);
+					svg2.selectAll(".hvnode").classed("active", function (p) {
+						
+						return p === d.source || p === d.target;
+					});
+					
+					
+		}
+		
+		// Clear any highlighted nodes or links.
+		function mouseout() {
+			svg2.selectAll(".active").classed("active", false);
+			$("#mytooltip4").html('').hide();
+		}
+		function zoom() {
+		  svg2.attr("transform", "translate(" + (d3.event.translate[0] + (hwidth / 2)*d3.event.scale )+","+ (d3.event.translate[1]+ (hheight / 2)*d3.event.scale) +")scale(" + d3.event.scale + ")");
+		}
+		
+
+		function degrees(radians) {
+		  return radians / Math.PI * 180 - 90;
+		}
+		
+		//var listCategory = Object.keys(categoriesReactions);
+		//for (var i=0; i< listCategory.length;i++){	
+		//		nbReactionsPerSub[listCategory[i]]=0;		
+		//}
+		
+		/*for (elem in chartData){
+			if (chartData.hasOwnProperty(elem)) {
+				nbReactionsPerSub[elem]=0;
+			}
+		}
+		for (elem1 in chartData){
+			if (chartData.hasOwnProperty(elem1)) {
+				for (elem2 in MapNbMetabolitesPerReaction){
+					if (MapNbMetabolitesPerReaction.hasOwnProperty(elem2)) {
+						if (selectedMetabolicData[1][elem2][4][1][0] ){
+							if (selectedMetabolicData[1][elem2][4][1][0]==elem1){
+								nbReactionsPerSub[elem1]+=MapNbMetabolitesPerReaction[elem2]
+							}
+						}
+					}
+				}
+			}
+		}
+		var arr = Object.keys( nbReactionsPerSub ).map(function ( key ) { return nbReactionsPerSub[key]; });
+		var maxNBMetabolitesPerReaction = Math.max.apply( null, arr );
+		//console.log(chartData);
+		var nbElem=1;
+		for (elem in chartData){
+			if (chartData.hasOwnProperty(elem)) {
+				//console.log(chartData[elem]/tnbReactions);
+				//for (var i=0, j=chartData[elem]; i<j;i++){
+					
+					nodes.push({x: 0, y: nbReactionsPerSub[elem]/maxNBMetabolitesPerReaction });
+					nodes.push({x: nbElem, y: (chartData[elem]/tnbReactions) });
+					links.push({source: nodes[nodes.length-2], target: nodes[nodes.length-1]})
+				//}
+			}
+			nbElem++;
+		}
+
+		var listR=Object.keys( nbReactionsPerSub );
+		*/
+		
+		//console.log(categoriesReactions)
+	},
+	minSpareRows: 1
+});
 
 
 jsPlumb.ready(function() {
@@ -10285,6 +10952,179 @@ jsPlumb.ready(function() {
 		}
 
 	$("#qsspn-model-edit-form0").css({top:  $("#modelSpreadSheet").position().top -750, width:$("#container").width()/2});	
+	
+	var qm = <%- JSON.stringify(qm)%>;
+	var detailMTN={};
+	var listMTN={};
+	var tmpListModelNodes={};
+	var mtns={};
+	var results ={};
+	var mtb=<%- JSON.stringify(mtb) %>;
+		mtns[mtb['name']]=mtb['file'][1];
+	
+	for (var i=0, j= qm.file.extra[3].length; i<j; i++){
+		if (qm.file.extra[3][i][3]==2){
+			//var name_model_node= 
+			if (tmpListModelNodes.hasOwnProperty(qm.file.extra[2][qm.file.extra[3][i][0]][1])){
+				tmpListModelNodes[qm.file.extra[2][qm.file.extra[3][i][0]][1]].push(mtns[qm.metabolic_net][qm.file.extra[3][i][1]][1]);
+				if (detailMTN.hasOwnProperty(qm.metabolic_net)){
+					if (detailMTN[qm.metabolic_net].indexOf(mtns[qm.metabolic_net][qm.file.extra[3][i][1]][1])==-1){
+						
+						detailMTN[qm.metabolic_net].push(mtns[qm.metabolic_net][qm.file.extra[3][i][1]][1]);
+					}
+				}
+				else{
+					detailMTN[qm.metabolic_net]=[];
+					detailMTN[qm.metabolic_net].push(mtns[qm.metabolic_net][qm.file.extra[3][i][1]][1]);
+					
+				}
+			}
+			else{
+				tmpListModelNodes[qm.file.extra[2][qm.file.extra[3][i][0]][1]]=[];
+				tmpListModelNodes[qm.file.extra[2][qm.file.extra[3][i][0]][1]].push(mtns[qm.metabolic_net][qm.file.extra[3][i][1]][1]);
+				if (detailMTN.hasOwnProperty(qm.metabolic_net)){
+					if (detailMTN[qm.metabolic_net].indexOf(mtns[qm.metabolic_net][qm.file.extra[3][i][1]][1])==-1){
+						
+						detailMTN[qm.metabolic_net].push(mtns[qm.metabolic_net][qm.file.extra[3][i][1]][1]);
+					}
+				}
+				else{
+					detailMTN[qm.metabolic_net]=[];
+					detailMTN[qm.metabolic_net].push(mtns[qm.metabolic_net][qm.file.extra[3][i][1]][1]);
+					
+				}
+			}
+		
+		}
+	}
+	listMTN[qm.name]=[qm.metabolic_net,tmpListModelNodes];
+	
+	
+	var myListModels=Object.keys(listMTN);
+	var mylistMTN=Object.keys(detailMTN);
+	
+	var data;
+	for (el0 in listMTN ){
+		if (listMTN.hasOwnProperty(el0)) {
+			data = [];
+			for (var j = 0, jl =detailMTN[listMTN[el0][0]].length; j < jl; j += 1) {
+				var tmpdata = [];
+				for (var k = 0, kl = Object.keys(listMTN[el0][1]).length; k < kl; k += 1) {
+					if (listMTN[el0][1][Object.keys(listMTN[el0][1])[k]].indexOf(detailMTN[listMTN[el0][0]][j])>-1){
+					tmpdata.push(1);
+					}
+					else{
+					tmpdata.push(0);
+					}
+				}
+				data.push(tmpdata);
+			}
+			results[el0]=data;
+		}
+	}
+	
+	var nbModel=0;
+	var data = [];
+	for (var j = 0, jl =detailMTN[listMTN[myListModels[nbModel]][0]].length; j < jl; j += 1) {
+		var tmpdata = [];
+		for (var k = 0, kl = Object.keys(listMTN[myListModels[nbModel]][1]).length; k < kl; k += 1) {
+			if (listMTN[myListModels[nbModel]][1][Object.keys(listMTN[myListModels[nbModel]][1])[k]].indexOf(detailMTN[listMTN[myListModels[nbModel]][0]][j])>-1){
+			tmpdata.push(1);
+			}
+			else{
+			tmpdata.push(0);
+			}
+		}
+		data.push(tmpdata);
+	}
+	//console.log(listMTN);
+	//console.log(detailMTN);
+    // Make the changes
+	//$("#democ0").html("");
+	var width = window.innerWidth / 5,
+    height = window.innerHeight *0.6,
+    mdiv = d3.select('#democ0'),
+    msvg = mdiv.append('svg')
+        .attr('width', width)
+        .attr('height', height),
+	rw = width/results[myListModels[nbModel]][0].length,
+    rh = height/results[myListModels[nbModel]].length;
+	//var msvg = d3.select("#democ0").transition();
+	var grp = msvg.selectAll('g')
+		.data(data)
+		.enter()
+		.append('g')
+		.attr('transform', function(d, i) {
+			return 'translate(0, ' + (rh*1.0) * i + ')';
+		});
+
+	// For each group, create a set of rectangles and bind 
+	// them to the inner array (the inner array is already
+	// binded to the group)
+	grp.selectAll('rect')
+		.data(function(d) { return d; })
+		.enter()
+		.append('rect')
+        .attr('x', function(d, i) { return (rw*1.0 )* i; })
+        .attr('width', rw)
+        .attr('height', rh)
+		.style("fill", function(d, i) { if (d==1) {return "rgb(0,0,"+(parseInt(255*d))+")"} else return "transparent"})
+		.on('mouseover', function(d,i,j) {
+					disableSelection=true;
+					if (d==1){
+					d3.select(this).transition().duration(10)
+					.style({'stroke-opacity':1,'stroke':'#F00', 'stroke-width':2});
+					$("#mytooltip3")
+                      .html("Link between: <br>Model node: <b>"+Object.keys(listMTN[myListModels[nbModel]][1])[i]+"</b><br>and Metabolic node: <b>"+detailMTN[listMTN[myListModels[nbModel]][0]][j]) //listMTN[myListModels[nbModel]][1]
+					  .css('left', window.event.clientX+40)
+                      .css('top', window.event.clientY)
+                      .show();
+					}
+                    
+		})
+		.on("mouseout", function(d,i) {
+					disableSelection=false;
+				   $("#mytooltip3").html('').hide();
+				   d3.select(this).transition().duration(100)
+					.style({'stroke-opacity':0.0,'stroke':'transparent','stroke-width':0});
+		});
+	
+	
+	$("#hiveplotColor").css({top:  $("#hivePlot").position().top +$("#hivePlot").height()+5});	
+	
+	
+	function hiveplotAction(){
+		var svg2= d3.select("#hivePlot").select("svg");
+		if(hvBColor==true){
+			//console.log("black")
+			svg2.select("rect").attr('fill', 'black');
+			svg2.selectAll("text").attr("style", "fill: white");
+			svg2.selectAll("line").attr("style", "stroke: white");
+			svg2.selectAll("circle").attr("style", "stroke: white");
+			
+			
+			//svg2.selectAll(".hvnode")
+			//.data(nodes)
+			//.attr("r", function(d) {console.log(d); return 0.5+(d.y )});
+			
+			svg2.selectAll(".hvlink")
+			.data(links)
+			.attr("stroke", function(d) { return '#'+Math.floor( 215+(d.source.y/10)*215).toString(16);});
+			//.attr("r", function(d) {console.log(d); return 0.5+(d.y )});
+			
+			
+			hvBColor=false;
+		}
+		else{
+			//console.log("white")
+			svg2.select("rect").attr('fill', 'white');
+			svg2.selectAll("text").attr("style", "fill: black");
+			svg2.selectAll("line").attr("style", "stroke: #000");
+			svg2.selectAll("circle").attr("style", "stroke: black");
+			hvBColor=true;
+		}
+	}
+	
 	
 	</script>	
 	

@@ -86,6 +86,17 @@ module.exports = {
 		});
 	},
 	
+	// render the profile view (e.g. /views/show.ejs)
+	layoutEditor: function(req, res, next) {
+		Metabolic_net.findOne(req.param('id'), function foundMtn(err, mtn) {
+		  if (err) return next(err);
+		  if (!mtn) return next();
+		  res.view({
+			mtn: mtn
+		  });
+		});
+	},
+	
 	index: function(req, res, next) {
 		// Get an array of all users in the User collection(e.g. table)
 		Metabolic_net.find(function foundMtns(err, mtns) {

@@ -1,0 +1,136 @@
+<br><br>
+<div class='container' id="showresult" style="width:80%">
+<% if(status!=="Processed") { %>
+	<h1><center>Calculations in progress</center></h1>
+	<form action="/fbaexperiment/show/<%= id %>" id="experiment-edit-form" method="POST" class="form-signin form-inline">
+		<center>
+				<input type="submit" value="Back" class="btn btn-sm btn-success">
+				<input type="hidden" name="_csrf" value="<%= _csrf %>" />
+		</center>
+	</form>
+<% method = "none" 
+} %>
+<% if(method==="objstat") { %>
+	<h1><center>Objective function evaluation.</center></h1>
+	<table class='table table-bordered' style="text-align:left">
+		<tr>
+			<td>Model</td><td><%= name + ' : ' + comment %></td>			
+		</tr>
+		<tr>
+			<td>Objective function</td><td><%= objective %></td>
+		</tr>
+		<% 
+			var fields = result.split(":"); 
+		%>
+		<tr>
+			<td>Maximal value</td><td><%= fields[0] %></td>
+		</tr>
+		<tr>
+			<td>Status</td><td><%= fields[1].split(";")[0] %></td>
+		</tr>
+	</table>
+<% } %>
+<% if(method==="fba") { %>
+	<h1><center>Objective function value and example flux distribution.</center></h1>
+	<table class='table table-bordered' style="text-align:left">
+		<tr>
+			<td>Model</td><td><%= name + ' : ' + comment %></td>			
+		</tr>
+		<tr>
+			<td>Objective function</td><td><%= objective %></td>
+		</tr>
+		<tr>
+			<td>Maximal value</td><td id='maxValue'></td>
+		</tr>
+		<tr>
+			<td>Status</td><td id='status'></td>
+		</tr>
+	</table>
+	<br><br><div id="fbaResult"></div>
+<% } %>
+<% if(method==="fva") { %>
+	<h1><center>Flux Variability Analysis.</center></h1>
+	<table class='table table-bordered' style="text-align:left">
+		<tr>
+			<td>Model</td><td><%= name + ' : ' + comment %></td>			
+		</tr>
+		<tr>
+			<td>Objective function</td><td><%= objective %></td>
+		</tr>
+		<tr>
+			<td>Maximal value</td><td id='maxValue'></td>
+		</tr>
+		<tr>
+			<td>Status</td><td id='status'></td>
+		</tr>
+	</table>
+	<br><br><div id="fvaResult"></div>
+<% } %>
+
+</div>
+<script>
+if(<%- JSON.stringify(method) %>==="fba") {
+	var fbaData = [];
+	var result =<%- JSON.stringify(result) %>;
+	result = result.split(';')[0];
+	var lines = result.split('\n');
+	var firstLine = lines[0].split(' ');
+	$('#maxValue').html(firstLine[0].split('#')[1].split(':')[0]);
+	$('#status').html(firstLine[1]);
+	for(var i=1;i<lines.length;i++) {
+		var fields = lines[i].split('\t');
+		if(fields.length<3) continue;
+		var comments = fields[2].split('#');
+		var comment = '';
+		if(comments.length>0) {
+			comment = comments[1];
+		}
+		fbaData.push([ fields[0], fields[1], comment ]);
+	}
+
+	var $container = $("#fbaResult");
+	$container.handsontable({
+	  data: fbaData,
+	  width: ($("#showresult").width()),
+	  height:600,
+	  colWidths: [$("#showresult").width()*0.25, $("#showresult").width()*0.25, $("#showresult").width()*3],
+	  startRows: 5,
+	  startCols: 3,
+	  colHeaders: ['Reaction name', 'Reaction Flux', 'Comment'],
+	  minSpareRows: 1
+	});
+}
+
+if(<%- JSON.stringify(method) %>==="fva") {
+	var fbaData = [];
+	var result =<%- JSON.stringify(result) %>;
+	result = result.split(';')[0];
+	var lines = result.split('\n');
+	var firstLine = lines[0].split(' ');
+	$('#maxValue').html(firstLine[0].split('#')[1].split(':')[0]);
+	$('#status').html(firstLine[1]);
+	for(var i=1;i<lines.length;i++) {
+		var fields = lines[i].split('\t');
+		if(fields.length<4) continue;
+		var comments = fields[3].split('#');
+		var comment = '';
+		if(comments.length>0) {
+			comment = comments[1];
+		}
+		fbaData.push([ fields[0], fields[1].split(':')[0], fields[1].split(':')[1], fields[2].split(':')[0], fields[2].split(':')[1],comment ]);
+	}
+
+	var $container1 = $("#fvaResult");
+	$container1.handsontable({
+	  data: fbaData,
+	  width: ($("#showresult").width()),
+	  height:600,
+	  colWidths: [$("#showresult").width()*0.25, $("#showresult").width()*0.1, $("#showresult").width()*0.1,$("#showresult").width()*0.1, $("#showresult").width()*0.1,$("#showresult").width()*3],
+	  startRows: 5,
+	  startCols: 6,
+	  colHeaders: ['Reaction name', 'Minimal Flux', 'Status', 'Maximal Flux', 'Status', 'Comment'],
+	  minSpareRows: 1
+	});
+}
+</script>
+

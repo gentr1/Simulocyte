@@ -1,0 +1,28 @@
+<div class='container' >
+	<div class="jumbotron">
+	<h1>FBA Experiments </h1>
+	<h2>Run <i>in silico</i> experiments with Flux Balance Analysis of metabolic networks.</h2>
+	
+	
+	<table class='table table-bordered' style="text-align:left">
+		<tr>
+			
+			<th>Name</th>
+			<th>Comment</th>
+			<th><a href="/fbaexperiment/new" class="btn btn-sm btn-primary">Create New</a></th>
+		</tr>
+		
+		<% _.each(experims, function(exp) { %>
+		<tr data-id="<%= exp.id %>" data-model="exp">
+			
+			<td style="font-size:15px;"><b><%= exp.name %></b></td>
+			<td style="font-size:15px;"><%= exp.comment %></td>
+			<td><a href="/fbaexperiment/show/<%= exp.id %>" class="btn btn-sm btn-success">Show</a></td>
+		</tr> 
+		<% }) %>
+	</table>
+	
+	
+	
+	
+</div>

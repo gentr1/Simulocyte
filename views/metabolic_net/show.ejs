@@ -7,7 +7,8 @@
 	
 	<%= mtn.comment %>
 	<hr>
-	
+	<a href="/metabolic_net/layoutEditor/<%= mtn.id %>" class="btn btn-sm btn-success">Layout Editor</a>
+	<hr>
 	<%var data=[];
 	_.each(mtn.file, function(compartment) {
 		data.push(compartment);
@@ -41,11 +42,11 @@
 	
 	</div>
 	
-	
+	<div id="democ0" style="position: absolute;left: 0px;z-index:1000"></div>
 	<div id="container"  style="position: absolute;left: 0px; overflow: inherit">  </div>
 	
 	<div id="advert" ></div>
-	<div id="dataTable" style="position: absolute; " align="center">
+	<div id="dataTable" style="position: relative; " align="center">
 	<table id="list4"></table>
 	</div>
 	<div id="titlechart" style="position: absolute; " align="center"><h2>Pie chart: nb of reaction nodes per sub-system</h2>
@@ -262,17 +263,17 @@
 		
 		<script type="x-shader/x-vertex" id="vertexshader2">
 
-			uniform float amplitude;
-			attribute vec3 displacement;
+			//uniform float amplitude;
+			//attribute vec3 displacement;
 			attribute vec3 ca;
 			varying vec3 vColor;
 			varying float opacity;
 			attribute float op;
 			void main() {
-				vec3 newPosition = position + amplitude * displacement;
+				//vec3 newPosition = position + amplitude * displacement;
 				vColor = ca;
 				opacity =op;
-				gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
 			}
 			//uniform float amplitude;
 			//attribute vec3 displacement;
@@ -408,6 +409,7 @@
 		var tvalues_color ;
 		var tvalues_p ;
 		var KeggMapPlan;
+		var MiniKeggMapPlan;
 		var geometryKegg;
 		var keggSegment = 1000;
 		var keggSegmentPts = keggSegment*2;
@@ -615,7 +617,7 @@
 			//element1.src	= "slickgrid132E.html"	
 		}
 		
-		else if (nameModel=="hepatonet1-msb201062-s5"){
+		else if (nameModel=="hepatonet1-msb201062-s5" || nameModel=="msb201062-s5"){
 			mapComp = {'-1':-1, GolErMi:0 ,bile:1 ,lyso:2 ,mito:3 ,peroxy:4 ,nuc:5 ,cyto:6 ,ext:7 }
 			nameComp = ["GolErMi","bile","lysosome","mytochodria","peroxisome", "nucleus", "cytoplasm" ,"extra-cellular" ];	
 			//element1.src	= "slickgrid13HP.html"	
@@ -974,6 +976,78 @@
 		}
 		
 		init();
+		
+		
+		
+		var data;
+			/*for (el0 in listMTNs ){
+				if (listMTNs.hasOwnProperty(el0)) {
+					data = [];
+					for (var j = 0, jl =detailListMTNs[listMTNs[el0][0]].length; j < jl; j += 1) {
+						var tmpdata = [];
+						for (var k = 0, kl = Object.keys(listMTNs[el0][1]).length; k < kl; k += 1) {
+							if (listMTNs[el0][1][Object.keys(listMTNs[el0][1])[k]].indexOf(detailListMTNs[listMTNs[el0][0]][j])>-1){
+							tmpdata.push(1);
+							}
+							else{
+							tmpdata.push(0);
+							}
+						}
+						data.push(tmpdata);
+					}
+					results[el0]=data;
+				}
+			}*/
+			
+			
+			var width = 450,//900/3,
+			height = 273.5,//547/3,
+			mdiv = d3.select('#democ0'),
+			msvg = mdiv.append('svg')
+				.attr('width', width)
+				.attr('height', height),
+			rw = 3;//width/2,
+			rh = 3;//height/2;
+
+			var data = [];			
+			//msvg.append("image")
+			//  .attr("xlink:href", "/images/kegg-xsmall.png")
+			//  .attr("x", "0px")
+			//  .attr("y", "0px")
+			//  .attr("width", width+"px")
+			//  .attr("height", height+"px");
+			msvg.selectAll('rect')
+				.data(data)
+				.enter()
+				//.data(function(d) { console.log(d);return d; })
+				//.enter()
+				.append('rect')
+				.attr('x', function(d, i) { console.log(d);return d[0] })
+				.attr('y', function(d, i) { console.log(d);return d[1] })
+				//.attr('x', function(d, i) { return (rw*1.2 )* i; })
+				//.attr('y', function(d, i) { return (rh*1.2 )* i; })
+				.attr('width', rw)
+				.attr('height', rh)
+				.style("fill", function(d, i) { return "rgb(255,0,0)"})//if (d==1) {return "rgb("+(parseInt(255*d))+",0,0)"} else return "transparent"})
+
+			document.getElementById("democ0").style.top=$("#container").position().top+($("#container").height()*0.5)+ 'px';
+			document.getElementById("democ0").style.left=window.innerWidth*0.01+ 'px';	
+			document.getElementById("democ0").style.visibility="hidden";	
+			
+			
+			/*var MiniKeggMapTexture = new THREE.ImageUtils.loadTexture( '/images/kegg-xsmall.png' );
+			var MiniKeggMapMaterial = new THREE.MeshBasicMaterial( { map: MiniKeggMapTexture ,side: THREE.DoubleSide}  );
+			var MiniKeggMapGeometry = new THREE.PlaneGeometry( 900/10, 547/10, 0, 0 ) // size image 2587 1575
+			MiniKeggMapPlan = new THREE.Mesh( MiniKeggMapGeometry, MiniKeggMapMaterial );
+			MiniKeggMapPlan.doubleSided = true;
+			MiniKeggMapPlan.position.set(0, 0, -0 );
+			MiniKeggMapPlan.rotation.x -= (90*(Math.PI / 180));
+			MiniKeggMapPlan.rotation.z += (90*(Math.PI / 180));
+			MiniKeggMapPlan.name="minimapkegg";
+			scene.add( MiniKeggMapPlan );*/
+			
+			
+		
 		animate();
 		
 		
@@ -1222,7 +1296,7 @@
 			// define shader attributes for group of lines
 			linesAttributes = {
 
-				displacement: {	type: 'v3', value: [] },
+				//displacement: {	type: 'v3', value: [] },
 				ca: {	type: 'c', value: [] },
 				op:{ type: "f", value: [] }
 
@@ -1230,7 +1304,7 @@
 
 			linesUniforms = {
 
-				amplitude: { type: "f", value: 1.0 },
+				//amplitude: { type: "f", value: 1.0 },
 				opacity:   { type: "f", value: 0.7 },
 				color:     { type: "c", value: new THREE.Color( 0xffffff ) }
 
@@ -1304,63 +1378,46 @@
 			bgeometryP1 = new THREE.BufferGeometry();
 			
 			bgeometryP1.dynamic = true;
-			bgeometryP1.attributes = {
-
-				position: {
-					itemSize: 3,
-					array: new Float32Array( nbDNAParticles * 3 )
-				},
-				ca: {
-					itemSize: 3,
-					array: new Float32Array( nbDNAParticles * 3 )
-				},
-				size: {
-					itemSize: 1,
-					array: new Float32Array( nbDNAParticles ),
-					dynamic: true
-				},
-				compartment: {
-					itemSize: 1,
-					array: new Float32Array( nbDNAParticles ),
-					dynamic: true
-				}
-
-			}
-			bgeometryP1.attributes.size.needsUpdate = true;
-			bgeometryP1.attributes.position.needsUpdate = true;
-			bgeometryP1.attributes.ca.needsUpdate = true;
-			bgeometryP1.attributes.compartment.needsUpdate = true;
-
-			b1values_size = bgeometryP1.attributes.size.array;
-			b1positions = bgeometryP1.attributes.position.array;
-			b1values_color = bgeometryP1.attributes.ca.array;
-			b1values_compartment = bgeometryP1.attributes.compartment.array;
+			var positionsP1 = new Float32Array( nbDNAParticles * 3 );
+			var values_colorP1 = new Float32Array( nbDNAParticles * 3 );
+			var values_sizeP1 = new Float32Array( nbDNAParticles );
+			var compartmentP1 = new Float32Array( nbDNAParticles );
 			
-			// populates first buffer geometry for particles with coordinates, colors, and size
+			
 			var color = new THREE.Color( 0xffffff );
 			var radius =400;
 			for( var bv = 0; bv < nbDNAParticles; bv++ ) {
 			
 
-				b1values_size[ bv ] = 10;
-				b1values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+				values_sizeP1[ bv ] = 10;
+				compartmentP1[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
 
-				b1positions[ (bv * 3) + 0 ] = (Math.random() * 2 - 1) * radius;
+				positionsP1[ (bv * 3) + 0 ] = (Math.random() * 2 - 1) * radius;
 				//b1positions[ (bv * 3) + 1 ] = (Math.random() * 2 - 1) * radius;
-				b1positions[ (bv * 3) + 1 ] = yStartDisplacement;
-				b1positions[ (bv * 3) + 2 ] = (Math.random() * 2 - 1) * radius;
+				positionsP1[ (bv * 3) + 1 ] = yStartDisplacement;
+				positionsP1[ (bv * 3) + 2 ] = (Math.random() * 2 - 1) * radius;
 				
 				
 				//if ( positions[ bv * 3 + 0 ] < 0 )
 				//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
 				//else
 				//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
-				b1values_color[ (bv * 3) + 0 ] = color.r;
-				b1values_color[ (bv * 3) + 1 ] = color.g;
-				b1values_color[ (bv * 3) + 2 ] = color.b;
+				values_colorP1[ (bv * 3) + 0 ] = color.r;
+				values_colorP1[ (bv * 3) + 1 ] = color.g;
+				values_colorP1[ (bv * 3) + 2 ] = color.b;
 
 			}
-			//console.log(bgeometryP1);
+			bgeometryP1.addAttribute( 'position', new THREE.BufferAttribute( positionsP1, 3 ) );
+			bgeometryP1.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP1, 3 ) );
+			bgeometryP1.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP1, 1 ) );
+			bgeometryP1.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP1, 1 ) );
+			
+			b1values_size = bgeometryP1.attributes.size.array;
+			b1positions = bgeometryP1.attributes.position.array;
+			b1values_color = bgeometryP1.attributes.ca.array;
+			b1values_compartment = bgeometryP1.attributes.compartment.array;
+			
+			
 			
 			// associate first particle system with bufferGeometry
 			PointCloud1 = new THREE.PointCloud( bgeometryP1, particle1ShaderMaterial );
@@ -1378,66 +1435,54 @@
 			bgeometryP2 = new THREE.BufferGeometry();
 			
 			bgeometryP2.dynamic = true;
-			bgeometryP2.attributes = {
-
-				position: {
-					itemSize: 3,
-					array: new Float32Array( nbRNAParticles * 3 )
-				},
-				ca: {
-					itemSize: 3,
-					array: new Float32Array( nbRNAParticles * 3 )
-				},
-				size: {
-					itemSize: 1,
-					array: new Float32Array( nbRNAParticles ),
-					dynamic: true
-				},
-				compartment: {
-					itemSize: 1,
-					array: new Float32Array( nbRNAParticles ),
-					dynamic: true
-				}
-				
-
-			}
-			bgeometryP2.attributes.size.needsUpdate = true;
-			bgeometryP2.attributes.position.needsUpdate = true;
-			bgeometryP2.attributes.ca.needsUpdate = true;
-			bgeometryP2.attributes.compartment.needsUpdate = true;
-
-			b2values_size = bgeometryP2.attributes.size.array;
-			b2positions = bgeometryP2.attributes.position.array;
-			b2values_color = bgeometryP2.attributes.ca.array;
-			b2values_compartment = bgeometryP2.attributes.compartment.array;
+			var positionsP2 = new Float32Array( nbRNAParticles * 3 );
+			var values_colorP2 = new Float32Array( nbRNAParticles * 3 );
+			var values_sizeP2 = new Float32Array( nbRNAParticles );
+			var compartmentP2 = new Float32Array( nbRNAParticles );
+									
+			//bgeometryP2.attributes.size.needsUpdate = true;
+			//bgeometryP2.attributes.position.needsUpdate = true;
+			//bgeometryP2.attributes.ca.needsUpdate = true;
+			//bgeometryP2.attributes.compartment.needsUpdate = true;
 			
-			// populates first buffer geometry for particles with coordinates, colors, and size
-			var color = new THREE.Color( 0xffffff );;
+			var color = new THREE.Color( 0xffffff );
 			var radius =400;
 			for( var bv = 0; bv < nbRNAParticles; bv++ ) {
 			
 
-				b2values_size[ bv ] = 10;
-				b2values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+				values_sizeP2[ bv ] = 10;
+				compartmentP2[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
 				
-				b2positions[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
+				positionsP2[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
 				//b2positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
-				b2positions[ bv * 3 + 1 ] = yStartDisplacement;
+				positionsP2[ bv * 3 + 1 ] = yStartDisplacement;
 				
-				b2positions[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
+				positionsP2[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
 				
 				
 				//if ( positions[ bv * 3 + 0 ] < 0 )
 				//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
 				//else
 				//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
-				b2values_color[ bv * 3 + 0 ] = color.r;
-				b2values_color[ bv * 3 + 1 ] = color.g;
-				b2values_color[ bv * 3 + 2 ] = color.b;
+				values_colorP2[ bv * 3 + 0 ] = color.r;
+				values_colorP2[ bv * 3 + 1 ] = color.g;
+				values_colorP2[ bv * 3 + 2 ] = color.b;
 
 			}
 			
 			
+			
+			
+			
+			bgeometryP2.addAttribute( 'position', new THREE.BufferAttribute( positionsP2, 3 ) );
+			bgeometryP2.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP2, 3 ) );
+			bgeometryP2.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP2, 1 ) );
+			bgeometryP2.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP2, 1 ) );
+			
+			b2values_size = bgeometryP2.attributes.size.array;
+			b2positions = bgeometryP2.attributes.position.array;
+			b2values_color = bgeometryP2.attributes.ca.array;
+			b2values_compartment = bgeometryP2.attributes.compartment.array;
 			// associate first particle system with bufferGeometry
 			PointCloud2 = new THREE.PointCloud( bgeometryP2, particle2ShaderMaterial );
 
@@ -1453,7 +1498,12 @@
 			bgeometryP3 = new THREE.BufferGeometry();
 			
 			bgeometryP3.dynamic = true;
-			bgeometryP3.attributes = {
+			var positionsP3 = new Float32Array( nbProtParticles * 3 );
+			var values_colorP3 = new Float32Array( nbProtParticles * 3 );
+			var values_sizeP3 = new Float32Array( nbProtParticles );
+			var compartmentP3 = new Float32Array( nbProtParticles );
+			
+			/*bgeometryP3.attributes = {
 
 				position: {
 					itemSize: 3,
@@ -1474,17 +1524,105 @@
 					dynamic: true
 				}
 
-			}
-			bgeometryP3.attributes.size.needsUpdate = true;
-			bgeometryP3.attributes.position.needsUpdate = true;
-			bgeometryP3.attributes.ca.needsUpdate = true;
-			bgeometryP3.attributes.compartment.needsUpdate = true;
-
-			b3values_size = bgeometryP3.attributes.size.array;
-			b3positions = bgeometryP3.attributes.position.array;
-			b3values_color = bgeometryP3.attributes.ca.array;
-			b3values_compartment = bgeometryP3.attributes.compartment.array;
+			}*/
+			//bgeometryP3.attributes.size.needsUpdate = true;
+			//bgeometryP3.attributes.position.needsUpdate = true;
+			//bgeometryP3.attributes.ca.needsUpdate = true;
+			//bgeometryP3.attributes.compartment.needsUpdate = true;
 			
+			// populates first buffer geometry for particles with coordinates, colors, and size
+			var color = new THREE.Color( 0xff9900 );;
+			var color2 = new THREE.Color( 0x55ff55 );
+			var radius =400;
+			var bv=0;
+			//for( var bv = 0; bv < nbProtParticles; bv++ ) {
+				for( var bw = 0 , bww= jsonObj1.length; bw < bww; bw++ ) {
+					if (jsonObj1[bw][6]==2){
+						values_sizeP3[ bv ] = 10;
+						//b3values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+						compartmentP3[ bv ] = mapComp[jsonObj1[bw][3]];
+						idMap[bw]=[2,bv];
+						typesMap[2][bv]=bw;
+						
+						var rm;
+						var rr;
+						
+						if (nameModel=="hepatonet1-msb201062-s5" || nameModel=="msb201062-s5"){
+							rm=bv*0.078*2*Math.PI;
+							rr = ((bv*0.02)+0.35*radius)
+							positionsP3[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							positionsP3[ bv * 3 + 1 ] = yStartDisplacement+0+(bv*0.05);
+						}
+						else if (nameModel=="Ec_iAF1260_flux2"){
+							rm=bv*0.004*2*Math.PI;
+							rr = ((radius*1.08)-(bv*0.03)+1)
+							positionsP3[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							positionsP3[ bv * 3 + 1 ] = yStartDisplacement+0-(bv*0.03);
+
+						}
+						
+						else if (nameModel=="iTO977_v1.00_cobra"){
+							rm=bv*0.004*2*Math.PI;
+							rr = ((radius*1.08)-(bv*0.03)+1)
+							positionsP3[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							positionsP3[ bv * 3 + 1 ] = yStartDisplacement+0-(bv*0.03);
+
+						}
+						else{
+							rm=bv*0.008*2*Math.PI;
+							rr = ((bv*0.02)+0.05*radius);
+							positionsP3[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							positionsP3[ bv * 3 + 1 ] = yStartDisplacement+0+(bv*0.02);
+						}
+						
+						positionsP3[ bv * 3 + 2 ] = Math.sin(rm) *rr;
+						
+						values_colorP3[ bv * 3 + 0 ] = color.r;
+						values_colorP3[ bv * 3 + 1 ] = color.g;
+						values_colorP3[ bv * 3 + 2 ] = color.b;
+						bv++;
+					}
+				}
+				startModelPlaces=bv;
+				for( var bw = jsonObj1.length , bww= jsonObj1.length+5000; bw < bww; bw++ ) {
+						
+		
+					//if (jsonObj1[bw][6]==2){
+						values_sizeP3[ bv ] = 30;
+						//b3values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+						compartmentP3[ bv ] = -1;
+						//idMap[bw]=[2,bv];
+						//typesMap[2][bv]=bw;
+						idMap[bw]=[2,bv];
+						typesMap[2][bv]=bw;
+						//var rm=(bw-jsonObj1.length)*0.078*2*Math.PI;
+						//var	rr = (((bw-jsonObj1.length)*0.02)+0.95*radius)
+						//radius=900;
+						var rm=(bw-jsonObj1.length)*0.008*2*Math.PI;
+						var rr = ((radius*1.08)-((bw-jsonObj1.length)*0.3)+1)
+						positionsP3[ bv * 3 + 0 ] = (Math.cos(rm) *rr)+900;
+						//b3positions[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius+900;
+						//b3positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
+						positionsP3[ bv * 3 + 1 ] = yStartDisplacement+80;
+						positionsP3[ bv * 3 + 2 ] = ((Math.random() * 2 - 1) * radius)+50000;
+						//b3positions[ bv * 3 + 2 ] = (Math.sin(rm) *rr)+50000;
+						
+						//if ( positions[ bv * 3 + 0 ] < 0 )
+						//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
+						//else
+						//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
+						values_colorP3[ bv * 3 + 0 ] = color2.r;
+						values_colorP3[ bv * 3 + 1 ] = color2.g;
+						values_colorP3[ bv * 3 + 2 ] = color2.b;
+						bv++;
+					//}
+				}
+				endModelPlaces=bv;
+			
+			
+
+			
+			/*
 			// populates first buffer geometry for particles with coordinates, colors, and size
 			var color = new THREE.Color( 0xff9900 );;
 			var color2 = new THREE.Color( 0x55ff55 );
@@ -1574,8 +1712,18 @@
 				}
 				endModelPlaces=bv;
 			//}
+			*/
+			bgeometryP3.addAttribute( 'position', new THREE.BufferAttribute( positionsP3, 3 ) );
+			bgeometryP3.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP3, 3 ) );
+			bgeometryP3.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP3, 1 ) );
+			bgeometryP3.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP3, 1 ) );
 			
+			b3values_size = bgeometryP3.attributes.size.array;
+			b3positions = bgeometryP3.attributes.position.array;
+			b3values_color = bgeometryP3.attributes.ca.array;
+			b3values_compartment = bgeometryP3.attributes.compartment.array;
 			
+			bgeometryP3.computeBoundingSphere();
 			// associate first particle system with bufferGeometry
 			PointCloud3 = new THREE.PointCloud( bgeometryP3, particle3ShaderMaterial );
 
@@ -1592,63 +1740,49 @@
 			bgeometryP4 = new THREE.BufferGeometry();
 			
 			bgeometryP4.dynamic = true;
-			bgeometryP4.attributes = {
-
-				position: {
-					itemSize: 3,
-					array: new Float32Array( nbDegradParticles * 3 )
-				},
-				ca: {
-					itemSize: 3,
-					array: new Float32Array( nbDegradParticles * 3 )
-				},
-				size: {
-					itemSize: 1,
-					array: new Float32Array( nbDegradParticles ),
-					dynamic: true
-				},
-				compartment: {
-					itemSize: 1,
-					array: new Float32Array( nbDegradParticles ),
-					dynamic: true
-				}
-
-			}
-			bgeometryP4.attributes.size.needsUpdate = true;
-			bgeometryP4.attributes.position.needsUpdate = true;
-			bgeometryP4.attributes.ca.needsUpdate = true;
-			bgeometryP4.attributes.compartment.needsUpdate = true;
-
-			b4values_size = bgeometryP4.attributes.size.array;
-			b4positions = bgeometryP4.attributes.position.array;
-			b4values_color = bgeometryP4.attributes.ca.array;
-			b4values_compartment = bgeometryP4.attributes.compartment.array;
+			var positionsP4 = new Float32Array( nbDegradParticles * 3 );
+			var values_colorP4 = new Float32Array( nbDegradParticles * 3 );
+			var values_sizeP4 = new Float32Array( nbDegradParticles );
+			var compartmentP4 = new Float32Array( nbDegradParticles );
 			
+			
+
 			// populates first buffer geometry for particles with coordinates, colors, and size
 			var color = new THREE.Color( 0xff66ff );;
 			var radius =400;
 			for( var bv = 0; bv < nbDegradParticles; bv++ ) {
 			
 
-				b4values_size[ bv ] = 10;
-				b4values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+				values_sizeP4[ bv ] = 10;
+				compartmentP4[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
 
-				b4positions[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
+				positionsP4[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
 				
 				//b4positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
-				b4positions[ bv * 3 + 1 ] = yStartDisplacement+0;
-				b4positions[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
+				positionsP4[ bv * 3 + 1 ] = yStartDisplacement+0;
+				positionsP4[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
 				
 				
 				//if ( positions[ bv * 3 + 0 ] < 0 )
 				//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
 				//else
 				//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
-				b4values_color[ bv * 3 + 0 ] = color.r;
-				b4values_color[ bv * 3 + 1 ] = color.g;
-				b4values_color[ bv * 3 + 2 ] = color.b;
+				values_colorP4[ bv * 3 + 0 ] = color.r;
+				values_colorP4[ bv * 3 + 1 ] = color.g;
+				values_colorP4[ bv * 3 + 2 ] = color.b;
 
 			}
+			bgeometryP4.addAttribute( 'position', new THREE.BufferAttribute( positionsP4, 3 ) );
+			bgeometryP4.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP4, 3 ) );
+			bgeometryP4.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP4, 1 ) );
+			bgeometryP4.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP4, 1 ) );
+			
+			b4values_size = bgeometryP4.attributes.size.array;
+			b4positions = bgeometryP4.attributes.position.array;
+			b4values_color = bgeometryP4.attributes.ca.array;
+			b4values_compartment = bgeometryP4.attributes.compartment.array;
+			
+			
 			
 			
 			// associate first particle system with bufferGeometry
@@ -1665,8 +1799,13 @@
 			// defines first buffergeometry for PN particles
 			bgeometryP5 = new THREE.BufferGeometry();
 			
+			var positionsP5 = new Float32Array( nbPNParticles * 3 );
+			var values_colorP5 = new Float32Array( nbPNParticles * 3 );
+			var values_sizeP5 = new Float32Array( nbPNParticles );
+			var compartmentP5 = new Float32Array( nbPNParticles );
+			
 			bgeometryP5.dynamic = true;
-			bgeometryP5.attributes = {
+			/*bgeometryP5.attributes = {
 
 				position: {
 					itemSize: 3,
@@ -1687,16 +1826,8 @@
 					dynamic: true
 				}
 
-			}
-			bgeometryP5.attributes.size.needsUpdate = true;
-			bgeometryP5.attributes.position.needsUpdate = true;
-			bgeometryP5.attributes.ca.needsUpdate = true;
-			bgeometryP5.attributes.compartment.needsUpdate = true;
-
-			b5values_size = bgeometryP5.attributes.size.array;
-			b5positions = bgeometryP5.attributes.position.array;
-			b5values_color = bgeometryP5.attributes.ca.array;
-			b5values_compartment = bgeometryP5.attributes.compartment.array;
+			}*/
+			
 			
 			var color = new THREE.Color( 0xffffff );
 					
@@ -1788,57 +1919,13 @@
 						}
 					}
 					
-					//console.log(totalWidth);
-					//console.log(listWidthSubSystems);
-					/*for (var key in subSystems) {
-						if (subSystems.hasOwnProperty(key)) {
-							var percentage= subSystems[key]/totalNbreactions;
-							if (percentage < minCircleFraction){
-								percentage= minCircleFraction;
-								
-							}
-							subSystems[key]=percentage;
-							totalPercentage+=percentage;
-							
-							//console.log(percentage);
-						}
-					}
-					console.log(totalPercentage);
-					var toDistribute=0;
-					if (totalPercentage>1){
-						toDistribute= totalPercentage-1;
-					}
-					var nbReducable=0;
-					for (var key in subSystems) {
-						if (subSystems.hasOwnProperty(key)) {
-							if((subSystems[key]*(1-toDistribute))>minCircleFraction){
-								nbReducable++;
-							}
-						}
-					}
-					console.log(nbReducable);
-					var sums=0;
-					for (var key in subSystems) {
-						if (subSystems.hasOwnProperty(key)) {
-							if((subSystems[key]*(1-toDistribute))>minCircleFraction){
-								var res=subSystems[key]*(1-(toDistribute));
-								subSystems[key]=res;
-								
-							}
-							sums+=subSystems[key];
-							
-							//toDistribute/nbReducable
-						}
-					}
-					console.log(subSystems+" total: "+sums);*/
-					//var cnt1=0
-					//var cnt2=0;
+					
 					var localRSeparator=0;
 					for( var bw = 0 , bww= jsonObj1.length; bw < bww; bw++ ) {
 						
 						if (jsonObj1[bw][6]==4){
 
-							b5values_size[ bv ] = 10;
+							values_sizeP5[ bv ] = 10;
 							//b5values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
 							
 							// try to assign the compartment of the majority of the products the reaction is linked to 
@@ -1858,9 +1945,9 @@
 										votes[mapComp[jsonObj1[listProducts[lp]][3]]]++;
 								}
 								var winner= votes.indexOf(Math.max.apply( Math, votes ));
-								b5values_compartment[ bv ] = winner;
+								compartmentP5[ bv ] = winner;
 								if (winner==-1){
-									b5values_compartment[ bv ] = mapComp[jsonObj1[bw][3]];
+									compartmentP5[ bv ] = mapComp[jsonObj1[bw][3]];
 								}
 							} 
 							else if (listModifiers.length>0){
@@ -1873,9 +1960,9 @@
 										votes[mapComp[jsonObj1[listModifiers[lp]][3]]]++;
 								}
 								var winner= votes.indexOf(Math.max.apply( Math, votes ));
-								b5values_compartment[ bv ] = winner;
+								compartmentP5[ bv ] = winner;
 								if (winner==-1){
-									b5values_compartment[ bv ] = mapComp[jsonObj1[bw][3]];
+									compartmentP5[ bv ] = mapComp[jsonObj1[bw][3]];
 								}
 							}
 							else if (listReactants.length>0){
@@ -1888,14 +1975,14 @@
 										votes[mapComp[jsonObj1[listReactants[lp]][3]]]++;
 								}
 								var winner= votes.indexOf(Math.max.apply( Math, votes ));
-								b5values_compartment[ bv ] = winner;
+								compartmentP5[ bv ] = winner;
 								if (winner==-1){
-									b5values_compartment[ bv ] = mapComp[jsonObj1[bw][3]];
+									compartmentP5[ bv ] = mapComp[jsonObj1[bw][3]];
 								}
 							}
 							else {
 								// if no species linked, put reaction in the center
-								b5values_compartment[ bv ] = mapComp[jsonObj1[bw][3]];
+								compartmentP5[ bv ] = mapComp[jsonObj1[bw][3]];
 							}
 							
 							idMap[bw]=[4,bv];
@@ -1911,7 +1998,7 @@
 								rm=bv*0.078*2*Math.PI;
 								rr = ((bv*0.02)+0.35*radius)
 								//b5positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;
-								b5positions[ bv * 3 + 1 ] = (yStartDisplacement/2)+(bv*0.04);
+								positionsP5[ bv * 3 + 1 ] = (yStartDisplacement/2)+(bv*0.04);
 							}
 							else{
 								var yModifier=0;
@@ -2011,16 +2098,16 @@
 								
 								//b5positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;
 								//b5positions[ bv * 3 + 1 ] = 0-(bv*0.03);
-								b5positions[ bv * 3 + 1 ] = yStartDisplacement-(mDepth*4)+(yModifier*4);
+								positionsP5[ bv * 3 + 1 ] = yStartDisplacement-(mDepth*4)+(yModifier*4);
 								//console.log(jsonObj1[bw][4][1][0])
 							}
-							b5positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;
-							b5positions[ bv * 3 + 2 ] = Math.sin(rm) *rr;
+							positionsP5[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							positionsP5[ bv * 3 + 2 ] = Math.sin(rm) *rr;
 							
 							
-							b5values_color[ bv * 3 + 0 ] = color.r;
-							b5values_color[ bv * 3 + 1 ] = color.g;
-							b5values_color[ bv * 3 + 2 ] = color.b;
+							values_colorP5[ bv * 3 + 0 ] = color.r;
+							values_colorP5[ bv * 3 + 1 ] = color.g;
+							values_colorP5[ bv * 3 + 2 ] = color.b;
 							bv++;
 						}
 					}
@@ -2028,9 +2115,9 @@
 					startModelReactions=bv;
 					for( var bw = jsonObj1.length , bww= jsonObj1.length+5000; bw < bww; bw++ ) {
 						
-						b5values_size[ bv ] = 30;
+						values_sizeP5[ bv ] = 30;
 						
-						b5values_compartment[ bv ] = -1;
+						compartmentP5[ bv ] = -1;
 						idMap[bw]=[4,bv];
 						typesMap[4][bv]=bw;
 						
@@ -2040,24 +2127,43 @@
 						var rm=(bw-jsonObj1.length)*0.008*2*Math.PI;
 						var rr = ((radius*0.78)-((bw-jsonObj1.length)*0.3)+1)
 						//b5positions[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius+900;
-						b5positions[ bv * 3 + 0 ] = (Math.cos(rm) *rr)+1800;
+						positionsP5[ bv * 3 + 0 ] = (Math.cos(rm) *rr)+1800;
 						//b5positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
-						b5positions[ bv * 3 + 1 ] = yStartDisplacement+180;
+						positionsP5[ bv * 3 + 1 ] = yStartDisplacement+180;
 						
-						b5positions[ bv * 3 + 2 ] = ((Math.random() * 2 - 1) * radius)+50000;
+						positionsP5[ bv * 3 + 2 ] = ((Math.random() * 2 - 1) * radius)+50000;
 						
 						
 						//if ( positions[ bv * 3 + 0 ] < 0 )
 						//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
 						//else
 						//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
-						b5values_color[ bv * 3 + 0 ] = color2.r;
-						b5values_color[ bv * 3 + 1 ] = color2.g;
-						b5values_color[ bv * 3 + 2 ] = color2.b;
+						values_colorP5[ bv * 3 + 0 ] = color2.r;
+						values_colorP5[ bv * 3 + 1 ] = color2.g;
+						values_colorP5[ bv * 3 + 2 ] = color2.b;
 						bv++;
 					}
 					endModelReactions=bv;
 			
+			
+			
+			
+			
+			bgeometryP5.addAttribute( 'position', new THREE.BufferAttribute( positionsP5, 3 ) );
+			bgeometryP5.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP5, 3 ) );
+			bgeometryP5.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP5, 1 ) );
+			bgeometryP5.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP5, 1 ) );
+			
+			//bgeometryP5.attributes.size.needsUpdate = true;
+			//bgeometryP5.attributes.position.needsUpdate = true;
+			//bgeometryP5.attributes.ca.needsUpdate = true;
+			//bgeometryP5.attributes.compartment.needsUpdate = true;
+
+			b5values_size = bgeometryP5.attributes.size.array;
+			b5positions = bgeometryP5.attributes.position.array;
+			b5values_color = bgeometryP5.attributes.ca.array;
+			b5values_compartment = bgeometryP5.attributes.compartment.array;
+									
 			// associate first particle system with bufferGeometry
 			PointCloud5 = new THREE.PointCloud( bgeometryP5, particle5ShaderMaterial );
 
@@ -2073,37 +2179,11 @@
 			bgeometryP6 = new THREE.BufferGeometry();
 			
 			bgeometryP6.dynamic = true;
-			bgeometryP6.attributes = {
-
-				position: {
-					itemSize: 3,
-					array: new Float32Array( nbLogParticles * 3 )
-				},
-				ca: {
-					itemSize: 3,
-					array: new Float32Array( nbLogParticles * 3 )
-				},
-				size: {
-					itemSize: 1,
-					array: new Float32Array( nbLogParticles ),
-					dynamic: true
-				},
-				compartment: {
-					itemSize: 1,
-					array: new Float32Array( nbLogParticles ),
-					dynamic: true
-				}
-
-			}
-			bgeometryP6.attributes.size.needsUpdate = true;
-			bgeometryP6.attributes.position.needsUpdate = true;
-			bgeometryP6.attributes.ca.needsUpdate = true;
-			bgeometryP6.attributes.compartment.needsUpdate = true;
-
-			b6values_size = bgeometryP6.attributes.size.array;
-			b6positions = bgeometryP6.attributes.position.array;
-			b6values_color = bgeometryP6.attributes.ca.array;
-			b6values_compartment = bgeometryP6.attributes.compartment.array;
+			
+			var positionsP6 = new Float32Array( nbLogParticles * 3 );
+			var values_colorP6 = new Float32Array( nbLogParticles * 3 );
+			var values_sizeP6 = new Float32Array( nbLogParticles );
+			var compartmentP6 = new Float32Array( nbLogParticles );
 			
 			// populates first buffer geometry for particles with coordinates, colors, and size
 			var color = new THREE.Color( 0xffffff );;
@@ -2111,25 +2191,37 @@
 			for( var bv = 0; bv < nbLogParticles; bv++ ) {
 			
 
-				b6values_size[ bv ] = 10;
-				b6values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+				values_sizeP6[ bv ] = 10;
+				compartmentP6[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
 
-				b6positions[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
+				positionsP6[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
 				//b6positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
-				b6positions[ bv * 3 + 1 ] = yStartDisplacement;
+				positionsP6[ bv * 3 + 1 ] = yStartDisplacement;
 				
-				b6positions[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
+				positionsP6[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
 				
 				
 				//if ( positions[ bv * 3 + 0 ] < 0 )
 				//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
 				//else
 				//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
-				b6values_color[ bv * 3 + 0 ] = color.r;
-				b6values_color[ bv * 3 + 1 ] = color.g;
-				b6values_color[ bv * 3 + 2 ] = color.b;
+				values_colorP6[ bv * 3 + 0 ] = color.r;
+				values_colorP6[ bv * 3 + 1 ] = color.g;
+				values_colorP6[ bv * 3 + 2 ] = color.b;
 
 			}
+
+			bgeometryP6.addAttribute( 'position', new THREE.BufferAttribute( positionsP6, 3 ) );
+			bgeometryP6.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP6, 3 ) );
+			bgeometryP6.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP6, 1 ) );
+			bgeometryP6.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP6, 1 ) );
+			
+			b6values_size = bgeometryP6.attributes.size.array;
+			b6positions = bgeometryP6.attributes.position.array;
+			b6values_color = bgeometryP6.attributes.ca.array;
+			b6values_compartment = bgeometryP6.attributes.compartment.array;
+			
+			
 			
 			
 			// associate first particle system with bufferGeometry
@@ -2147,37 +2239,11 @@
 			bgeometryP7 = new THREE.BufferGeometry();
 			
 			bgeometryP7.dynamic = true;
-			bgeometryP7.attributes = {
-
-				position: {
-					itemSize: 3,
-					array: new Float32Array( nbCoarseParticles * 3 )
-				},
-				ca: {
-					itemSize: 3,
-					array: new Float32Array( nbCoarseParticles * 3 )
-				},
-				size: {
-					itemSize: 1,
-					array: new Float32Array( nbCoarseParticles ),
-					dynamic: true
-				},
-				compartment: {
-					itemSize: 1,
-					array: new Float32Array( nbCoarseParticles ),
-					dynamic: true
-				}
-
-			}
-			bgeometryP7.attributes.size.needsUpdate = true;
-			bgeometryP7.attributes.position.needsUpdate = true;
-			bgeometryP7.attributes.ca.needsUpdate = true;
-			bgeometryP7.attributes.compartment.needsUpdate = true;
-
-			b7values_size = bgeometryP7.attributes.size.array;
-			b7positions = bgeometryP7.attributes.position.array;
-			b7values_color = bgeometryP7.attributes.ca.array;
-			b7values_compartment = bgeometryP7.attributes.compartment.array;
+			
+			var positionsP7 = new Float32Array( nbCoarseParticles * 3 );
+			var values_colorP7 = new Float32Array( nbCoarseParticles * 3 );
+			var values_sizeP7 = new Float32Array( nbCoarseParticles );
+			var compartmentP7 = new Float32Array( nbCoarseParticles );
 			
 			// populates first buffer geometry for particles with coordinates, colors, and size
 			var color = new THREE.Color( 0xffffff );;
@@ -2185,25 +2251,37 @@
 			for( var bv = 0; bv < nbCoarseParticles; bv++ ) {
 			
 
-				b7values_size[ bv ] = 10;
-				b7values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+				values_sizeP7[ bv ] = 10;
+				compartmentP7[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
 
-				b7positions[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
+				positionsP7[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
 				//b7positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
-				b7positions[ bv * 3 + 1 ] = yStartDisplacement;
+				positionsP7[ bv * 3 + 1 ] = yStartDisplacement;
 				
-				b7positions[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
+				positionsP7[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
 				
 				
 				//if ( positions[ bv * 3 + 0 ] < 0 )
 				//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
 				//else
 				//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
-				b7values_color[ bv * 3 + 0 ] = color.r;
-				b7values_color[ bv * 3 + 1 ] = color.g;
-				b7values_color[ bv * 3 + 2 ] = color.b;
+				values_colorP7[ bv * 3 + 0 ] = color.r;
+				values_colorP7[ bv * 3 + 1 ] = color.g;
+				values_colorP7[ bv * 3 + 2 ] = color.b;
 
 			}
+
+			bgeometryP7.addAttribute( 'position', new THREE.BufferAttribute( positionsP7, 3 ) );
+			bgeometryP7.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP7, 3 ) );
+			bgeometryP7.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP7, 1 ) );
+			bgeometryP7.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP7, 1 ) );
+			
+			b7values_size = bgeometryP7.attributes.size.array;
+			b7positions = bgeometryP7.attributes.position.array;
+			b7values_color = bgeometryP7.attributes.ca.array;
+			b7values_compartment = bgeometryP7.attributes.compartment.array;
+			
+			
 			
 			
 			// associate first particle system with bufferGeometry
@@ -2218,7 +2296,15 @@
 			// populates second buffer geometry for lines  with coordinates, colors, and size
 			//segmentPts = 20000;
 			bgeometry2 = new THREE.BufferGeometry();
-			bgeometry2.attributes = {
+			
+			var positionsL1 = new Float32Array( (segmentPts+5000) * 3 );
+			var colorsL1 = new Float32Array( (segmentPts+5000) * 3 );
+			var opL1 = new Float32Array((segmentPts+5000));
+			var compartmentL1 = new Float32Array( (segments+2500)*2 );
+			var fluxL1 = new Float32Array( (segments+2500) );
+			var boundsL1= new Float32Array( (segments+2500) * 2 );
+			
+			/*bgeometry2.attributes = {
 				position: {
 					itemSize: 3,
 					array: new Float32Array((segmentPts+5000) * 3)
@@ -2247,13 +2333,106 @@
 					array: new Float32Array( (segments+2500) * 2 ),
 					dynamic: true
 				}
-			};
+			};*/
+			
+			var r = 800;
+			var col = new THREE.Color( 0x00ffff );
+			var col2 = new THREE.Color( 0x55ff55 );
+			
+			var iv=0;
+			for ( var i = 0; i < segments; i ++ ) {
+			
+				var t1 = jsonObj1[jsonObj2[i][0]][6]
+				var t2 = jsonObj1[jsonObj2[i][1]][6]
+				var ivList=[]
+				
+				if (t1==2){
+					positionsL1[ (iv * 3)+0 ] = b3positions[ (idMap[jsonObj2[i][0]][1] * 3) + 0 ]+0.0;
+					positionsL1[ (iv * 3) + 1 ] = b3positions[ (idMap[jsonObj2[i][0]][1] * 3) + 1 ]+0.0;
+					positionsL1[ (iv * 3) + 2 ] = b3positions[ (idMap[jsonObj2[i][0]][1] * 3) + 2 ]+0.0;
+					compartmentL1[ (i*2)+0 ] = b3values_compartment[ (idMap[jsonObj2[i][0]][1]) ];
+					opL1[iv]=0.25;
+					colorsL1[ iv * 3 ] = 0.0;
+					colorsL1[ iv * 3 + 1 ] = 1.0;
+					colorsL1[ iv * 3 + 2 ] = 1.0;
+					ivList.push(iv)
+					//linesMap[i]=iv
+					
+					iv++;
+				}
+				else if (t1==4){
+					positionsL1[ (iv * 3)+0 ] = b5positions[ (idMap[jsonObj2[i][0]][1] * 3) + 0 ]+0.0;
+					positionsL1[ (iv * 3) + 1 ] = b5positions[ (idMap[jsonObj2[i][0]][1] * 3) + 1 ]+0.0;
+					positionsL1[ (iv * 3) + 2 ] = b5positions[ (idMap[jsonObj2[i][0]][1] * 3) + 2 ]+0.0;
+					compartmentL1[ (i*2)+0 ] = b5values_compartment[ (idMap[jsonObj2[i][0]][1]) ];
+					opL1[iv]=0.25;
+					colorsL1[ iv * 3 ] = 0.0;
+					colorsL1[ iv * 3 + 1 ] = 1.0;
+					colorsL1[ iv * 3 + 2 ] = 1.0;
+					//linesMap[i]=iv
+					ivList.push(iv)
+					iv++;
+				}
+				if (t2 ==2){
+					positionsL1[ (iv * 3)+0 ] = b3positions[ (idMap[jsonObj2[i][1]][1] * 3) + 0 ]+0.0;
+					positionsL1[ (iv * 3) + 1 ] = b3positions[ (idMap[jsonObj2[i][1]][1] * 3) + 1 ]+0.0;
+					positionsL1[ (iv * 3) + 2 ] = b3positions[ (idMap[jsonObj2[i][1]][1] * 3) + 2 ]+0.0;
+					compartmentL1[ (i*2)+1 ] = b3values_compartment[ (idMap[jsonObj2[i][1]][1]) ];
+					opL1[iv]=0.25;
+					colorsL1[ iv * 3 ] = 0.0;
+					colorsL1[ iv * 3 + 1 ] = 1.0;
+					colorsL1[ iv * 3 + 2 ] = 1.0;
+					//linesMap[i]=iv
+					ivList.push(iv)
+					iv++;
+				}
+				else if (t2 ==4){
+					positionsL1[ (iv * 3)+0 ] = b5positions[ (idMap[jsonObj2[i][1]][1] * 3) + 0 ]+0.0;
+					positionsL1[ (iv * 3) + 1 ] = b5positions[ (idMap[jsonObj2[i][1]][1] * 3) + 1 ]+0.0;
+					positionsL1[ (iv * 3) + 2 ] = b5positions[ (idMap[jsonObj2[i][1]][1] * 3) + 2 ]+0.0;
+					compartmentL1[ (i*2)+1 ] = b5values_compartment[ (idMap[jsonObj2[i][1]][1]) ];
+					opL1[iv]=0.25;
+					colorsL1[ iv * 3 ] = 0.0;
+					colorsL1[ iv * 3 + 1 ] = 1.0;
+					colorsL1[ iv * 3 + 2 ] = 1.0;
+					//linesMap[i]=iv
+					ivList.push(iv)
+					iv++;
+				}
+				linesMap[i]=ivList
+			}
+			var radius=400;
+			extraLinesCnt=iv;
+			for ( var i = segments; i < segments+maxNbTokenModel; i ++ ) {
+				
+					positionsL1[ (iv * 3)+0 ] = (Math.random() * 2 - 1) * radius;
+					positionsL1[ (iv * 3) + 1 ] = 80;
+					positionsL1[ (iv * 3) + 2 ] = ((Math.random() * 2 - 1) * radius)+50000;
+					compartmentL1[ (i*2)+0 ] = -1;
+					opL1[iv]=0.25;
+					colorsL1[ iv * 3 ] = 0.33;
+					colorsL1[ iv * 3 + 1 ] = 1.0;
+					colorsL1[ iv * 3 + 2 ] = 0.33;
+					ivList.push(iv)
+					//linesMap[i]=iv
+					
+					iv++;
 				
 				
-			bgeometry2.attributes.position.needsUpdate = true;
-			bgeometry2.attributes.ca.needsUpdate = true;
-			bgeometry2.attributes.compartment.needsUpdate = true;
-			bgeometry2.attributes.op.needsUpdate = true;
+				
+			}
+
+			bgeometry2.addAttribute( 'position', new THREE.BufferAttribute( positionsL1, 3 ) );	
+			bgeometry2.addAttribute( 'ca', new THREE.BufferAttribute( colorsL1, 3 ) );
+			bgeometry2.addAttribute( 'op', new THREE.BufferAttribute( opL1, 1 ) );
+			bgeometry2.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentL1, 2 ) );
+
+			/*
+				
+			//bgeometry2.attributes.position.needsUpdate = true;
+			//bgeometry2.attributes.ca.needsUpdate = true;
+			//bgeometry2.attributes.compartment.needsUpdate = true;
+			//bgeometry2.attributes.op.needsUpdate = true;
 
 			b2lpositions = bgeometry2.attributes.position.array;
 				//var colors = bgeometry.attributes.color.array;
@@ -2345,7 +2524,7 @@
 				
 				
 				
-			}
+			}*/
 			//for ( var i = 0; i < segmentPts; i ++ ) {
 			//if (i<50)
 			//	console.log(i+" -- "+b1values_compartment[i]);
@@ -2355,7 +2534,11 @@
 		//console.log(bgeometry2);
 			mesh = new THREE.Line( bgeometry2, linesShaderMaterial,THREE.LinePieces );
 			scene.add( mesh );
-			
+			b2lpositions = bgeometry2.attributes.position.array;
+				//var colors = bgeometry.attributes.color.array;
+			b2lcolors = bgeometry2.attributes.ca.array;
+			b2lcompartments=bgeometry2.attributes.compartment.array;
+			b2lopacity = bgeometry2.attributes.op.array;
 			// create and populate geometry with token particles coordinates, colors, and size
 			var radius = 300;
 			//tokenGeometry = new THREE.CubeGeometry( 0.8 * radius, 0.8 * radius, 0.8 * radius, 150, 100, 1 );
@@ -2658,7 +2841,7 @@
 			//}
 			
 			//nbOrganelles=7;
-			var canvasSize=900
+			var canvasSize=1300
 			
 			for (var i=0;i<nbOrganelles;i++){
 				arraymaterial[i] = new THREE.MeshBasicMaterial( { color: 0x1111ff, side: THREE.DoubleSide } );
@@ -2680,6 +2863,8 @@
 				organelles[i].name="c"+i;
 				organelles[i].position.set(0, yStartDisplacement, 0 );
 				organelles[i].rotation.x += (90*(Math.PI / 180));
+				//organelles[i].scale.x=0.1;
+				//organelles[i].scale.y=0.1;
 				scene.add( organelles[i] );
 			}
 			
@@ -2790,6 +2975,36 @@
 			KeggMapPlan.rotation.z += (90*(Math.PI / 180));
 			KeggMapPlan.name="mapkegg";
 			scene.add( KeggMapPlan );
+			
+			
+				var geo1 = new THREE.SphereGeometry( 500, 60, 60 );
+				
+				//var geo = new THREE.IcosahedronGeometry(90,3);
+				//var material = new THREE.MeshPhongMaterial( {wireframe: true, shading: THREE.FlatShading} );
+				//var omesh = new THREE.Mesh( geo, new THREE.MeshBasicMaterial( { color: 0xffaa00, wireframe: true } )  );
+				var omesh1 = new THREE.Mesh( geo1, new THREE.MeshPhongMaterial( { 
+					color: 0x9966ff, 
+					ambient: 0x9966ff, // should generally match color
+					specular: 0x050505,
+					shininess: 200,side: THREE.BackSide, //wireframe: true
+				} ) );
+				//omesh.rotation.x = -Math.PI/2;
+				omesh1.scale.y = 0.5;
+				omesh1.name="isosun";
+				omesh1.position.set( 0, yStartDisplacement, 0 );
+				scene.add(omesh1 );
+				
+				// add subtle blue ambient lighting
+				var ambientLight = new THREE.AmbientLight(0x000027);
+				  
+				scene.add(ambientLight);
+				  
+				// directional lighting
+				directionalLight = new THREE.DirectionalLight(0x55ffff); 
+				directionalLight.position.set(13, 1, 1).normalize();
+				ambientLight.name="dlight"
+				scene.add(directionalLight);
+			
 			
 			
 			// add arrows
@@ -2976,6 +3191,10 @@
 			
 			container.appendChild( stats.domElement );
 			stats.domElement.style.top = ($("#container").height()-60)+'px';
+			
+			
+			
+			
 			// add grid for graph...
 			/*var gridYZ = new THREE.GridHelper(50, 10);
 			gridYZ.position.set( 1000,100,100 );
@@ -4596,7 +4815,9 @@
 		}
 		
 		function toXYCoords (pos) {
-			var vector = projector.projectVector(pos.clone(), camera);
+			//var vector = projector.projectVector(pos.clone(), camera);
+			
+			var vector = pos.clone().project(camera);//projector.projectVector(pos.clone(), camera);
 			vector.x = (vector.x + 1)/2 * window.innerWidth;
 			vector.y = -(vector.y - 1)/2 * window.innerHeight;
 			return vector;
@@ -6079,7 +6300,8 @@
 			if (stopThreeJsMouseEvent==false){
 			if (flagPick==1){
 				var vector = new THREE.Vector3( mouse.x, mouse.y, 1 );
-				projector.unprojectVector( vector, camera );
+				//projector.unprojectVector( vector, camera );
+				vector.unproject(camera);
 				raycaster.set( camera.position, vector.sub( camera.position ).normalize() );
 				var distance=99999999;
 				var listretPointsIndexes=[];
@@ -6169,6 +6391,52 @@
 									var stringTxt="";
 									var dat =typesMap[listretPointsTypes[myr]][closest];
 									if(jsonObj1[dat]){
+										//MiniKeggMapPlan.position.set(camera.position.x, camera.position.y-200, camera.position.z );
+										
+										document.getElementById("democ0").style.visibility="visible";
+										var ptdata=[]
+										if (jsonObj1[dat][4][1][2] && Array.isArray(jsonObj1[dat][4][1][2])){
+											//console.log(jsonObj1[dat][4][1][2])
+											
+											for (var nbpts=0, l_nbpts=jsonObj1[dat][4][1][2].length; nbpts<l_nbpts; nbpts++){
+												ptdata.push([((jsonObj1[dat][4][1][2][nbpts][0]*0.68355)/2)-2.5, ((jsonObj1[dat][4][1][2][nbpts][1]*0.68355)/2)]);
+											}
+										}
+										$("#democ0").html("");
+										var width = 450,//900/3,
+										height = 273,//547/3,
+										mdiv = d3.select('#democ0'),
+										msvg = mdiv.append('svg')
+											.attr('width', width)
+											.attr('height', height),
+										rw = 3;//width/2,
+										rh = 3;//height/2;
+
+										//var data = [];			
+										msvg.append("image")
+										  .attr("xlink:href", "/images/kegg-xsmall.png")
+										  .attr("x", "0px")
+										  .attr("y", "0px")
+										  .attr("width", width+"px")
+										  .attr("height", height+"px");
+										if (ptdata.length>0){
+										msvg.selectAll('rect')
+											.data(ptdata)
+											.enter()
+											//.data(function(d) { console.log(d);return d; })
+											//.enter()
+											.append('rect')
+											.attr('x', function(d, i) { return d[0] })
+											.attr('y', function(d, i) { return d[1] })
+											//.attr('x', function(d, i) { return (rw*1.2 )* i; })
+											//.attr('y', function(d, i) { return (rh*1.2 )* i; })
+											.attr('width', rw)
+											.attr('height', rh)
+											.style("fill", function(d, i) { return "rgb(255,0,0)"})
+										}
+									
+									
+									
 										stringTxt = jsonObj1[dat][0]+" "+jsonObj1[dat][2];
 										if (jsonObj1[dat][4][1] && jsonObj1[dat][4][1][0]){
 											stringTxt = jsonObj1[dat][0]+" "+jsonObj1[dat][2]+" ("+jsonObj1[dat][4][1][0]+")";
@@ -6234,6 +6502,7 @@
 									}*/
 								}
 								else{
+								document.getElementById("democ0").style.visibility="visible";
 									text1.style.top =  (text1PreviousPos.y+positionContainer.top )+ 'px';								
 									text1.style.left = text1PreviousPos.x -(text1.firstChild.length*8)-18+ 'px';
 								}
@@ -6248,6 +6517,7 @@
 							//}
 					}
 					else{
+					
 						sprite.position.set(-10000,-10000,-50000);
 						//if (text1.style.top == (2000 + 'px')){
 						//else{
@@ -6325,6 +6595,7 @@
 				if (isOnParticle==0 ){
 					text1.style.top = 2000 + 'px';
 					text1.style.left = 2000 + 'px';
+					document.getElementById("democ0").style.visibility="hidden";
 					//pip.style.top = 2000 + 'px';
 					//pip.style.left = 2000 + 'px';
 				}
@@ -8393,7 +8664,7 @@ function selectValue(el){
 						var rm;
 						var rr;
 						
-						if (nameModel=="hepatonet1-msb201062-s5"){
+						if (nameModel=="hepatonet1-msb201062-s5" || nameModel=="msb201062-s5"){
 							rm=bv*0.078*2*Math.PI*0.25;
 							rr = ((bv*0.02)+0.35*radius)
 							b3positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;
@@ -8445,7 +8716,7 @@ function selectValue(el){
 						var rm;
 						var rr;
 						
-						if (nameModel=="hepatonet1-msb201062-s5"){
+						if (nameModel=="hepatonet1-msb201062-s5" || nameModel=="msb201062-s5"){
 							rm=bv*0.078*2*Math.PI*0.25;
 							rr = ((bv*0.02)+0.35*radius)
 							b3positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;

@@ -19,6 +19,14 @@ var os = require('os');
 var sys = require('sys');
 var exec = require('child_process').exec;
 var execf = require('child_process').execFile;
+//var csv = require('rfc-csv');
+//var LineInputStream = require('line-input-stream');
+//var byline = require('byline');
+var Fgets = require('qfgets');
+//var csv = require("fast-csv");
+//var csv = require('csv-parser')
+
+
 //var hound = require('hound');
 module.exports = {
    'new': function(req,res){
@@ -246,7 +254,7 @@ module.exports = {
 					if (err3) return next(err3);
 					if (!qmm) return next();
 					var parRes=-1;
-					for (var i=0;i<100;i++){
+					for (var i=0;i<200;i++){
 						if (req.param('r'+i)){
 							if (req.param('r'+i)!=-1){
 								parRes=req.param('r'+i);
@@ -255,7 +263,7 @@ module.exports = {
 						}
 					}
 					var tRes=-1;
-					for (var i=0;i<100;i++){
+					for (var i=0;i<200;i++){
 						if (req.param('t'+i)){
 							if (req.param('t'+i)!=-1){
 								tRes=req.param('t'+i);
@@ -263,8 +271,18 @@ module.exports = {
 							
 						}
 					}
-					console.log(tRes)
-					console.log(parRes)
+					var lRes=-1;
+					for (var i=0;i<200;i++){
+						if (req.param('l'+i)){
+							if (req.param('l'+i)!=-1){
+								lRes=parseInt(req.param('l'+i));
+							}
+							
+						}
+					}
+					//console.log(tRes)
+					//console.log(parRes)
+					//console.log(lRes)
 					if (err) return next(err);
 					if (!exp) return next();
 					var file = 'assets/output-model-files/'+exp.qsspn_model_name+'__'+exp.name+'__'+parRes+'.output.xls';
@@ -272,139 +290,138 @@ module.exports = {
 					try{
 						// read file content in an asynchronous way
 						//var textm = fs.readFile(path,'utf8')
-						fs.readFile(file,"utf-8", function (err, data) {
-							if (err) { console.log("error reading file")}
-							else{
-								myres=[];
-								var mcountToken={};
-								var arrayString = data.split('\n');
-								var headtitles = arrayString[0].split('\t');
+						myres=[];
+						var mcountToken={};
+						var headtitles;
+						var countline=0;
+						var totalNbTrajectories=lRes;
+						//console.log(lRes)
+						var cntTrajectories=-1;
+						var simTrajectory=0;
+						if (tRes!=-1)
+							simTrajectory=tRes;
+						var mdataSim="";
+						var cntStartSim=-1;
+						var cntLine=0;
+						var inSim=false;
+						
+						
+						/*
+						var stream = fs.createReadStream(file);
+
+						var csvStream = csv({delimiter: "\t"})
+						.on("data", function(data){
+						
+							if (countline==0){
+								headtitles = data
 								headtitles[headtitles.length-1]=headtitles[headtitles.length-1].replace('\r','');
-								//console.log(headtitles)
-								var totalNbTrajectories=0;
-								for (var i=0, ii=arrayString.length; i<ii;i++){
-									var melement = arrayString[i].split('\t');
-									if (melement[0] && melement[0]=="Trajectory"){
-										
-										totalNbTrajectories++;
+								
+							}
+							//var melement = line.split('\t');
+							if (data[0] && data[0]=="Trajectory"){	
+								
+								cntTrajectories++;
+								console.log(cntTrajectories);
+								if (cntTrajectories==simTrajectory	){
+									inSim=true;
+								}
+								if (cntTrajectories>simTrajectory	){
+									inSim=false;
+								}
+							}
+							else{
+								if (data[2] && data[2]!='none'){
+									if (!mcountToken.hasOwnProperty(data[2])){
+										mcountToken[data[2]]=[];
+									}
+									else if (mcountToken[data[2]].length==0){
+										for (var i1=0;i1<totalNbTrajectories;i1++){
+											mcountToken[data[2]].push(0);
+										}	
+										mcountToken[data[2]][cntTrajectories]+=1;
 									}
 									else{
-										if (melement[2] && melement[2]!='none'){
-											if (!mcountToken.hasOwnProperty(melement[2])){
-												mcountToken[melement[2]]=[];
-											}
+										if(mcountToken[data[2]].length>cntTrajectories){
+											mcountToken[data[2]][cntTrajectories]+=1;
 										}
 									}
 								}
-								var cntTrajectories=-1;
-								for (var i=0, ii=arrayString.length; i<ii;i++){
-									var melement = arrayString[i].split('\t');
-									if (melement[0] && melement[0]=="Trajectory"){
-										if (cntTrajectories<totalNbTrajectories){
-										cntTrajectories++;
-										}
-									}
-									else{
-										if (melement[2] && melement[2]!='none'){
-											if(mcountToken[melement[2]].length==0){
-												for (var i1=0;i1<totalNbTrajectories;i1++){
-													mcountToken[melement[2]].push(0);
-												}
-												
-												mcountToken[melement[2]][cntTrajectories]+=1;
-												
-											}
-											else{
-												if(mcountToken[melement[2]].length>cntTrajectories){
-												mcountToken[melement[2]][cntTrajectories]+=1;
-												}
-											}
-										
-										
-										}
-									}
+								if (inSim==true){
+									mdataSim+=data.toString();
 								}
-								//console.log(mcountToken)
-								/*var totalNbTrajectories=0;
-								for (var i=0, ii=arrayString.length; i<ii;i++){
-									var melement = arrayString[i].split('\t');
-									if (melement[0] && melement[0]=="Trajectory"){
-										
-										totalNbTrajectories++;
-									}
-									else{
-										if (melement[2]!='none'){
-										if (mcountToken.hasOwnProperty(melement[2])){
-											
-											if (mcountToken[melement[2]].length<totalNbTrajectories){
-												mcountToken[melement[2]].push(0);
-											}
-											else{
-												mcountToken[melement[2]][totalNbTrajectories]+=1;
-											}
-										}
-										else{
-											mcountToken[headtitles[i]]=[0];
-										}
-										}
-									}
-								}*/
-								//console.log(mcountToken)
-								// index of the result to watch is the value of simTrajectory...
-								var simTrajectory=0;
-								if (tRes!=-1)
-									simTrajectory=tRes;
-								 //console.log(localStorage.getItem('myCurrentResult'));
-								 
-								var mdataSim=[];
-								var cntStartSim=-1;
-								var cntLine=0;
-								var startSim=0;
 								
+							}
+							countline++;
+						})
+						.on("end", function(){
+							console.log(mdataSim.length)
+							console.log(mdataSim[0].length)
+							res.view({
+								exp: exp,
+								mtb:mtb,
+								nbRes: parRes,
+								dataR: mdataSim,
+								headtitles: headtitles,
+								ly: qmm.layouts,
+								stats: mcountToken
+							});
+						});
+						stream.pipe(csvStream);
+						*/
+						
+						var fp = new Fgets(file);        // use buit-in FileReader
+						var contents = "";
+						var line="";
+						(function readfile() {
+							line= fp.fgets();
+							
+							
+							
+							
+							if (line.substring(0, 4)=="Traj"){
 								
-								for (var i=startSim, ii=arrayString.length; i<ii;i++){
-									var melement = arrayString[i].split('\t');
-									if (melement[0] && melement[0]=="Trajectory"){
-											cntStartSim++;
-											cntLine=i+1;	
-									}
-									if (cntStartSim==simTrajectory	){
-										startSim=cntLine;
-									}
+								cntTrajectories++;
+								if (cntTrajectories==0){
+									headtitles = line.split('\t');
+									headtitles[headtitles.length-1]=headtitles[headtitles.length-1].replace('\r','');
 									
 								}
-								var cntLine=startSim;
-								var endSim=startSim;
-								var first=true;
-								
-								for (var i=startSim, ii=arrayString.length; i<ii;i++){
-									var melement = arrayString[i].split('\t');
-									if (melement[0] && melement[0]=="Trajectory" && first ==true){
-											cntLine=i;	
-											
-											
-												first=false;
-											
-									}		
+								console.log("processing trajectory : "+cntTrajectories);
+								if (cntTrajectories==simTrajectory	){
+									inSim=true;
 								}
-								if (cntLine==startSim){
-									cntLine=arrayString.length-1;
+								if (cntTrajectories>simTrajectory	){
+									inSim=false;
 								}
-								endSim=cntLine;
-								//console.log("start sim: "+startSim);
-								// get end line of given trajectory 
-								//console.log("end sim: "+endSim);
-								
-								for (var i=startSim, ii=endSim; i<ii;i++){
-									if (arrayString[i] && arrayString[i]!=""){
-										var melement = arrayString[i].split('\t');
-										mdataSim.push(melement)
+							}
+							else{
+								var melement = line.split('\t');
+								if (melement[2] && melement[2]!='none'){
+									if (!mcountToken.hasOwnProperty(melement[2])){
+										mcountToken[melement[2]]=[];
+									}
+									else if (mcountToken[melement[2]].length==0){
+										for (var i1=0;i1<totalNbTrajectories;i1++){
+											mcountToken[melement[2]].push(0);
+										}	
+										mcountToken[melement[2]][cntTrajectories]+=1;
+									}
+									else{
+										if(mcountToken[melement[2]].length>cntTrajectories){
+											mcountToken[melement[2]][cntTrajectories]+=1;
+										}
 									}
 								}
-									//mdataSim is the result to visualise
-								//console.log(mdataSim.length)
-								//console.log(mdataSim)
-								//dataR=mdataSim;
+								if (line!="" && inSim==true){
+									mdataSim+=line;
+								}
+								
+							}
+							countline++;
+							if (!fp.feof()) {setImmediate(readfile);}
+							else{
+								//console.log(headtitles.length)
+								//console.log(mdataSim[0].length)
 								res.view({
 									exp: exp,
 									mtb:mtb,
@@ -413,11 +430,247 @@ module.exports = {
 									headtitles: headtitles,
 									ly: qmm.layouts,
 									stats: mcountToken
-								  });
+								});
+							}							
+						})();
+						
+						
+						
+						/*
+						var stream = LineInputStream(fs.createReadStream(file, { flags: "r" }));
+						stream.setEncoding("utf8");
+						stream.setDelimiter("\n");    // optional string, defaults to "\n"
+
+						stream.on("error", function(err) {
+								console.log(err);
+							});
+							
+						stream.on("line", function(line) {
+								// Sends you lines from the stream delimited by delimiter
+								if (countline==0){
+									headtitles = line.split('\t');
+									headtitles[headtitles.length-1]=headtitles[headtitles.length-1].replace('\r','');
+									
+								}
 								
 								
-							}
+								var melement = line.split('\t');
+								if (melement[0] && melement[0]=="Trajectory"){		
+									cntTrajectories++;
+									if (cntTrajectories==simTrajectory	){
+										inSim=true;
+									}
+									if (cntTrajectories>simTrajectory	){
+										inSim=false;
+									}
+								}
+								else{
+									if (melement[2] && melement[2]!='none'){
+										if (!mcountToken.hasOwnProperty(melement[2])){
+											mcountToken[melement[2]]=[];
+										}
+										else if (mcountToken[melement[2]].length==0){
+											for (var i1=0;i1<totalNbTrajectories;i1++){
+												mcountToken[melement[2]].push(0);
+											}	
+											mcountToken[melement[2]][cntTrajectories]+=1;
+										}
+										else{
+											if(mcountToken[melement[2]].length>cntTrajectories){
+												mcountToken[melement[2]][cntTrajectories]+=1;
+											}
+										}
+									}
+									if (line!="" && inSim==true){
+										mdataSim.push(melement)
+									}
+									
+								}
+								countline++;
+								
+			
+								
+								
+							});
+
+						stream.on("end", function() {
+							console.log(mdataSim.length)
+							console.log(mdataSim[0].length)
+							res.view({
+								exp: exp,
+								mtb:mtb,
+								nbRes: parRes,
+								dataR: mdataSim,
+								headtitles: headtitles,
+								ly: qmm.layouts,
+								stats: mcountToken
+							});
 						});
+
+						if(stream.readable) {
+							console.log("stream is readable");
+						}
+						*/
+						
+						/*var stream = fs.createReadStream(file, {encoding: 'utf8'});
+						function read() {
+						  var buf;
+						  while (buf = stream.read()) {
+							console.log('Read from the file:', buf.length);
+						  }
+						}
+						stream.on('readable', read);
+ 
+						stream.once('end', function() {
+						  console.log('stream ended');
+						});*/
+
+						// fs.readFile(file,"utf-8", function (err, data) {
+							// if (err) { console.log("error reading file")}
+							// else{
+								// myres=[];
+								// var mcountToken={};
+								// var arrayString = data.split('\n');
+								// var headtitles = arrayString[0].split('\t');
+								// headtitles[headtitles.length-1]=headtitles[headtitles.length-1].replace('\r','');
+								// //console.log(headtitles)
+								// var totalNbTrajectories=0;
+								// for (var i=0, ii=arrayString.length; i<ii;i++){
+									// var melement = arrayString[i].split('\t');
+									// if (melement[0] && melement[0]=="Trajectory"){
+										
+										// totalNbTrajectories++;
+									// }
+									// else{
+										// if (melement[2] && melement[2]!='none'){
+											// if (!mcountToken.hasOwnProperty(melement[2])){
+												// mcountToken[melement[2]]=[];
+											// }
+										// }
+									// }
+								// }
+								// var cntTrajectories=-1;
+								// for (var i=0, ii=arrayString.length; i<ii;i++){
+									// var melement = arrayString[i].split('\t');
+									// if (melement[0] && melement[0]=="Trajectory"){
+										// if (cntTrajectories<totalNbTrajectories){
+										// cntTrajectories++;
+										// }
+									// }
+									// else{
+										// if (melement[2] && melement[2]!='none'){
+											// if(mcountToken[melement[2]].length==0){
+												// for (var i1=0;i1<totalNbTrajectories;i1++){
+													// mcountToken[melement[2]].push(0);
+												// }
+												
+												// mcountToken[melement[2]][cntTrajectories]+=1;
+												
+											// }
+											// else{
+												// if(mcountToken[melement[2]].length>cntTrajectories){
+												// mcountToken[melement[2]][cntTrajectories]+=1;
+												// }
+											// }
+										
+										
+										// }
+									// }
+								// }
+								// //console.log(mcountToken)
+								// /*var totalNbTrajectories=0;
+								// for (var i=0, ii=arrayString.length; i<ii;i++){
+									// var melement = arrayString[i].split('\t');
+									// if (melement[0] && melement[0]=="Trajectory"){
+										
+										// totalNbTrajectories++;
+									// }
+									// else{
+										// if (melement[2]!='none'){
+										// if (mcountToken.hasOwnProperty(melement[2])){
+											
+											// if (mcountToken[melement[2]].length<totalNbTrajectories){
+												// mcountToken[melement[2]].push(0);
+											// }
+											// else{
+												// mcountToken[melement[2]][totalNbTrajectories]+=1;
+											// }
+										// }
+										// else{
+											// mcountToken[headtitles[i]]=[0];
+										// }
+										// }
+									// }
+								// }*/
+								// //console.log(mcountToken)
+								// // index of the result to watch is the value of simTrajectory...
+								// var simTrajectory=0;
+								// if (tRes!=-1)
+									// simTrajectory=tRes;
+								 // //console.log(localStorage.getItem('myCurrentResult'));
+								 
+								// var mdataSim=[];
+								// var cntStartSim=-1;
+								// var cntLine=0;
+								// var startSim=0;
+								
+								
+								// for (var i=startSim, ii=arrayString.length; i<ii;i++){
+									// var melement = arrayString[i].split('\t');
+									// if (melement[0] && melement[0]=="Trajectory"){
+											// cntStartSim++;
+											// cntLine=i+1;	
+									// }
+									// if (cntStartSim==simTrajectory	){
+										// startSim=cntLine;
+									// }
+									
+								// }
+								// var cntLine=startSim;
+								// var endSim=startSim;
+								// var first=true;
+								
+								// for (var i=startSim, ii=arrayString.length; i<ii;i++){
+									// var melement = arrayString[i].split('\t');
+									// if (melement[0] && melement[0]=="Trajectory" && first ==true){
+											// cntLine=i;	
+											
+											
+												// first=false;
+											
+									// }		
+								// }
+								// if (cntLine==startSim){
+									// cntLine=arrayString.length-1;
+								// }
+								// endSim=cntLine;
+								// //console.log("start sim: "+startSim);
+								// // get end line of given trajectory 
+								// //console.log("end sim: "+endSim);
+								
+								// for (var i=startSim, ii=endSim; i<ii;i++){
+									// if (arrayString[i] && arrayString[i]!=""){
+										// var melement = arrayString[i].split('\t');
+										// mdataSim.push(melement)
+									// }
+								// }
+									// //mdataSim is the result to visualise
+								// //console.log(mdataSim.length)
+								// //console.log(mdataSim)
+								// //dataR=mdataSim;
+								// res.view({
+									// exp: exp,
+									// mtb:mtb,
+									// nbRes: parRes,
+									// dataR: mdataSim,
+									// headtitles: headtitles,
+									// ly: qmm.layouts,
+									// stats: mcountToken
+								  // });
+								
+								
+							// }
+						// });
 						//
 					}
 					catch(erf){}

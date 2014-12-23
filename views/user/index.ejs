@@ -52,8 +52,627 @@
 	
 	<!--<svg class="chart"></svg>-->
 	<div id="container"></div>
-	<script>
 	
+		<script id="fragmentShader" type="x-shader/x-fragment">
+		
+		uniform float time;
+			uniform vec2 resolution;
+			varying vec2 vUv;
+
+			void main() {
+				
+				
+				vec2 position = -1.0 + 2.0 * vUv;
+				//vec2 p = ( gl_FragCoord.xy / resolution.xy ) - 0.50;
+				float sx = 0.2 * (position.x + 0.01) * sin( 100.0 * position.x - 1. * time);
+				float dy = 1./ ( 50. * abs(position.y - sx));
+				dy += 1./ (20. * length(position - vec2(position.x, 0.)));
+				gl_FragColor = vec4( (position.x + 0.50) * dy, 0.23 * dy, dy, 1.0 );
+			}
+			/*uniform float time;
+			uniform vec2 resolution;
+			varying vec2 vUv;
+			void main( void ) {
+				//vec2 position = (gl_FragCoord.xy / resolution.xy) - 5.0;
+				vec2 position = -1.0 + 2.0 * vUv;
+				vec3 color = vec3(0.0, 0.0, 0.0);
+				float px = 1.0 * (position.x+0.3*sin(1.0*pow(time, 1.0)*1.0));				
+				float py = 4.0/(500.0*abs(position.y - px));
+				float py2 = 4.0/(200.0*abs(position.y - px));				
+				float px1 = 1.0 * (position.x+0.3*sin(1.0*pow(time, 1.0)*1.0));				
+				float py3 = 5.0/(500.0*abs(position.y+0.2 - px1));
+				float py4 = 5.0/(200.0*abs(position.y+0.2 - px1));				
+				color.x = (position.x-py)*0.4;
+				color.y = py*0.3;
+				color.z = py;				
+				color.x += (position.x-py2)*0.4;
+				color.z += py2;				
+				color.x += (position.x-py3)*0.4;
+				color.y += py3*1.0;
+				color.z += py3;				
+				color.x += (position.x-py4)*0.4;
+				color.z += py4;					
+				gl_FragColor = vec4(color, 1.0);
+			}
+		
+		/*
+		uniform float time;
+		uniform vec2 mouse;
+		uniform vec2 resolution;
+		varying vec2 vUv;
+		#define PI 3.1415926535
+
+		void main( void ) {
+			//vec2 p = (2.0*gl_FragCoord.xy - resolution.xy)/resolution.y;
+			vec2 p = -1.0 + 2.0 * vUv;
+			//vec2 p = (2.0*gl_FragCoord.xy - resolution.xy)/resolution.y;
+			//p = floor(p)+fract(p*4.0);
+			vec3 col = vec3(0.2);
+			for(int i=0; i<20; i++) {
+				float a = 2.0*PI*float(i)/12.0 + time*0.02;
+				float x = mod(a,1.)*time*0.001-2.;
+				float y = -1.+float(i)/10.0;
+				vec2 q = vec2(x,y);
+				float r = fract(a);
+				float g = 1.0-r;
+				col += 0.01/length(p-q)*vec3(r, g, 0.01);
+			}
+			gl_FragColor = vec4(vec3(col), 1.0);
+		}*/
+		/*uniform float time;
+		uniform vec2 mouse;
+		uniform vec2 resolution;
+		varying vec2 vUv;
+
+		float length2(vec2 p) { return dot(p, p); }
+
+		float noise(vec2 p){
+			return fract(sin(fract(sin(p.x) * (43.13311)) + p.y) * 31.0011);
+		}
+
+		float worley(vec2 p) {
+			float d = 1e30;
+			for (int xo = -1; xo <= 1; ++xo) {
+				for (int yo = -1; yo <= 1; ++yo) {
+					vec2 tp = floor(p) + vec2(xo, yo);
+					d = min(d, length2(p - tp - vec2(noise(tp))));
+				}
+			}
+			return 3.0*exp(-4.0*abs(2.0*d - 1.0));
+		}
+
+		float fworley(vec2 p) {
+			return sqrt(sqrt(sqrt(
+				1.1 * // light
+				worley(p*5. + .3 + 0.01*time*.0525) *
+				sqrt(worley(p * 50. + 0.3 + 0.01*time * -0.15)) *
+				sqrt(sqrt(worley(p * -10. + 9.3))))));
+		}
+
+		void main() {
+			//vec2 uv = gl_FragCoord.xy / resolution.xy;
+			vec2 uv = -1.0 + 2.0 * vUv;
+			float t = fworley(uv * resolution.xy / 1500.0);
+			t *= exp(-length2(abs(0.7*uv - 1.0)));
+			gl_FragColor = vec4(t * vec3(0.1, 1.5*t, 1.2*t + pow(t, 0.5-t)), 1.0);
+		}*/
+		
+		/*uniform float time;
+		uniform vec2 mouse;
+		uniform vec2 resolution;
+		varying vec2 vUv;
+		// Created by inigo quilez - iq/2013 : https://www.shadertoy.com/view/4dl3zn
+		// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+		// Messed up by Weyland
+
+		void main(void)
+		{
+			//vec2 uv = -1.0 + 2.0*gl_FragCoord.xy / resolution.xy;
+			//uv.x *= resolution.x / resolution.y;
+			vec2 uv = -1.0 + 2.0 * vUv;
+			
+			// background	 
+		//	vec3 color = vec3(0.9 + 0.2*uv.y);
+			vec3 color = vec3(1.0);
+
+			// bubbles	
+			for( int i=0; i<64; i++ )
+			{
+				// bubble seeds
+				float pha =      sin(float(i)*546.13+1.0)*0.5 + 0.5;
+				float siz = pow( sin(float(i)*651.74+5.0)*0.5 + 0.5, 4.0 );
+				float pox =      sin(float(i)*321.55+4.1) * resolution.x / resolution.y;
+
+				// buble size, position and color
+				float rad = 0.1 + 0.5*siz+sin(time/6.+pha*500.+siz)/20.;
+				vec2  pos = vec2( pox+sin(time/10.+pha+siz), -1.0-rad + (2.0+2.0*rad)
+								 *mod(pha+0.1*(time/5.)*(0.2+0.8*siz),1.0));
+				float dis = length( uv - pos );
+				vec3  col = mix( vec3(0.194*sin(time/6.0),0.3,0.0), 
+								vec3(1.1*sin(time/9.0),0.4,0.8), 
+								0.5+0.5*sin(float(i)*1.2+1.9));
+					  //col+= 8.0*smoothstep( rad*0.95, rad, dis );
+				
+				// render
+				float f = length(uv-pos)/rad;
+				f = sqrt(clamp(1.0-f*f,0.0,1.0));
+				color -= col.zyx *(1.0-smoothstep( rad*0.95, rad, dis )) * f;
+			}
+
+			// vigneting	
+			color *= sqrt(1.5-0.5*length(uv));
+
+			gl_FragColor = vec4(color,1.0);
+		}*/
+		/*uniform float time;
+		uniform vec2 mouse;
+		uniform vec2 resolution;
+		varying vec2 vUv;
+		float pi = atan(1.0)*4.0;
+		float tau = atan(1.0)*8.0;
+		vec2 res = vec2(resolution.x/resolution.y,1.0);
+
+		mat3 rotate(vec3 ang)
+		{
+			mat3 rX = mat3(1,0,0,
+					   0,cos(ang.x),-sin(ang.x),
+					   0,sin(ang.x),cos(ang.x));
+			mat3 rY = mat3(cos(ang.y),0,sin(ang.y),
+					   0,1,0,
+					   -sin(ang.y),0,cos(ang.y));
+			mat3 rZ = mat3(cos(ang.z),-sin(ang.z),0,
+					   sin(ang.z),cos(ang.z),0,
+					   0,0,1);
+			return rX*rY*rZ;
+					   
+		}
+
+		vec3 cylNorm(vec3 v)
+		{
+			return v / max(length(v.xz),length(v.y*2.0));
+		}
+
+		float bar(float x,float width,float h,vec2 uv)
+		{
+			float hw = width/2.0;
+			float edges = smoothstep(-hw-0.001,-hw,uv.x-x) * smoothstep(hw+0.001,hw,uv.x-x);
+			x -= res.x;
+			edges += smoothstep(-hw-0.005,-hw,uv.x-x) * smoothstep(hw+0.005,hw,uv.x-x);
+			x += res.x;
+			edges += smoothstep(-hw-0.005,-hw,uv.x-x) * smoothstep(hw+0.005,hw,uv.x-x);
+			
+			return ((1.0-uv.y)-h) * edges * step(-3.999,uv.y);
+		}
+
+		float rand(float n)
+		{
+			return fract(sin(n) * 43758.5453123);
+		}
+
+		float backdrop(vec2 uv)
+		{
+			float col = 0.0; //srsly
+			for(int i = 0;i < 32;i++)
+			{
+				float x = float(i);
+				float off = mod(time * rand(x+0.4)*0.01,1.0);
+				col += bar(off,0.01+rand(x+4.5)*0.05,rand(x+0.5),uv)*rand(x+5.)*0.02;
+			}
+			return col;
+		}
+
+		void main( void ) 
+		{
+			//vec2 p = ( gl_FragCoord.xy / resolution.y ) - res/2.0;
+			vec2 position = -1.0 + 2.0 * vUv;
+				
+			vec3 cang = vec3(mouse.yx-0.5,0)*pi;
+			cang = vec3(0,tau*(2./4.),0);
+			
+			vec3 cdir = normalize(vec3(position.xy,0.7));
+			
+			cdir *= rotate(cang);
+			cdir = cylNorm(cdir);
+			
+			vec3 col;
+			
+			float horizon = min(length(cdir.xz),(0.5-cdir.y));
+			
+			col = vec3(0,0.5,1)*pow(horizon,3.) + pow(horizon,16.);
+			
+			vec2 backuv = vec2(atan(cdir.z,cdir.x)/tau + 0.5,cdir.y*8.0);
+			
+			col += backdrop(backuv);
+			
+			gl_FragColor = vec4( col , 1.0 );
+
+		}*/
+		/*
+		const float VELOCITY        = 20.0  ;           // speed of lines [ 0.5  .. 1.5  ] =  1.0
+		const float HEIGHT          = 0.5    ;           // height of the lines  [ 0    .. 1.0  ] =  0.5
+		const float FREQUENCY       = 32.5 ;           // frequency  [ 1.0  .. 14.0 ] =  9.0
+		const float AMPLITUDE       = 0.3 ;           // amplitude  [ 0.1  .. 0.5  ] =  0.2
+		const int   NUMBER          = 10    ;           // lines      [ 0    .. 20   ] = 10.0
+		const float INVERSE         = 1.0 / float(10);  // inverse
+		uniform vec2 resolution;
+		uniform float time;
+		varying vec2 vUv;
+		
+		void main()
+		{
+		   vec3 col = vec3( 1.);
+		   
+		   float rColMod;
+		   float gColMod;
+		   float bColMod;
+		   
+		   float offset;
+		   float t;
+		   
+		   float color;
+		   float colora;
+		   
+		   float tsin;
+				   
+		   for (int i = 0; i < NUMBER; ++i)
+		   {
+			  vec2 pos= vUv+0.5;//gl_FragCoord.xy/resolution.xy;
+			  
+			  offset = float(i) * INVERSE;
+					
+			  t      = time + VELOCITY *(offset * offset * 2.);
+			  
+			  tsin   = sin( t +pos.y*33.);
+			  
+			  pos.y -= HEIGHT;
+			  pos.y+=sin(pos.x * FREQUENCY + t ) * AMPLITUDE * tsin;
+			  
+			  color  = 1.0 - pow( abs( pos.y) , 0.2 );
+			  colora = pow( 1. , 0.2 * abs( pos.y ) );
+			  
+			  rColMod = (2. - (offset * .5) + .5) * colora ;
+			  gColMod = ((offset * .5) + .65) * colora ;
+			  bColMod = ((offset * .5) + .35) * colora ;
+				   
+			  col -= exp(color) *color* INVERSE * vec3( mix(rColMod, gColMod, tsin), mix(gColMod, bColMod, tsin) , sin(bColMod*rColMod*tsin)*mix(bColMod, rColMod, tsin)) ;      
+		   }
+		   
+		   gl_FragColor=vec4(col.x, col.y, col.y ,1.0);
+			 
+		}*/
+		/*uniform float time;
+		uniform vec2 resolution;
+		varying vec2 vUv;
+		void main( void ) 
+		{
+			//vec2 p = ( gl_FragCoord.xy / resolution.xy ) * 2.0 - 1.0;
+			vec2 position = -1.0 + 2.0 * vUv;
+			vec3 c = vec3( 0.0 );
+			
+			float amplitude = 0.30; 
+			float glowT = sin(0.01*time) * 0.5 + 0.5;
+			float glowFactor = mix( 0.15, 0.35, glowT );
+			c += vec3(0.02, 0.03, 0.13) * ( glowFactor * abs( 1.0 / sin(position.x + sin( position.y + 0.01*time ) * amplitude ) ));
+			c += vec3(0.02, 0.10, 0.03) * ( glowFactor * abs( 1.0 / sin(position.x + sin( position.y + 0.01*time+1.00 ) * amplitude+0.1 ) ));
+
+			gl_FragColor = vec4( c, 1.0 );
+
+		}*/
+		
+		/*uniform float time;
+		uniform vec2 resolution;
+		varying vec2 vUv;
+		void main( void ) 
+		{
+			//vec2 k; 
+			//k.x = resolution.y; k.y = resolution.y;
+			//vec2 p = ( gl_FragCoord.xy / k.xy ) ; 
+			vec2 position = -1.0 + 2.0 * vUv;
+			
+			vec3 c = vec3( 0.0 );
+			
+			c += vec3(1.0, 0.5, 1.0) * fract( (              position.x + position.y + fract(time*0.05) ) * 5.0 ) ;
+			c *= vec3(1.0, 2.0, 2.0) * fract( (sin(time*0.05)*position.x - position.y + fract(time*0.005) ) * 5.0 ) ;
+			c *= ( position.x * position.y );
+			
+			gl_FragColor = vec4( c, 1.0 );
+		}*/
+		/*uniform float time;
+		varying vec2 vUv;
+		uniform vec2 resolution;
+
+		void main( void ) {
+
+			//this is me deconstructing http://glsl.heroku.com/e#19344.0 to try and figure out how it works
+			
+			vec2 position = -1.0 + 2.0 * vUv;
+			vec3 colour = vec3(0.0);
+			
+			float density = 0.09;
+			float amplitude = 0.3;
+			float frequency = 10.0;
+			float scroll = 0.01;
+
+
+				colour += vec3	(0.1, 0.05, 0.05) * (1.0 / abs((position.y + (amplitude * sin((position.x + time * scroll) *frequency)))) * density);
+				
+			
+			gl_FragColor = vec4( colour, 1.0 );
+
+		}*/
+			/*uniform float time;		
+			uniform vec2 resolution;
+			varying vec2 vUv;
+			void main( void ) 
+			{
+				//vec2 p = ( gl_FragCoord.xy / resolution.xy ) * 2.0 - 1.0;
+				vec2 position = -1.0 + 2.0 * vUv;
+				
+				position.y += 0.1*position.x;//sin(time*0.5)*0.1*position.x;
+				
+				vec3 c = vec3( 0.0 );
+				
+				float amplitude = 0.005; 
+				float glowT = sin(time*0.01) * 0.5 + 10.5;
+				float glowFactor = mix( 0.15, 0.35, glowT );
+				c += vec3(0.02, 0.03, 0.13) * ( glowFactor * abs(1.0 /(position.y)));
+
+				gl_FragColor = vec4( c, 1.0);
+
+			}*/
+			/*uniform float time;
+			uniform vec2 resolution;
+			varying vec2 vUv;
+			void main( void ) 
+			{
+				//vec2 p = ( gl_FragCoord.xy / resolution.xy ) * 2.0 - 1.0;
+				vec2 position = -1.0 + 2.0 * vUv;
+				
+				vec3 c = vec3( 0.0 );
+				
+				float amplitude = 3.05; 
+				float glowT = sin(time) * 0.6 + 0.1;
+				float glowFactor = mix( 0.15, 0.35, glowT );
+				
+				c += vec3(0.02, 0.03, 0.13) * ( glowFactor * abs( 1.0 / sin(position.x + sin( position.y + 0.01*time ) * amplitude ) ));
+				c += vec3(0.02, 0.10, 0.03) * ( glowFactor * abs( 1.0 / sin(position.x + cos( position.y + 0.01*time+1.00 ) * amplitude+0.1 ) ));
+				c += vec3(0.15, 0.05, 0.20) * ( glowFactor * abs( 1.0 / sin(position.y + sin( position.x + 0.01*time+1.30 ) * amplitude+0.15 ) ));
+				c += vec3(0.20, 0.05, 0.05) * ( glowFactor * abs( 1.0 / sin(position.y + cos( position.x + 0.01*time+3.00 ) * amplitude+0.3 ) ));
+				c += vec3(0.17, 0.17, 0.05) * ( glowFactor * abs( 1.0 / sin(position.y + cos( position.x + 0.01*time+5.00 ) * amplitude+0.2 ) ));
+				
+				gl_FragColor = vec4( c, 400.0 );
+
+			}*/
+			/*uniform float time;
+			uniform vec2 resolution;
+			varying vec2 vUv;
+			float deg2rad=3.141592/180.0;
+			float angle=60.0;
+			vec2 normal=vec2(cos(angle*deg2rad),sin(angle*deg2rad));
+			void main( void ) {
+				
+				float freq=5.0;
+				float rahmda=5.0;
+				
+				float len=dot(gl_FragCoord.xy,normal);
+				
+				float factor=sin(time*freq - len/rahmda)*0.4 + 1.0;
+				
+				gl_FragColor=vec4(0.4*factor,0.3*factor,0.9*factor,1.0);
+
+			}*/
+			/*uniform float time;
+			uniform vec2 resolution;
+			varying vec2 vUv;
+			void main( void ) {
+				//vec2 position = (gl_FragCoord.xy / resolution.xy) - 5.0;
+				vec2 position = -1.0 + 2.0 * vUv;
+				vec3 color = vec3(0.0, 0.0, 0.0);
+				float px = 1.0 * (position.x+0.3*sin(1.0*pow(time, 1.0)*1.0));				
+				float py = 4.0/(500.0*abs(position.y - px));
+				float py2 = 4.0/(200.0*abs(position.y - px));				
+				float px1 = 1.0 * (position.x+0.3*sin(1.0*pow(time, 1.0)*1.0));				
+				float py3 = 5.0/(500.0*abs(position.y+0.2 - px1));
+				float py4 = 5.0/(200.0*abs(position.y+0.2 - px1));				
+				color.x = (position.x-py)*0.4;
+				color.y = py*0.3;
+				color.z = py;				
+				color.x += (position.x-py2)*0.4;
+				color.z += py2;				
+				color.x += (position.x-py3)*0.4;
+				color.y += py3*1.0;
+				color.z += py3;				
+				color.x += (position.x-py4)*0.4;
+				color.z += py4;					
+				gl_FragColor = vec4(color, 1.0);
+			}*/
+		
+			/*uniform float time;
+			uniform vec2 resolution;
+			varying vec2 vUv;
+
+			void main() {
+				
+				
+				vec2 position = -1.0 + 2.0 * vUv;
+				//vec2 p = ( gl_FragCoord.xy / resolution.xy ) - 0.50;
+				float sx = 0.2 * (position.x + 0.01) * sin( 100.0 * position.x - 1. * time);
+				float dy = 1./ ( 50. * abs(position.y - sx));
+				dy += 1./ (20. * length(position - vec2(position.x, 0.)));
+				gl_FragColor = vec4( (position.x + 0.50) * dy, 0.23 * dy, dy, 1.0 );
+			}*/
+		
+			/*uniform float time;
+			uniform vec2 resolution;
+
+			varying vec2 vUv;
+
+			void main( void ) {
+
+				vec2 position = -1.0 + 2.0 * vUv;
+
+				float red = abs( sin( position.x * position.y + time / 5.0 ) );
+				float green = abs( sin( position.x * position.y + time / 4.0 ) );
+				float blue = abs( sin( position.x * position.y + time / 3.0 ) );
+				gl_FragColor = vec4( red, green, blue, 1.0 );
+
+			}*/
+			/*uniform float time;
+			uniform vec2 resolution;
+
+			varying vec2 vUv;
+
+			void main( void ) {
+
+				vec2 position = vUv;
+
+				float color = 0.0;
+				//color += sin( position.x * cos( time / 15.0 ) * 80.0 ) + cos( position.y * cos( time / 15.0 ) * 10.0 );
+				//color += sin( position.y * sin( time / 10.0 ) * 40.0 ) + cos( position.x * sin( time / 25.0 ) * 40.0 );
+				//color += sin( position.x * sin( time / 5.0 ) * 10.0 ) + sin( position.y * sin( time / 35.0 ) * 80.0 );
+				color += sin( position.x * cos( time / 15.0 ) * 80.0 ) + cos( position.y * cos( time / 15.0 ) * 10.0 );
+				color += sin( position.y * sin( time / 10.0 ) * 40.0 ) + cos( position.x * sin( time / 25.0 ) * 40.0 );
+				color += sin( position.x * sin( time / 5.0 ) * 10.0 ) + sin( position.y * sin( time / 35.0 ) * 80.0 );
+				color *= sin( time / 10.0 ) * 0.5;
+				color *= sin( time / 10.0 ) * 0.5;
+
+				//gl_FragColor = vec4( vec3( color, color * 0.5, sin( color + time / 3.0 ) * 0.75 ), 1.0 );
+				gl_FragColor = vec4( vec3( color, color * 0.7, sin( color + time / 3.0 ) * 0.75 ), 1.0 );
+			}*/
+			/*
+			varying vec2 vUv;
+		uniform float time;
+
+		uniform vec2 resolution;
+
+		void main( void ) {
+			//vec2 position = ( gl_FragCoord.xy / resolution.xy ) - 0.5;
+			vec2 position = vUv-0.5;
+			vec3 colour = vec3(0.0);		
+			float density = (1.5 - (abs(sin(0.1*time)))) * 0.5;
+			float amplitude = 0.01;
+			float frequency = 5.0;
+			colour += vec3(0.1, 0.05, 0.07) * (1.0 / abs((position.y + (amplitude * tan((position.x - 1.0) *frequency)))) * density);
+			colour += vec3(0.1, 0.05, 0.07) * (1.0 / abs(((position.y) + (amplitude * tan((1.0 - position.x) *frequency)))) * density);		
+			gl_FragColor = vec4( colour, 1.0 );
+		}
+		*/
+		/*
+		varying vec2 vUv;
+		uniform float time;
+		uniform vec2 resolution;
+
+		void main(void)
+		{
+			//vec2 uv = -1.0 + 2.0*gl_FragCoord.xy / resolution.xy;
+			vec2 muv = -1.0 + 2.0 * vUv;
+			//muv.x *=  resolution.x / resolution.y;
+			
+			// background	 
+			vec3 color = vec3(0.8 + 0.2*muv.y);
+
+			// bubbles	
+			for( int i=0; i<20; i++ )
+			{
+				// bubble seeds
+				float pha =      sin(float(i)*546.13+1.0)*0.5 + 0.5;
+				float siz = pow( sin(float(i)*651.74+5.0)*0.5 + 0.5, 4.0 );
+				float pox =      sin(float(i)*321.55+4.1) ;
+				
+				// buble size, position and color
+				float rad = 0.1 + 0.5*siz;
+				vec2  pos = vec2( pox, -1.0-rad + (2.0+2.0*rad)*mod(pha+0.1*time*(0.2+0.8*siz),1.0));
+				float dis = length( muv - pos );
+				vec3  col = mix( vec3(0.94,0.3,0.0), vec3(0.1,0.4,0.8), 0.5+0.5*sin(float(i)*1.2+1.9));
+				
+				// render
+				float f = length(muv-pos)/rad;
+				f = sqrt(clamp(1.0-f*f,0.0,1.0));
+				color -= col.zyx *(1.0-smoothstep( rad*0.95, rad, dis )) * f;
+			}
+
+			// vigneting	
+			color *= sqrt(1.5-0.5*length(muv));
+
+			gl_FragColor = vec4(color,1.0);
+		}
+		*/
+
+		</script>
+		
+		
+		
+		<script id="vertexShader" type="x-shader/x-vertex">
+
+			varying vec2 vUv;
+
+			void main()
+			{
+				vUv = uv;
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+				gl_Position = projectionMatrix * mvPosition;
+			}
+
+		</script>
+		
+		
+	
+	<script id="fragmentShader2" type="x-shader/x-fragment">
+		
+		varying vec2 vUv;
+		uniform float time;
+
+	uniform vec2 resolution;
+
+	float length2(vec2 p) { return dot(p, p); }
+
+	float noise(vec2 p){
+		return fract(sin(fract(sin(p.x) * (43.13311)) + p.y) * 31.0011);
+	}
+
+	float worley(vec2 p) {
+		float d = 1e30;
+		for (int xo = -1; xo <= 1; ++xo) {
+			for (int yo = -1; yo <= 1; ++yo) {
+				vec2 tp = floor(p) + vec2(xo, yo);
+				d = min(d, length2(p - tp - vec2(noise(tp))));
+			}
+		}
+		return 3.0*exp(-4.0*abs(2.0*d - 1.0));
+	}
+
+	float fworley(vec2 p) {
+		return sqrt(sqrt(sqrt(
+			0.01 * // light
+			worley(p*5. + .3 + time*.0225) *
+			sqrt(worley(p * 50. + 0.3 + 0.2*time * -0.15)) *
+			sqrt(sqrt(worley(p * -10. + 9.3))))));
+	}
+
+	void main() {
+		vec2 uv = vUv;
+		float t = fworley(uv  / 1.0);
+		t *= exp(-length2(abs(uv - 0.5)));//t *= exp(-length2(abs(0.7*uv - 1.0)));
+		gl_FragColor = vec4(t * vec3(1.0, t, t ), 0.0);
+	}
+	
+	
+	</script>
+	<script id="vertexShader2" type="x-shader/x-vertex">
+
+			varying vec2 vUv;
+
+			void main()
+			{
+				vUv = uv;
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+				gl_Position = projectionMatrix * mvPosition;
+			}
+
+		</script>	
+		
+		
+<script>
 /*var data = [4, 8, 15, 16, 23, 42];
 
 var width = 420,
@@ -257,7 +876,7 @@ var w = 960, h = 500;
 			
 			
 		if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
-
+			var uniforms, uniforms2;
 			var text0 = document.createElement('div');
 			text0.style.position = 'absolute';
 			text0.style.width = 100;
@@ -279,10 +898,12 @@ var w = 960, h = 500;
 			camera, scene, renderer, material, composer;
 			var mouse = new THREE.Vector2(), INTERSECTED;
 			var select_mesh;
-			var projector = new THREE.Projector();
+			//var projector = new THREE.Projector();
 			var raycaster = new THREE.Raycaster();
 			var directionalLight;
 			var controls;
+			var clock = new THREE.Clock();
+			var bline;
 			init();
 			animate();
 
@@ -355,33 +976,77 @@ var w = 960, h = 500;
 					scene.add( line );
 
 				}*/
+				
+				uniforms = {
+					time: { type: "f", value: 1.0 },
+					resolution: { type: "v2", value: new THREE.Vector2() }
+				};
+
+				var smaterial = new THREE.ShaderMaterial( {
+
+					uniforms: uniforms,
+					vertexShader: document.getElementById( 'vertexShader' ).textContent,
+					fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
+					side: THREE.BackSide 
+				} );
+				uniforms2 = {
+					time: { type: "f", value: 1.0 },
+					resolution: { type: "v2", value: new THREE.Vector2() }
+				};
+
+				var smaterial2 = new THREE.ShaderMaterial( {
+
+					uniforms: uniforms2,
+					vertexShader: document.getElementById( 'vertexShader2' ).textContent,
+					fragmentShader: document.getElementById( 'fragmentShader2' ).textContent,
+					side: THREE.BackSide 
+				} );
+				
 
 				//
-				var geo = new THREE.TorusGeometry( 500, 450, 100, 100 );
-				
+				//var geo = new THREE.TorusGeometry( 500, 450, 100, 100 );
+				var geo = new THREE.SphereGeometry( 100, 32,32 );
 				//var geo = new THREE.IcosahedronGeometry(90,3);
 				//var material = new THREE.MeshPhongMaterial( {wireframe: true, shading: THREE.FlatShading} );
 				//var omesh = new THREE.Mesh( geo, new THREE.MeshBasicMaterial( { color: 0xffaa00, wireframe: true } )  );
 				var omesh = new THREE.Mesh( geo, new THREE.MeshPhongMaterial( { 
-					color: 0x9966ff, 
-					ambient: 0x9966ff, // should generally match color
-					specular: 0x050505,
-					shininess: 200,side: THREE.BackSide, //wireframe: true
+					color: 0xff0600, 
+					ambient: 0xff0600, // should generally match color
+					specular: 0xff0505,
+					shininess: 1//,side: THREE.BackSide, //wireframe: true
 				} ) );
+				//var omesh = new THREE.Mesh( geo, smaterial2 );
+				
 				omesh.rotation.x = -Math.PI/2;
 				omesh.name="isosun";
-				scene.add(omesh );
+				//omesh.position.y = -100;
+				scene.add(omesh);
+				
+				//var smesh = new THREE.Mesh( new THREE.SphereGeometry( 2000,32, 32), smaterial )
+				//smesh.rotation.y = Math.PI/2;
+				//scene.add(smesh );
+				
+				
+				
+				
+				
+				
+				var smesh2 = new THREE.Mesh( new THREE.SphereGeometry( 20000,32, 32), smaterial2 )
+				//var smesh2 = new THREE.Mesh( new THREE.BoxGeometry( 40000,40000, 40000), smaterial2 )
+				smesh2.rotation.y = Math.PI/2;
+				//smesh2.rotation.x = Math.PI/2;
+				scene.add(smesh2 );
 				
 				// add subtle blue ambient lighting
-				  var ambientLight = new THREE.AmbientLight(0x000027);
+				var ambientLight = new THREE.AmbientLight(0x000027);
 				  
-				  scene.add(ambientLight);
+				scene.add(ambientLight);
 				  
-				  // directional lighting
-      directionalLight = new THREE.DirectionalLight(0x55ffff); 
-      directionalLight.position.set(13, 1, 1).normalize();
-	  ambientLight.name="dlight"
-      scene.add(directionalLight);
+				// directional lighting
+				directionalLight = new THREE.DirectionalLight(0x55ffff); 
+				directionalLight.position.set(13, 1, 1).normalize();
+				ambientLight.name="dlight"
+				scene.add(directionalLight);
 	  
 				var geo2 = new THREE.IcosahedronGeometry(15,1);
 				select_mesh= new THREE.Mesh( geo2, new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: true } )  );
@@ -408,7 +1073,37 @@ var w = 960, h = 500;
 					arrayUsers[i].name=list_users[i];
 					scene.add(arrayUsers[i] );
 					
+					
+					
 				}
+				
+				
+				
+				//SUBDIVISIONS = 20;
+				var bgeometry = new THREE.Geometry();
+				
+				//curve.v0 = new THREE.Vector3(arrayUsers[0].position.x, arrayUsers[0].position.y, 0);
+				//curve.v1 = new THREE.Vector3(arrayUsers[0].position.x/2, arrayUsers[0].position.y/2-60, 0);
+				
+				
+				for (j = 0; j < list_users.length; j++) {
+				bgeometry.vertices.push( new THREE.Vector3(0, 0, 0))
+				bgeometry.vertices.push( new THREE.Vector3(arrayUsers[j].position.x, arrayUsers[j].position.y,arrayUsers[j].position.z))
+				}
+				var bmaterial = new THREE.LineBasicMaterial( { color: 0xffffff, linewidth: 1 ,opacity: 0.4, blending: THREE.AdditiveBlending, transparent: true} );
+				bline = new THREE.Line(bgeometry, bmaterial,THREE.LinePieces);
+				//scene.add(bline);
+				
+				//bline.geometry.verticesNeedUpdate=true;
+				
+				//console.log(bline.position)
+				
+
+				
+
+				
+				
+				
 				
 
 				stats = new Stats();
@@ -443,7 +1138,7 @@ var w = 960, h = 500;
 				composer.addPass( effectFXAA );
 				composer.addPass( effectBloom );
 				composer.addPass( effectCopy );
-				projector = new THREE.Projector();
+				//projector = new THREE.Projector();
 				raycaster = new THREE.Raycaster();
 				//
 				controls = new THREE.OrbitControls( camera, container  );
@@ -462,7 +1157,10 @@ var w = 960, h = 500;
 
 				windowHalfX = window.innerWidth / 2;
 				windowHalfY = window.innerHeight / 2;
-
+				uniforms.resolution.value.x = window.innerWidth;
+				uniforms.resolution.value.y = window.innerHeight;
+				uniforms2.resolution.value.x = window.innerWidth;
+				uniforms2.resolution.value.y = window.innerHeight;
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
 
@@ -523,12 +1221,16 @@ var w = 960, h = 500;
 
 			function render() {
 				controls.update();
+				var delta = clock.getDelta();
+				uniforms.time.value += delta * 5;
+				uniforms2.time.value += delta * 5;
 				//camera.position.x += ( mouseX - camera.position.x ) * .01;
 				//camera.position.y += ( - mouseY + 200 - camera.position.y ) * .01;
 
 				camera.lookAt( scene.position );
 				var vector = new THREE.Vector3( mouse.x, mouse.y, 1 );
-				projector.unprojectVector( vector, camera );
+				//projector.unprojectVector( vector, camera );
+				vector.unproject(camera);
 				raycaster.set( camera.position, vector.sub( camera.position ).normalize() );
 	
 				var intersects = raycaster.intersectObjects( scene.children );
@@ -610,18 +1312,14 @@ var w = 960, h = 500;
 					}
 					else{
 						//object.position.x += Math.cos(time )*300;
-						var euler = new THREE.Euler( 0, 0.006, 0, 'XYZ' );
+						var euler = new THREE.Euler( 0, delta/2, 0, 'XYZ' );
 						object.position.applyEuler(euler);
-						//var euler2 = new THREE.Euler( 0, 0.0006, 0, 'XYZ' );
-						//directionalLight.position.applyEuler(euler2);
-						//select_mesh.position.x =9999999;
-						//select_mesh.position.y = 9999999;
-						//select_mesh.position.z =-9999999;
-						//object.position.z += Math.sin(time )*300;
+						//bline.rotation.y+=( Math.sin(delta/14));
+						
 					}
 
 				}
-
+				
 				renderer.clear();
 				composer.render();
 
@@ -636,4 +1334,3 @@ var w = 960, h = 500;
 
 		
 </div>
-

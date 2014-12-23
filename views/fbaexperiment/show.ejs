@@ -1,10 +1,80 @@
 <br><br><div class='container' id="showthing" style="width:80%">
-	<h1>Experiment </h1>
+	<h1>FBA Experiment </h1>
 	<hr>
-	<h2>Name: <%= fba.name %> </h2>
+	<h2>Name: <%= exp.name %> </h2>
 	<hr>
 	<h3>Comment: </h3>
-	<%= fba.comment %>
+	<%= exp.comment %>
 	<hr>
+
+	<br><b>Simulation results:</b>
+	<%var resultsMessage=" - No results yet."%>
+	<form action="/fbaexperiment/showresult/<%= exp.id %>" id="experiment-edit-form" method="POST" class="form-signin form-inline">
+    	<div class="tbl_container" style="overflow:auto; height: 300px;">
+    	<table id='tableResults' class='table table-bordered' style="text-align:left">
+    		<tr>
+				<th>Simulation: Result <%if (JSON.stringify(exp.results)=="[]") {%><%= resultsMessage %><%}%></th>
+				<th>Status</th>
+				<th><a href="/fbaexperiment/edit/<%= exp.id %>" class="btn btn-sm btn-primary">Add Simulation with new condition</a></th>
+			</tr>
+			<% _.each(exp.results, function(res) { %>
+				<tr data-id="<%= res.nb %>" data-model="experiment">
+					<td style="font-size:15px;"><b>Simulation nb <%= res.nb %></b></td>
+					<td style="font-size:15px;"><%= res.status %></td>
+					<td>
+						<input type="hidden" name="r<%= res.nb %>" id="r<%= res.nb %>"/>
+						<input type="submit" value="Show results" class="btn btn-sm btn-success" onclick="showRes(<%= res.nb %>)"/>
+					</td>
+				</tr>
+			<% }) %>
+		</table>
+		</div>
+
+		<input type="hidden" name="_csrf" value="<%= _csrf %>" />
+	</form>
+
 	
+	<br>
+	<br><b>Objective function:</b><%= exp.objective %>
+	<br><b>FBA model table:</b><div id="sfbaTable"></div>
+	<br>
 </div>
+
+<script>
+
+function showRes(myid) {
+	localStorage.setItem('myCurrentResult',myid);
+     //window.myCurrentResult = myid;
+	 //console.log(localStorage.getItem('myCurrentResult'));
+	 var r_element = document.getElementById("r"+myid);
+	 r_element.value=myid;
+}
+
+var $container13 = $("#sfbaTable");
+$container13.handsontable({
+  data: [],
+  width: ($("#showthing").width()),
+  height:200,
+  dataSchema: {name: null, formula: null, lb: null, ub:null,command:null, rule:null},
+  colWidths: [55, (($("#showthing").width())-235)/2, 40, 40,100, (($("#showthing").width())-235)/2],
+  startRows: 5,
+  startCols: 6,
+  colHeaders: ['Reaction name', 'Reaction Formula', 'Lb','Ub','Gene/Reaction Rule','Comment'],
+  columns: [
+    {data: "name"},
+    {data: "formula"},
+    {data: "lb"},
+    {data: "ub"},
+	{data: "command"},
+	{data: "rule"}
+  ],
+  minSpareRows: 1
+});
+
+var tempdata6=<%- JSON.stringify(exp.sfba_model_instance)%>
+var ht = $('#sfbaTable').handsontable('getInstance');
+if ($.isArray(tempdata6) && tempdata6[0] && $.isArray(tempdata6[0])){
+	ht.populateFromArray (0, 0, tempdata6,tempdata6.length-1, 5);
+}
+
+</script>

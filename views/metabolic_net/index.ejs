@@ -79,7 +79,7 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 			windowHalfY = window.innerHeight / 2;
 			var mouse = new THREE.Vector2(), INTERSECTED;
 			var select_mesh;
-			var projector = new THREE.Projector();
+			//var projector = new THREE.Projector();
 			var raycaster = new THREE.Raycaster();
 
 			init();
@@ -291,7 +291,7 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 				composer.addPass( effectVignette );
 				
-				projector = new THREE.Projector();
+				//projector = new THREE.Projector();
 				raycaster = new THREE.Raycaster();
 				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 			}
@@ -354,7 +354,8 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				//camera.lookAt( scene.position );
 				
 				var mvector = new THREE.Vector3( mouse.x, mouse.y, 1 );
-				projector.unprojectVector( mvector, camera );
+				//projector.unprojectVector( mvector, camera );
+				mvector.unproject(camera);
 				raycaster.set( camera.position, mvector.sub( camera.position ).normalize() );
 	
 				var intersects = raycaster.intersectObjects( scene.children );
@@ -437,7 +438,7 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 			var mouse = new THREE.Vector2(), INTERSECTED;
 			var select_mesh;
 			var effectBloom ;
-			var projector = new THREE.Projector();
+			//var projector = new THREE.Projector();
 			var raycaster = new THREE.Raycaster();
 			var omesh, ambientLight, directionalLight,directionalLight2;
 			var controls;
@@ -469,7 +470,7 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				
 				//
 				//var geo = new THREE.TorusGeometry( 500, 450, 100, 100 );
-				var geo = new THREE.PlaneGeometry( 50000,50000);
+				var geo = new THREE.PlaneBufferGeometry( 50000,50000);
 				//var geo = new THREE.IcosahedronGeometry(90,3);
 				//var material = new THREE.MeshPhongMaterial( {wireframe: true, shading: THREE.FlatShading} );
 				//var omesh = new THREE.Mesh( geo, new THREE.MeshBasicMaterial( { color: 0xffaa00, wireframe: true } )  );
@@ -586,7 +587,7 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				composer.addPass( effectCopy );
 				composer.addPass( effectBleach );
 				//composer.addPass( effectVignette );
-				projector = new THREE.Projector();
+				//projector = new THREE.Projector();
 				raycaster = new THREE.Raycaster();
 				//
 				
@@ -671,7 +672,8 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				
 				var delta = clock.getDelta();
 				var vector = new THREE.Vector3( mouse.x, mouse.y, 1 );
-				projector.unprojectVector( vector, camera );
+				//projector.unprojectVector( vector, camera );
+				vector.unproject(camera);
 				raycaster.set( camera.position, vector.sub( camera.position ).normalize() );
 				
 				//v = THREE.Math.clamp( v + 0.5 * delta * vdir, 0.1, 0.9 );
@@ -806,7 +808,7 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 			windowHalfY = window.innerHeight / 2;
 			var mouse = new THREE.Vector2(), INTERSECTED;
 			var select_mesh;
-			var projector = new THREE.Projector();
+			//var projector = new THREE.Projector();
 			var raycaster = new THREE.Raycaster();
 
 			init();
@@ -962,7 +964,7 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 				composer.addPass( effectVignette );
 				
-				projector = new THREE.Projector();
+				//projector = new THREE.Projector();
 				raycaster = new THREE.Raycaster();
 
 			}
@@ -1003,7 +1005,7 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				} );
 				
 
-				ground = new THREE.Mesh( new THREE.PlaneGeometry( 50000, 50000 ), groundBasic );
+				ground = new THREE.Mesh( new THREE.PlaneBufferGeometry( 50000, 50000 ), groundBasic );
 				ground.position.y = - 215;
 				ground.rotation.x = - Math.PI / 2;
 				scene.add( ground );
@@ -1099,7 +1101,8 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				camera.lookAt( scene.position );
 				
 				var vector = new THREE.Vector3( mouse.x, mouse.y, 1 );
-				projector.unprojectVector( vector, camera );
+				//projector.unprojectVector( vector, camera );
+				vector.unproject(camera);
 				raycaster.set( camera.position, vector.sub( camera.position ).normalize() );
 	
 				var intersects = raycaster.intersectObjects( scene.children );

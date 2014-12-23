@@ -1,5 +1,5 @@
-<br><br><form action="/fbaexperiment/create" method="POST" id="experiment-creation-form" enctype="multipart/form-data" class="form-signin">
-	<h2 class="form-signin-heading">Create a FBA experiment</h2>
+<br><br><form action="/fbaexperiment/create" method="POST" id="fbaexperiment-creation-form" enctype="multipart/form-data" class="form-signin">
+	<h2 class="form-signin-heading">Create FBA experiment</h2>
 
 	<% if(flash && flash.err) { %>
 		<ul class="alert alert-success">
@@ -9,14 +9,6 @@
 	</ul>
 	<% } %>
 
-	<% 
-		var InputParameters=JSON.stringify({'default_p':[] , 'simulations_p':[]});
-		var mtn=mtns[0];
-		//var InputdataJson=qm.file;
-		//var InputdataJson=JSON.stringify({"places" : [], "qssf" : { "constraints" : [], "externality_tag" :null,"objectives" : []}, "transitions" : []});
-		var metabolic_net_name=mtn.name;
-		var InputdataSfba=JSON.stringify([]);
-	%>
 	<div class="control-group">
 	<input type="text" class="form-control" placeholder="experiment title" name="name">
 	</div>
@@ -24,20 +16,24 @@
 	<div class="control-group">
 	<input type="text" class="form-control" placeholder="comments" name="comment">
 	</div>
-	
-	
-	<div class="control-group">Choose a metabolic network to use in this experiment :
-		<select class="form-control" name="mtn_model_name" onchange="updateModel(this);">
-		<% 
-		//var mtb_name=qm.metabolic_net; 
-		_.each(mtns, function(mtn) {%>
-		   <option><%=mtn.name%></option>
+
+	<div class="control-group">Select one metabolic network:
+	<select class="form-control" name="metabolic_net">
+		<% _.each(mtbs, function(mtb) {%>
+		   <option><%= mtb %></option>
 		<% }) %>
 		</select>
 	</div>
-	
-	<br>Select a .sfba file to upload:
-	<input type="file" placeholder="sfba file" name="sfbafile">Or fill in or copy/paste data in the following tables:
+    <p>
+    <div class="control-group">Type name of reaction or metabolite to be used as an objective function.
+	<input type="text" class="form-control" placeholder="objective function" name="objective"><br>
+	<div class="control-group">Type externality tag - the text tag at the end of external metabolite name.
+	<input type="text" class="form-control" placeholder="externality tag" name="xt">
+	</div>
+
+	<% var InputdataSfba=JSON.stringify([]); %>
+	<br>Either select a .sfba file to upload:
+	<input type="file" placeholder="sfba file" name="sfbafile">Or fill in or copy/paste data in the table below:
 	<input type="text"  name="mySfbaSpreadsheet0" id ="mySfbaSpreadsheet0" style="visibility: hidden;" value=<%=InputdataSfba%>>
 	<input type="text"  name="mySfbaSpreadsheet1" id ="mySfbaSpreadsheet1" style="visibility: hidden;" value="">
 	<input type="text"  name="mySfbaSpreadsheet2" id ="mySfbaSpreadsheet2" style="visibility: hidden;" value="">
@@ -48,35 +44,26 @@
 	<input type="text"  name="mySfbaSpreadsheet7" id ="mySfbaSpreadsheet7" style="visibility: hidden;" value="">
 	<input type="text"  name="mySfbaSpreadsheet8" id ="mySfbaSpreadsheet8" style="visibility: hidden;" value="">
 	<input type="text"  name="mySfbaSpreadsheet9" id ="mySfbaSpreadsheet9" style="visibility: hidden;" value="">
-	
-	<input type="text"  name="nameMtn" id ="nameMtn" style="visibility: hidden;" value=<%=metabolic_net_name%>>
-	
+	</div>
+
 	<div class="control-group"> 
 	<br>
-	<br><b>SFBA table:</b><div id="sfbaTable"></div>
+	<br><b>SurreyFBA table:</b><div id="sfbaTable"></div>
 	<br>
 	</div>
-	
-	<input type="submit" class="btn btn-lg btn-primary btn-block" value="Create Sfbaexperiment"/>
+
+    <input type="submit" class="btn btn-lg btn-primary btn-block" value="Submit"/>
 	<input type="hidden" name="_csrf" value="<%= _csrf %>" />
+
 </form>
 
 <script>
 var dataSfba=[];
 
-
-function updateModel(target){
-	//console.log(target.value);
-	var metabolic_net_name=target.value;
-	document.getElementById("nameMtn").value= metabolic_net_name;
-	console.log(document.getElementById("nameMtn").value);
-}
-
 var $container13 = $("#sfbaTable");
-
 $container13.handsontable({
   data: [],
-  width: $("#experiment-creation-form").width(),
+  width: $("#qsspn-model-sign-up-form").width(),
   height:200,
   dataSchema: {name: null, formula: null, lb: null, ub:null,command:null, rule:null},
   startRows: 5,
@@ -131,6 +118,5 @@ $container13.handsontable({
   },
   minSpareRows: 1
 });
-
 
 </script>
