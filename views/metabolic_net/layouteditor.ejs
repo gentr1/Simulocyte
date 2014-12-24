@@ -415,7 +415,7 @@
 			
 			
 			//generalLayout['merged']=list_merged_chains;
-			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name);
+			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name, 'merged');
 			$('#layout1menu').hide();
 			
 		});
@@ -459,7 +459,7 @@
 			
 			//compLayout["above"].push([INTERSECTED.name, INTERSECTED2.name] );
 			//console.log(compLayout);
-			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name);
+			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name,'above');
 			$('#layout1menu').hide();
 		});
 		var button3 = document.getElementById( 'b_below' );
@@ -504,7 +504,7 @@
 			
 			//compLayout["above"].push([INTERSECTED2.name, INTERSECTED.name] );
 			//console.log(compLayout);
-			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name);
+			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name,'below');
 			$('#layout1menu').hide();
 		});
 		var button4 = document.getElementById( 'b_inner' );
@@ -549,7 +549,7 @@
 			
 			//compLayout["outer"].push([INTERSECTED2.name, INTERSECTED.name] );
 			//console.log(compLayout);
-			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name);
+			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name,'outer');
 			$('#layout1menu').hide();
 		});
 		var button5 = document.getElementById( 'b_outer' );
@@ -589,7 +589,7 @@
 			
 			//compLayout["outer"].push([INTERSECTED.name, INTERSECTED2.name] );
 			//console.log(compLayout);
-			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name);
+			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name,'outer');
 			$('#layout1menu').hide();
 		});
 		var button6 = document.getElementById( 'b_satellite' );
@@ -628,7 +628,7 @@
 			
 			//compLayout["satellite"].push([INTERSECTED.name, INTERSECTED2.name] );
 			//console.log(compLayout);
-			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name);
+			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name,'satellite');
 			$('#layout1menu').hide();
 		});
 		var button7 = document.getElementById( 'b_subset' );
@@ -667,7 +667,7 @@
 			
 			//compLayout["in"].push([INTERSECTED.name,INTERSECTED2.name] );
 			//console.log(compLayout);
-			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name);
+			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name,'in');
 			$('#layout1menu').hide();
 		});
 		var button8 = document.getElementById( 'b_cancel' );
@@ -837,32 +837,7 @@
 										}
 									}
 									
-									if (ind!=-1){
-										var tmpRef;
-										for (var j=0; j<listCompartments.length;j++ ){
-											if (objects[j].name==ref){
-												tmpRef=j;
-												objects[j].position.setX(SELECTED.position.x);
-												objects[j].position.setZ(SELECTED.position.z);
-												//objects[j].position.setZ(SELECTED.position.z);
-											}
-										}
-										for (var j=0; j<generalLayout["satellite"][ref].length;j++ ){
-											var max_rotation_count=generalLayout["satellite"][ref].length;
-											var dilation_count=0;
-											var tmpNode= generalLayout["satellite"][ref][j];
-											for (var j1=0; j1<listCompartments.length;j1++ ){
-												if (objects[j1].name==tmpNode && objects[j1].name!=""){
-												objects[j1].position.x=SELECTED.position.x+Math.cos(((2 * Math.PI)*(1/max_rotation_count))*j)*(spacing+(dilation_count*spacing/2));
-												objects[j1].position.y=SELECTED.position.y;
-												objects[j1].position.z=SELECTED.position.z+Math.sin(((2 * Math.PI)*(1/max_rotation_count))*j)*(spacing+(dilation_count*spacing/2));
-													//objects[j1].position.setX(objects[tmpRef].position.x);
-													//objects[j1].position.setZ(objects[tmpRef].position.z);
-													//objects[j1].position.setY(objects[tmpRef].position.y+((j+1)*spacing));
-												}
-											}
-										}
-									}
+									
 									
 									
 										
@@ -1318,9 +1293,320 @@
 	}
 	$("#compTable").css({top:  $("#container").position().top + $("#container").height()+40});
 	
-	function placeCompFromLayout(cName, cRef){
-	
+	function placeCompFromLayout(cName, cRef, dropType){
+		if (dropType=='merged'){
+			var indRef;
+			for (var j=0; j<listCompartments.length;j++ ){
+				if (objects[j].name==cRef){
+					indRef=j;
+				}
+			}
+			for (var ref in generalLayout["merged"]){
+				if (generalLayout["merged"].hasOwnProperty(ref)){
+					if (cName==ref || generalLayout["merged"][ref].indexOf(cName)!=-1 ){
+						
+						for (var j=0; j<listCompartments.length;j++ ){
+							if (objects[j].name==ref || generalLayout["merged"][ref].indexOf(objects[j].name)!=-1){
+								objects[j].position.copy( objects[indRef].position );
+							}
+						}
+					}
+				}
+			}
+		}
+		if (dropType=='outer'){
+			var indRef;
+			for (var j=0; j<listCompartments.length;j++ ){
+				if (objects[j].name==cRef){
+					indRef=j;
+				}
+			}
+			for (var ref in generalLayout["outer"]){
+				if (generalLayout["outer"].hasOwnProperty(ref)){
+					if (cName==ref || generalLayout["outer"][ref].indexOf(cName)!=-1 ){
+						mustMove=true;
+						for (var j=0; j<listCompartments.length;j++ ){
+							if (objects[j].name==ref || generalLayout["outer"][ref].indexOf(objects[j].name)!=-1){
+								objects[j].position.copy( objects[indRef].position );
+							}
+						}
+					}
+				}
+			}
+		}
+		if (dropType=='above'){
+			var indRef;
+			for (var j=0; j<listCompartments.length;j++ ){
+				if (objects[j].name==cRef){
+					indRef=j;
+				}
+			}
+			var indCname;
+			for (var j=0; j<listCompartments.length;j++ ){
+				if (objects[j].name==cName){
+					indCname=j;
+				}
+			}
+			for (var ref in generalLayout["above"]){
+				if (generalLayout["above"].hasOwnProperty(ref)){
+					if (cName==ref || generalLayout["above"][ref].indexOf(cName)!=-1 ){
+						
+						
+						var ind=generalLayout["above"][ref].indexOf(cName);
+						
+						if (cName==ref ){
+							var tmpRef;
+							for (var j=0; j<listCompartments.length;j++ ){
+								if (objects[j].name==ref){
+									tmpRef=j;
+									objects[j].position.setX(objects[indRef].position.x);
+									objects[j].position.setZ(objects[indRef].position.z);
+									//console.log(ref)
+								}
+							}
+							for (var j=0; j<generalLayout["above"][ref].length;j++ ){
+								var tmpNode= generalLayout["above"][ref][j];
+								for (var j1=0; j1<listCompartments.length;j1++ ){
+									if (objects[j1].name==tmpNode && objects[j1].name!=""){
+										objects[j1].position.setX(objects[tmpRef].position.x);
+										objects[j1].position.setZ(objects[tmpRef].position.z);
+										objects[j1].position.setY(objects[tmpRef].position.y+((j+1)*spacing));
+									}
+								}
+							}
+						}
+						
+						if (ind!=-1){
+							var tmpRef;
+							for (var j=0; j<listCompartments.length;j++ ){
+								if (objects[j].name==ref){
+									tmpRef=j;
+									objects[j].position.setX(objects[indRef].position.x);
+									objects[j].position.setZ(objects[indRef].position.z);
+									//objects[j].position.setZ(SELECTED.position.z);
+								}
+							}
+							for (var j=0; j<generalLayout["above"][ref].length;j++ ){
+								var tmpNode= generalLayout["above"][ref][j];
+								for (var j1=0; j1<listCompartments.length;j1++ ){
+									if (objects[j1].name==tmpNode && objects[j1].name!=""){
+										objects[j1].position.setX(objects[tmpRef].position.x);
+										objects[j1].position.setZ(objects[tmpRef].position.z);
+										objects[j1].position.setY(objects[tmpRef].position.y+((j+1)*spacing));
+									}
+								}
+							}
+						}
+						
+						
+							
+								
+					}
+				}
+			}
+		}
 		
+		if (dropType=='below'){
+			var indRef;
+			for (var j=0; j<listCompartments.length;j++ ){
+				if (objects[j].name==cRef){
+					indRef=j;
+				}
+			}
+			
+			var indCname;
+			for (var j=0; j<listCompartments.length;j++ ){
+				if (objects[j].name==cName){
+					indCname=j;
+				}
+			}
+			for (var ref in generalLayout["above"]){
+			
+				if (generalLayout["above"].hasOwnProperty(ref)){
+					if (cName==ref || generalLayout["above"][ref].indexOf(cName)!=-1 ){
+						
+						
+						var ind=generalLayout["above"][ref].indexOf(cName);
+						
+						if (cName==ref ){
+							var tmpRef;
+							for (var j=0; j<listCompartments.length;j++ ){
+								if (objects[j].name==ref){
+									tmpRef=j;
+									objects[indRef].position.y-=spacing;
+									objects[j].position.setX(objects[indRef].position.x);
+									objects[j].position.setZ(objects[indRef].position.z);
+									objects[j].position.setY(objects[indRef].position.y);
+									//console.log(ref)
+								}
+							}
+							for (var j=0; j<generalLayout["above"][ref].length;j++ ){
+								var tmpNode= generalLayout["above"][ref][j];
+								for (var j1=0; j1<listCompartments.length;j1++ ){
+									if (objects[j1].name==tmpNode && objects[j1].name!=""){
+										objects[j1].position.setX(objects[tmpRef].position.x);
+										objects[j1].position.setZ(objects[tmpRef].position.z);
+										objects[j1].position.setY(objects[tmpRef].position.y+((j+1)*spacing));
+									}
+								}
+							}
+						}
+						
+						if (ind!=-1){
+							var tmpRef;
+							for (var j=0; j<listCompartments.length;j++ ){
+								if (objects[j].name==ref){
+									tmpRef=j;
+									objects[j].position.setX(objects[indRef].position.x);
+									objects[j].position.setZ(objects[indRef].position.z);
+									//objects[j].position.setZ(SELECTED.position.z);
+								}
+							}
+							for (var j=0; j<generalLayout["above"][ref].length;j++ ){
+								var tmpNode= generalLayout["above"][ref][j];
+								for (var j1=0; j1<listCompartments.length;j1++ ){
+									if (objects[j1].name==tmpNode && objects[j1].name!=""){
+										objects[j1].position.setX(objects[tmpRef].position.x);
+										objects[j1].position.setZ(objects[tmpRef].position.z);
+										objects[j1].position.setY(objects[tmpRef].position.y+((j+1)*spacing));
+									}
+								}
+							}
+						}
+						
+						
+							
+								
+					}
+				}
+			}
+		}
+		
+					
+						/*for (var ref in generalLayout["merged"]){
+							if (generalLayout["merged"].hasOwnProperty(ref)){
+								if (SELECTED.name==ref || generalLayout["merged"][ref].indexOf(SELECTED.name)!=-1 ){
+									mustMove=true;
+									for (var j=0; j<listCompartments.length;j++ ){
+										if (objects[j].name==ref || generalLayout["merged"][ref].indexOf(objects[j].name)!=-1){
+											objects[j].position.copy( SELECTED.position );
+										}
+									}
+								}
+							}
+						}
+						for (var ref in generalLayout["outer"]){
+							if (generalLayout["outer"].hasOwnProperty(ref)){
+								if (SELECTED.name==ref || generalLayout["outer"][ref].indexOf(SELECTED.name)!=-1 ){
+									mustMove=true;
+									for (var j=0; j<listCompartments.length;j++ ){
+										if (objects[j].name==ref || generalLayout["outer"][ref].indexOf(objects[j].name)!=-1){
+											objects[j].position.copy( SELECTED.position );
+										}
+									}
+								}
+							}
+						}
+						for (var ref in generalLayout["above"]){
+							if (generalLayout["above"].hasOwnProperty(ref)){
+								if (SELECTED.name==ref || generalLayout["above"][ref].indexOf(SELECTED.name)!=-1 ){
+									
+									mustMove=true;
+									var ind=generalLayout["above"][ref].indexOf(SELECTED.name);
+									
+									if (SELECTED.name==ref ){
+										var tmpRef;
+										for (var j=0; j<listCompartments.length;j++ ){
+											if (objects[j].name==ref){
+												tmpRef=j;
+												objects[j].position.setX(SELECTED.position.x);
+												objects[j].position.setZ(SELECTED.position.z);
+												//console.log(ref)
+											}
+										}
+										for (var j=0; j<generalLayout["above"][ref].length;j++ ){
+											var tmpNode= generalLayout["above"][ref][j];
+											for (var j1=0; j1<listCompartments.length;j1++ ){
+												if (objects[j1].name==tmpNode && objects[j1].name!=""){
+													objects[j1].position.setX(objects[tmpRef].position.x);
+													objects[j1].position.setZ(objects[tmpRef].position.z);
+													objects[j1].position.setY(objects[tmpRef].position.y+((j+1)*spacing));
+												}
+											}
+										}
+									}
+									
+									if (ind!=-1){
+										var tmpRef;
+										for (var j=0; j<listCompartments.length;j++ ){
+											if (objects[j].name==ref){
+												tmpRef=j;
+												objects[j].position.setX(SELECTED.position.x);
+												objects[j].position.setZ(SELECTED.position.z);
+												//objects[j].position.setZ(SELECTED.position.z);
+											}
+										}
+										for (var j=0; j<generalLayout["above"][ref].length;j++ ){
+											var tmpNode= generalLayout["above"][ref][j];
+											for (var j1=0; j1<listCompartments.length;j1++ ){
+												if (objects[j1].name==tmpNode && objects[j1].name!=""){
+													objects[j1].position.setX(objects[tmpRef].position.x);
+													objects[j1].position.setZ(objects[tmpRef].position.z);
+													objects[j1].position.setY(objects[tmpRef].position.y+((j+1)*spacing));
+												}
+											}
+										}
+									}
+									
+									
+										
+											
+								}
+							}
+						}
+						
+						for (var ref in generalLayout["satellite"]){
+							if (generalLayout["satellite"].hasOwnProperty(ref)){
+								if (SELECTED.name==ref || generalLayout["satellite"][ref].indexOf(SELECTED.name)!=-1 ){
+									
+									mustMove=true;
+									var ind=generalLayout["satellite"][ref].indexOf(SELECTED.name);
+									
+									if (SELECTED.name==ref ){
+										var tmpRef;
+										for (var j=0; j<listCompartments.length;j++ ){
+											if (objects[j].name==ref){
+												tmpRef=j;
+												objects[j].position.setX(SELECTED.position.x);
+												objects[j].position.setZ(SELECTED.position.z);
+												//console.log(ref)
+											}
+										}
+										for (var j=0; j<generalLayout["satellite"][ref].length;j++ ){
+											var max_rotation_count=generalLayout["satellite"][ref].length;
+											var dilation_count=0;
+											var tmpNode= generalLayout["satellite"][ref][j];
+											for (var j1=0; j1<listCompartments.length;j1++ ){
+												if (objects[j1].name==tmpNode && objects[j1].name!=""){
+												objects[j1].position.x=SELECTED.position.x+Math.cos(((2 * Math.PI)*(1/max_rotation_count))*j)*(spacing+(dilation_count*spacing/2));
+												objects[j1].position.y=SELECTED.position.y;
+												objects[j1].position.z=SELECTED.position.z+Math.sin(((2 * Math.PI)*(1/max_rotation_count))*j)*(spacing+(dilation_count*spacing/2));
+													//objects[j1].position.setX(objects[tmpRef].position.x);
+													//objects[j1].position.setZ(objects[tmpRef].position.z);
+													//objects[j1].position.setY(objects[tmpRef].position.y+((j+1)*spacing));
+												}
+											}
+										}
+									}
+									
+									
+									
+									
+										
+											
+								}
+							}
+						}*/
 		
 		// var listL = Object.keys(compLayout);
 		// var indexTarget=-1;
