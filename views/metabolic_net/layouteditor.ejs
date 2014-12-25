@@ -1326,9 +1326,17 @@
 					if (cName==ref || generalLayout["outer"][ref].indexOf(cName)!=-1 ){
 						mustMove=true;
 						for (var j=0; j<listCompartments.length;j++ ){
-							if (objects[j].name==ref || generalLayout["outer"][ref].indexOf(objects[j].name)!=-1){
+							var indPos = generalLayout["outer"][ref].indexOf(objects[j].name);
+							if (objects[j].name==ref ){
 								objects[j].position.copy( objects[indRef].position );
 							}
+							else if (indPos!=-1){
+								objects[j].position.copy( objects[indRef].position );
+								console.log(indPos)
+								objects[j].scale.x = 2+indPos;
+								objects[j].scale.z = 2+indPos;
+							}
+							else{}
 						}
 					}
 				}
