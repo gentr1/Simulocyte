@@ -48,16 +48,17 @@ module.exports = function (grunt) {
 
     // Bring in the socket.io client
     'linker/js/socket.io.js',
-
     // then beef it up with some convenience logic for talking to Sails.js
     'linker/js/sails.io.js',
-
     'linker/js/jquery.js',
+	'linker/js/papaparse.min.js',
     'linker/js/jquery.validate.min.js',
 	//'linker/js/jquery-ui-1.10.4.custom.min.js',
 	'linker/js/jquery.jqGrid.min.js',
 	'linker/js/grid.locale-en.js',
 	'linker/js/jquery.handsontable.full.js',
+	//'linker/js/jquery.multi-select.js',
+	'linker/js/bootstrap-multiselect.js',
 	//'linker/js/jquery.handsontable.full.js',
 	'linker/js/raphael.min.js',
     // A simpler boilerplate library for getting you up and running w/ an
@@ -65,6 +66,7 @@ module.exports = function (grunt) {
     'linker/js/app.js',
 
     // *->    put other dependencies here   <-*
+	
 	'linker/js/three.js',
 	'linker/js/hilbert3D.js',
 	'linker/js/Mirror.js',

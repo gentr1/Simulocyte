@@ -15,7 +15,10 @@
 	"shortid": "*",
 	"mkdirp": "*",
 	"hound": "*",
-	"express": "*"
+	"express": "*",
+	"line-input-stream": "*",
+	"qfgets": "*",
+	"rfc-csv": "*"
   },
   "scripts": {
     "start": "node app.js",
