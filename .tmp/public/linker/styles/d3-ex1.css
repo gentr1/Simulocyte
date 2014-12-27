@@ -1,3 +1,7 @@
+.disabled {
+	pointer-events: none;
+}
+
 .node {
   stroke: #fff;
   stroke-width: 1.5px;
@@ -176,11 +180,30 @@ nav a:nth-child(n+2):hover:after { width: 100%; }
           width: 300px;
           height: 70px;
 }
-
+#mytooltip3 {
+          display: none;
+          position: fixed;
+		  color: black;
+          //background-color: #000000;
+          //border: 1px solid #555;
+          width: 300px;
+          height: 70px;
+}
+#mytooltip4 {
+          display: none;
+          position: fixed;
+		  color: black;
+          //background-color: #fff;
+          //border: 1px solid #555;
+          width: 300px;
+          height: 50px;
+}
 .myborderclass {
   border: 1px solid white;
 }
-
+.myborderclass2 {
+  border: 1px solid black;
+}
 .default-link:link {font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 12px; font-style: normal; color: #0066CC;text-decoration: underline; background: transparent;}
 
 .mline {
@@ -291,22 +314,28 @@ nav a:nth-child(n+2):hover:after { width: 100%; }
 }
 .hvnode {
   stroke: #000;
-  stroke-width: 1.0px;
+  stroke-width: 0.8px;
 }
 
 .hvnode.active {
   stroke: #DC143C;
   stroke-width: 3px;
 }
-
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
 .hvlink {
   fill: none;
   stroke-width: 0.5px;
+  stroke-opacity: 0.4;
 }
 .hvlink.active {
-  stroke: #DC143C;
-  stroke-width: 4px;
-  stroke-opacity: 0.8;
+	//fill: none;
+  //stroke: red;
+  stroke-width: 2px;
+  stroke-opacity: 1.0;
+  
 }
 
 .handsontable .currentRow {
