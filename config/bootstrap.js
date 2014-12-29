@@ -27,119 +27,119 @@ module.exports.bootstrap = function(cb) {
 				var watcher = hound.watch('assets/output-model-files');
 				var watcher1 = hound.watch('assets/output-fba-files');
 				
-				// watcher.on('create', function(file, stats) {
-					// try{
-						// console.log(file + ' was created')
-						// var fname= file.split('\\').pop().split('/').pop();
-						// var prefix=fname.split('.output.xls').reverse().pop()
-						// //console.log(prefix);
-						// var nme=prefix.split('__')[1];
-						// var m_nme=prefix.split('__')[0];
-						// var nb_sim=parseInt(prefix.split('__')[2]);
-						// console.log(nme)
-						// console.log(m_nme)
-						// Experiment.findOne({ name: nme , qsspn_model_name: m_nme}, function(err, exp) {
-							// if (err) return next(err);
-							// //console.log("exp should exist... It should be: "+exp)
-							// var ExpObj = {
-								// name: exp.name,
-								// comment: exp.comment,
-								// parameters: exp.parameters,
-								// qsspn_model_name: exp.qsspn_model_name,
-								// qsspn_model_instance: exp.qsspn_model_instance,
-								// sfba_model_instance: exp.sfba_model_instance,
-								// results: exp.results
-							// }
+				watcher.on('create', function(file, stats) {
+					try{
+						console.log(file + ' was created')
+						var fname= file.split('\\').pop().split('/').pop();
+						var prefix=fname.split('.output.xls').reverse().pop()
+						//console.log(prefix);
+						var nme=prefix.split('__')[1];
+						var m_nme=prefix.split('__')[0];
+						var nb_sim=parseInt(prefix.split('__')[2]);
+						console.log(nme)
+						console.log(m_nme)
+						Experiment.findOne({ name: nme , qsspn_model_name: m_nme}, function(err, exp) {
+							if (err) return next(err);
+							//console.log("exp should exist... It should be: "+exp)
+							var ExpObj = {
+								name: exp.name,
+								comment: exp.comment,
+								parameters: exp.parameters,
+								qsspn_model_name: exp.qsspn_model_name,
+								qsspn_model_instance: exp.qsspn_model_instance,
+								sfba_model_instance: exp.sfba_model_instance,
+								results: exp.results
+							}
 							
-							// ExpObj.results[nb_sim]['status']="Processed";
-							// //console.log(ExpObj.results)
-							// Experiment.update(exp.id, ExpObj, function expUpdated(err) {
-								// //ExpObj.save(function (errx) {
-								// //	if (errx) return res.send(err,500);
+							ExpObj.results[nb_sim]['status']="Processed";
+							//console.log(ExpObj.results)
+							Experiment.update(exp.id, ExpObj, function expUpdated(err) {
+								//ExpObj.save(function (errx) {
+								//	if (errx) return res.send(err,500);
 
 									
-								// //});
-							// });
+								//});
+							});
 							
-							// //{'nb': newnb, 'data': [], 'status': "Not started yet"}
+							//{'nb': newnb, 'data': [], 'status': "Not started yet"}
 							
-							// //var light_myres= [];
-							// //for (var i=0;i<ExpObj.results.length;i++){
-							// //	light_myres.push({'nb': ExpObj.results[i]['nb'],'status': ExpObj.results[i]['status']})
-							// //}
-							// Experiment.publishUpdate(exp.id, {
-								// name: exp.name,
-								// results: JSON.stringify(ExpObj.results),
-								// action: ' has been updated.'
-							// });
-							// //console.log(data)
+							//var light_myres= [];
+							//for (var i=0;i<ExpObj.results.length;i++){
+							//	light_myres.push({'nb': ExpObj.results[i]['nb'],'status': ExpObj.results[i]['status']})
+							//}
+							Experiment.publishUpdate(exp.id, {
+								name: exp.name,
+								results: JSON.stringify(ExpObj.results),
+								action: ' has been updated.'
+							});
+							//console.log(data)
 							
-						  // // Do stuff here
-						// });
-					// }
-					// catch(erf){}
+						  // Do stuff here
+						});
+					}
+					catch(erf){}
 				
-				// })
-				// watcher1.on('create',function(file, stats) {
-					// try {
-						// var finished = false;
-						// console.log("WATCHER1: " + file + " created");
-						// var method = "none";
-						// var prefix = "";
-						// //console.log("RESULTS:" + exp.results);
-						// var fname= file.split('\\').pop().split('/').pop();
-						// if(fname.search('.objstat.xls')>0) { 
-							// method = 'objstat';
-							// prefix = fname.split('.objstat.xls').reverse().pop();
-							// var data = String(fs.readFileSync(file));
-							// var n = data.search("#time");
-							// if(n>(-1)) { finished = true; }
-						// }
-						// if(fname.search('.fba.xls')>0) { 
-							// method = 'fba';
-							// prefix = fname.split('.fba.xls').reverse().pop();
-							// finished = true;
-						// }
-						// if(fname.search('.fva.xls')>0) { 
-							// method = 'fva';
-							// prefix = fname.split('.fva.xls').reverse().pop();
-							// var data = fs.readFileSync(file,"utf8");
-							// if(data.length>1) {
-								// finished = true;
-							// }
-						// }
-						// if(finished) {
-							// var nme = prefix.split('__')[0];
-							// var nb_sim=parseInt(prefix.split('__')[1]);
-							// console.log('Name:'+nme);
-							// console.log('Number:'+nb_sim);
-							// FbaExperiment.findOne({name: nme}, function(err, exp){
-								// //console.log(exp);
-								// if (err) return next(err);
-								// var ExpObj = {
-									// name: exp.name,
-									// comment: exp.comment,
-									// parameters: exp.parameters,
-									// objective: exp.objective,
-									// externality_tag: exp.externality_tag,
-									// metabolic_net_name: exp.metabolic_net_name,
-									// sfba_model_instance: exp.sfba_model_instance,
-									// results: exp.results
-								// }
-								// ExpObj.results = [{nb: nb_sim, status: "Processed", method: method}];
-								// FbaExperiment.update(exp.id, ExpObj, function expUpdated(err) {
-								// });
-								// FbaExperiment.publishUpdate(exp.id, {
-									// name: exp.name,
-									// results: JSON.stringify(ExpObj.results),
-									// action: ' has been updated.'
-								// });
-							// });
-						// }
-					// } catch(erf){
-						// console.log("WATCHER1, create, exception:\n" + erf.message);
-					// }
-				// })
+				})
+				watcher1.on('create',function(file, stats) {
+					try {
+						var finished = false;
+						console.log("WATCHER1: " + file + " created");
+						var method = "none";
+						var prefix = "";
+						//console.log("RESULTS:" + exp.results);
+						var fname= file.split('\\').pop().split('/').pop();
+						if(fname.search('.objstat.xls')>0) { 
+							method = 'objstat';
+							prefix = fname.split('.objstat.xls').reverse().pop();
+							var data = String(fs.readFileSync(file));
+							var n = data.search("#time");
+							if(n>(-1)) { finished = true; }
+						}
+						if(fname.search('.fba.xls')>0) { 
+							method = 'fba';
+							prefix = fname.split('.fba.xls').reverse().pop();
+							finished = true;
+						}
+						if(fname.search('.fva.xls')>0) { 
+							method = 'fva';
+							prefix = fname.split('.fva.xls').reverse().pop();
+							var data = fs.readFileSync(file,"utf8");
+							if(data.length>1) {
+								finished = true;
+							}
+						}
+						if(finished) {
+							var nme = prefix.split('__')[0];
+							var nb_sim=parseInt(prefix.split('__')[1]);
+							console.log('Name:'+nme);
+							console.log('Number:'+nb_sim);
+							FbaExperiment.findOne({name: nme}, function(err, exp){
+								//console.log(exp);
+								if (err) return next(err);
+								var ExpObj = {
+									name: exp.name,
+									comment: exp.comment,
+									parameters: exp.parameters,
+									objective: exp.objective,
+									externality_tag: exp.externality_tag,
+									metabolic_net_name: exp.metabolic_net_name,
+									sfba_model_instance: exp.sfba_model_instance,
+									results: exp.results
+								}
+								ExpObj.results = [{nb: nb_sim, status: "Processed", method: method}];
+								FbaExperiment.update(exp.id, ExpObj, function expUpdated(err) {
+								});
+								FbaExperiment.publishUpdate(exp.id, {
+									name: exp.name,
+									results: JSON.stringify(ExpObj.results),
+									action: ' has been updated.'
+								});
+							});
+						}
+					} catch(erf){
+						console.log("WATCHER1, create, exception:\n" + erf.message);
+					}
+				})
 				
 				watcher.on('change', function(file, stats) {
 					console.log(file + ' was changed');
