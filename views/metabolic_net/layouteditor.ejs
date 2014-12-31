@@ -836,12 +836,45 @@
 											}
 										}
 									}
+								}
+							}
+						}
+						for (var ref in generalLayout["in"]){
+							if (generalLayout["in"].hasOwnProperty(ref)){
+								if (SELECTED.name==ref || generalLayout["in"][ref].indexOf(SELECTED.name)!=-1 ){
 									
+									mustMove=true;
+									var ind=generalLayout["in"][ref].indexOf(SELECTED.name);
 									
-									
-									
-										
-											
+									if (SELECTED.name==ref ){
+										var tmpRef;
+										for (var j=0; j<listCompartments.length;j++ ){
+											if (objects[j].name==ref){
+												tmpRef=j;
+												objects[j].position.setX(SELECTED.position.x);
+												objects[j].position.setZ(SELECTED.position.z);
+												//console.log(ref)
+											}
+										}
+										for (var j=0; j<generalLayout["in"][ref].length;j++ ){
+											var max_rotation_count=generalLayout["in"][ref].length;
+											var dilation_count=0;
+											var tmpNode= generalLayout["in"][ref][j];
+											for (var j1=0; j1<listCompartments.length;j1++ ){
+												if (objects[j1].name==tmpNode && objects[j1].name!=""){
+												objects[j1].position.x=SELECTED.position.x+Math.cos(((2 * Math.PI)*(1/max_rotation_count))*j)*(radiusComp*objects[tmpRef].scale.x*0.7);
+												objects[j1].position.y=SELECTED.position.y;
+												objects[j1].position.z=SELECTED.position.z+Math.sin(((2 * Math.PI)*(1/max_rotation_count))*j)*(radiusComp*objects[tmpRef].scale.x*0.7);
+												objects[j1].scale.x=0.3;
+												objects[j1].scale.y=0.15;
+												objects[j1].scale.z=0.3;
+													//objects[j1].position.setX(objects[tmpRef].position.x);
+													//objects[j1].position.setZ(objects[tmpRef].position.z);
+													//objects[j1].position.setY(objects[tmpRef].position.y+((j+1)*spacing));
+												}
+											}
+										}
+									}
 								}
 							}
 						}
