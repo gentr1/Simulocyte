@@ -1,62 +1,30 @@
 <div class='container'>
 <br><br>
-	<h1>Metabolic network Editor</h1>
+	<h1>Metabolic Network Layout </h1>
 	<hr>
-	<h2>Name: <%= mtn.name %> </h2>
-	
+	<h2>Name: <%= mtnl.name %> </h2>
+	<hr>
 	<h2>Comment: </h2>
-	
-	<%= mtn.comment %>
+	<%= mtnl.comment %>
+	<h2>Metabolic network: </h2>
+	<%= mtnl.metabolic_net %>
 	<hr>
-	<a href="/metabolic_net/show/<%= mtn.id %>" class="btn btn-sm btn-success">Back to Metabolic Network</a>
-	<hr>
-	<%var data=[];
-	_.each(mtn.file, function(compartment) {
-		data.push(compartment);
-	%>
-		
-	<%});
-	
-	%>
-
-	<nav>
-		<a href="" id="menuToggle" title="show menu">
-		<span class="navClosed"><i>show menu</i></span>
-		</a>
-		<a href="#" title="Item 1">Hide/Show</a>
-		<button class="btn btn-default btn-xs" title="Make metabolic network lines invisible/visible" id="view4" style="position: relative;left: 20px;">Lines</button>
-		<button class="btn btn-default btn-xs" title="Hide/show tokens (if problem, just refresh the page)" id="view5" style="position: relative;left: 20px;">Token</button>
-		<br><p style="position: relative;left: 20px;color:white">Line Opacity: <input id="defaultSlider" type="range" min="0" max="100" value="25" onchange="updateSlider(this.value)" style="position: relative;left: 20px"/></p>
-		
-		
-		<a href="#" title="Item 2">Layout</a>
-		<p style="position: relative;left: 20px;color:white">Choose Layout: <select name="select" id="selectLayout" onchange="selectValue(this)">
-		  <option value="default" selected>Default</option> 
-		  <option value="kegg map">Kegg Map</option> 
-		</select></p>
-		<button class="btn btn-default btn-xs" title="Explode metabolic network by compartment (if problem, just refresh the page)" id="view2" style="position: relative;left: 20px;">explode</button>
-		<button class="btn btn-default btn-xs" title="Put back initial view (if problem, just refresh the page)" id="view1" style="position: relative;left: 20px;">flatten</button>
-	</nav>
-	
-	<div id="menu" >
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	</div>
-	<div id="container"  style="position: absolute;left: 0px; overflow: inherit">  </div>
+	<h3 id="titleComp" style="position: absolute;left: 20px;">Edit/Add New Compartments:</h3>
 	<div id="compTable" style="position: absolute;left: 20px;"></div>
 	<br>	
 	<br>
-	<div id="searchfield" style="position: absolute;left: 20px;">Search Term: <input id="searchgrid" type="text" /></div>
+	
+	<div id="searchfield" style="position: absolute;left: 20px;"><h3>Edit Nodes Compartments:</h3><br>Search Term: <input id="searchgrid" type="text" /></div>
 	<br>
 	<div id="mtnTable" style="position: absolute;left: 20px;"></div>	
 	<br>
+	<h3 id="titleEditor" style="position: absolute;left: 20px;">Layout Editor:  
+	<select id="modeSelector" onchange="runModeSelector()">
+  <option value="0">between compartments</option>
+  <option value="1">inside compartments</option>
+	</select></h3>
+	<div id="container"  style="position: absolute;left: 0px; overflow: inherit">  </div>
+	
 	<div id="container2"  style="position: absolute;left: 0px; overflow: inherit">  </div>
 	<div id="layout1menu" class="btn-group-vertical" role="group" aria-label="..." style="position: absolute;left: 0px;">
 		<button class="btn btn-default btn-xs" title="Merge" id="b_merge" style="position: relative;left: 20px;">Merge</button>
@@ -68,6 +36,10 @@
 		<button class="btn btn-default btn-xs" title="Add as Subset" id="b_subset" style="position: relative;left: 20px;">Add as Subset</button>
 		<button class="btn btn-warning btn-xs" title="Cancel" id="b_cancel" style="position: relative;left: 20px;">Cancel</button>
 	</div>
+	
+	
+</div>	
+
 	<script id="fragmentShader" type="x-shader/x-fragment">
 			
 			varying vec2 vUv;
@@ -113,27 +85,9 @@
 			}
 
 		</script>
-	
 	<script>
-		
-		(function($){
-			$(document).ready(function(){
-			$('#menuToggle').click(function(e){
-			var $parent = $(this).parent('nav');
-			$parent.toggleClass("open");
-			var navState = $parent.hasClass('open') ? "hide" : "show";
-			$(this).attr("title", navState + " navigation");
-			// Set the timeout to the animation length in the CSS.
-			setTimeout(function(){
-			//console.log("timeout set");
-			$('#menuToggle > span').toggleClass("navClosed").toggleClass("navOpen");
-			}, 200);
-			e.preventDefault();
-			});
-			});
-		})(jQuery);
-		
-		$('#layout1menu').hide();
+	
+	$('#layout1menu').hide();
 		$('#layout1menu').zIndex(2000);
 		var stopThreeJsMouseEvent = false;	
 		var initialPos=new THREE.Vector3( 0, 0, 0 );
@@ -141,7 +95,7 @@
 		var spacing=120;
 		var radiusComp=40;
 		
-		var selectedMetabolicData = <%-JSON.stringify(data)%>
+		var selectedMetabolicData = <%-JSON.stringify(mtb.file)%>
 		//console.log("getting metabolic data from default file recon2");
 		var listCompartments=selectedMetabolicData[0];
 		var compIds=[];
@@ -185,7 +139,9 @@
 		var mouse = new THREE.Vector2(),
 		offset = new THREE.Vector3(),
 		INTERSECTED,INTERSECTED2, SELECTED;
-
+		
+		var myLayout = <%-JSON.stringify(mtnl.layout)%>
+		
 		init();
 		animate();
 		
@@ -939,6 +895,13 @@
 								}
 							}
 							SELECTED = null;
+							myLayout["compartments_layout"]["structure"]=generalLayout;
+							var layoutdata={};
+							for (var j=0; j<listCompartments.length;j++ ){
+								layoutdata[objects[j].name]={"position":objects[j].position, "scale":objects[j].scale}
+							}
+							myLayout["compartments_layout"]["spatial-layout"]=layoutdata;
+							//console.log(myLayout)
 						}						
 						container.style.cursor = 'auto';
 					case 1: // middle
@@ -1077,8 +1040,7 @@
 		}
 	  },
 	  afterChange: function(changes, source) {
-		var dt = this.getData();
-		
+		var dt = this.getData();		
 		if (dt[0]['c_id']!=null){
 			listCompartments=[];
 			for (var i=0, j= dt.length;i<j-1;i++){
@@ -1111,7 +1073,8 @@
 			//console.log(listCompartments);
 			//console.log(dt.length);
 			
-			
+			selectedMetabolicData[0]=listCompartments;
+			//console.log(selectedMetabolicData[0]);
 		}
 		
 	  },
@@ -1123,7 +1086,7 @@
 	if ($.isArray(tempdata1) && tempdata1[0] && $.isArray(tempdata1[0])){
 		ht.populateFromArray (0, 0, tempdata1,tempdata1.length-1, 1);
 	}
-	$("#compTable").css({top:  $("#container").position().top + $("#container").height()+40});
+	$("#compTable").css({top:  $("#titleComp").position().top + $("#titleComp").height()+40});
 	
 	var $container1 = $("#mtnTable");
 	$container1.handsontable({
@@ -1140,6 +1103,32 @@
 		{data: "n_name"},
 		{data: "c_name"},//, type: 'dropdown',source: compIds}
 	  ],
+	  beforeChange: function(changes, source) {
+		if ((Array.isArray(changes[0])) && changes[0][2] ){
+			if (changes[0][1]!="c_name" && changes[0][1]!="n_name"){
+				changes.length=0;
+				return false;
+			}
+			else{ 
+				if (changes[0][1]=="c_name" && compIds.indexOf(changes[0][3])==-1){
+					changes.length=0;
+					return false;
+				}
+			}
+		}
+		
+	  },
+	  afterChange: function(changes, source) {
+		if (changes && changes[0] && changes[0][2]){			
+			var dt = this.getData(changes[0][0],0,0,2);			
+			// change name			
+			selectedMetabolicData[1][dt[0][0]][1]=dt[0][1];
+			// change compartment
+			selectedMetabolicData[1][dt[0][0]][3]=dt[0][2];
+		}
+		
+		
+	  },
 	  columnSorting: true,
 	  minSpareRows: 1
 	});
@@ -1156,9 +1145,14 @@
 	if ($.isArray(tempdata2) && tempdata2[0] && $.isArray(tempdata2[0])){
 		ht.populateFromArray (0, 0, tempdata2,tempdata2.length-1, 2);
 	}
+	//console.log(ht)
+	//ht.data.columns[0].readOnly=true;
+	//ht.columns[1].readOnly=true;
+	//$("#compTable").css({top:  $("#container").position().top + $("#container").height()+40});
 	$("#searchfield").css({top:  $("#compTable").position().top + $("#compTable").height()+40});
 	$("#mtnTable").css({top:  $("#searchfield").position().top + $("#searchfield").height()+10});
-	
+	$("#titleEditor").css({top:  $("#mtnTable").position().top + $("#mtnTable").height()+40});
+	$("#container").css({top:  $("#titleEditor").position().top + $("#titleEditor").height()+40});
 	
 	
 	$('#searchgrid').on('keyup',function(event){
@@ -1625,12 +1619,23 @@
 			}
 		}
 		
-		
+		myLayout["compartments_layout"]["structure"]=generalLayout;
+		var layoutdata={};
+		for (var j=0; j<listCompartments.length;j++ ){
+			layoutdata[objects[j].name]={"position":objects[j].position, "scale":objects[j].scale}
+		}
+		myLayout["compartments_layout"]["spatial-layout"]=layoutdata;
+		//console.log(myLayout);
 	}
 	
 	$("#container2").css({top:  $("#mtnTable").position().top + $("#mtnTable").height()+40});
 	
+	function runModeSelector(){
+		console.log($('#modeSelector').val());
+	}
+	
 	</script>	
-		
-</div>
-
+	
+	
+	
+	

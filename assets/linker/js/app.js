@@ -27,6 +27,7 @@
     socket.get('/user/subscribe');
 	socket.get('/experiment/subscribe');
 	socket.get('/metabolic_net/subscribe');
+	socket.get('/metabolic_net_layout/subscribe');
 	socket.get('/qsspn_model/subscribe');
 	socket.get('/lab/subscribe');
 	socket.get('/fbaexperiment/subscribe');
@@ -153,6 +154,9 @@ function cometMessageReceivedFromServer(message) {
   } 
   if (message.model === 'metabolic_net') {
 	console.log("metabolic net update message id: "+message.id)
+  } 
+  if (message.model === 'metabolic_net_layout') {
+	console.log("metabolic net layout update message id: "+message.id)
   } 
   if (message.model === 'qsspn_model') {
 	console.log("qsspn model update message id: "+message.id)
