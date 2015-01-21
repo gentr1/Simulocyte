@@ -85,65 +85,219 @@
 			}
 
 		</script>
+	
+	
+	<script type="x-shader/x-vertex" id="vertexshaderP1">
+
+			attribute float size;
+			attribute vec3 ca;
+			varying vec3 vColor;
+			attribute float customVisible;
+			void main() {
+				vColor = ca;
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );				
+				//gl_PointSize = size;
+				gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );
+				gl_Position = projectionMatrix * mvPosition;
+
+			}
+
+		</script>
+
+		<script type="x-shader/x-fragment" id="fragmentshaderP1">
+
+			uniform vec3 color;
+			uniform sampler2D texture;
+			varying vec3 vColor;
+			void main() {
+				gl_FragColor = vec4( color * vColor, 1.0 );
+				gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+			}
+
+		</script>
+		
+		<script type="x-shader/x-vertex" id="vertexshaderP2">
+
+			attribute float size;
+			attribute vec3 ca;
+			varying vec3 vColor;
+			attribute float customVisible;
+			void main() {
+				vColor = ca;
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );				
+				//gl_PointSize = size;
+				gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );
+				gl_Position = projectionMatrix * mvPosition;
+
+			}
+
+		</script>
+
+		<script type="x-shader/x-fragment" id="fragmentshaderP2">
+
+			uniform vec3 color;
+			uniform sampler2D texture;
+			varying vec3 vColor;
+			void main() {
+				gl_FragColor = vec4( color * vColor, 1.0 );
+				gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+			}
+
+		</script>
+		
+		<script type="x-shader/x-vertex" id="vertexshaderL1">
+			attribute vec3 ca;
+			varying vec3 vColor;
+			varying float opacity;
+			attribute float op;
+			void main() {
+				vColor = ca;
+				opacity =op;
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+			}
+		</script>
+
+		<script type="x-shader/x-fragment" id="fragmentshaderL1">
+			uniform vec3 color;
+			varying float opacity;
+			varying vec3 vColor;
+			void main() {
+
+				gl_FragColor = vec4( vColor * color, opacity );
+
+			}
+		</script>
+	
+	
 	<script>
 	
+	if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+	
 	$('#layout1menu').hide();
-		$('#layout1menu').zIndex(2000);
-		var stopThreeJsMouseEvent = false;	
-		var initialPos=new THREE.Vector3( 0, 0, 0 );
-		var initialName="";
-		var spacing=120;
-		var radiusComp=40;
+	$('#layout1menu').zIndex(2000);
+	
+	var stopThreeJsMouseEvent = false;	
+	var initialPos=new THREE.Vector3( 0, 0, 0 );
+	var initialName="";
+	var spacing=1200;
+	var radiusComp=400;
+	var yStartDisplacement=400;
+	
+	var selectedMetabolicData = <%-JSON.stringify(mtb.file)%>
+	//console.log("getting metabolic data from default file recon2");
+	var listCompartments=selectedMetabolicData[0];
+	var nbCompartments=listCompartments.length
+	var compIds=[];
+	for (var i=0; i<listCompartments.length;i++){
+		compIds.push(listCompartments[i][0]);
+	}
+	var listNodes=selectedMetabolicData[1];
+	var txtComp=[]
+	var maxNbComp=20;
+	var compLayout={"merged":[],"above":[], "outer":[], "satellite":[], "in":[]};
+	var stackCompToMove=[];
+	var stackCompInitialPos={};
+	//console.log(listCompartments.length)
+	for (var i=0;i<maxNbComp;i++){
+		txtComp[i] = document.createElement('div');
+		txtComp[i].style.position = 'absolute';
+		txtComp[i].style.width = 100;
+		txtComp[i].style.height = 100;
+		txtComp[i].style.color = "black";
+		txtComp[i].style.fontSize="xx-small";
+		txtComp[i].id = "txt"+i;
+		//txtComp[i].style.fontWeight="1900";
+		txtComp[i].style.backgroundColor = "#99FFCC";
+		txtComp[i].style.opacity = 0.5;
+		//text1.innerHTML = ' <input type="text" name="first_name" value="" maxlength="100" />';
+		txtComp[i].innerHTML = 'hello ';
+		txtComp[i].style.top = 4000 + 'px';
+		txtComp[i].style.left = 4000 + 'px';
+		txtComp[i].style.zIndex = 1000;
+		txtComp[i].className="disabled";
+		//txtComp[i].style="cursor: none"
+		//txtComp[i].pointer-events:none;
+		document.body.appendChild(txtComp[i]);
 		
-		var selectedMetabolicData = <%-JSON.stringify(mtb.file)%>
-		//console.log("getting metabolic data from default file recon2");
-		var listCompartments=selectedMetabolicData[0];
-		var compIds=[];
-		for (var i=0; i<listCompartments.length;i++){
-			compIds.push(listCompartments[i][0]);
-		}
-		var listNodes=selectedMetabolicData[1];
-		var txtComp=[]
-		var maxNbComp=20;
-		var compLayout={"merged":[],"above":[], "outer":[], "satellite":[], "in":[]};
-		var stackCompToMove=[];
-		var stackCompInitialPos={};
-		//console.log(listCompartments.length)
-		for (var i=0;i<maxNbComp;i++){
-			txtComp[i] = document.createElement('div');
-			txtComp[i].style.position = 'absolute';
-			txtComp[i].style.width = 100;
-			txtComp[i].style.height = 100;
-			txtComp[i].style.color = "black";
-			txtComp[i].style.fontSize="xx-small";
-			txtComp[i].id = "txt"+i;
-			//txtComp[i].style.fontWeight="1900";
-			txtComp[i].style.backgroundColor = "#99FFCC";
-			txtComp[i].style.opacity = 0.5;
-			//text1.innerHTML = ' <input type="text" name="first_name" value="" maxlength="100" />';
-			txtComp[i].innerHTML = 'hello ';
-			txtComp[i].style.top = 4000 + 'px';
-			txtComp[i].style.left = 4000 + 'px';
-			txtComp[i].style.zIndex = 1000;
-			txtComp[i].className="disabled";
-			//txtComp[i].style="cursor: none"
-			//txtComp[i].pointer-events:none;
-			document.body.appendChild(txtComp[i]);
-			
-		}
-		
-		var container, stats;
-		var camera, controls, scene, renderer, uniforms;
-		var objects = [], plane;
+	}
+	
+	var container, stats;
+	var camera, controls, scene, renderer, uniforms;
+	var objects = [], plane;
 
-		var mouse = new THREE.Vector2(),
-		offset = new THREE.Vector3(),
-		INTERSECTED,INTERSECTED2, SELECTED;
+	var mouse = new THREE.Vector2(),
+	offset = new THREE.Vector3(),
+	INTERSECTED,INTERSECTED2, SELECTED;
+	
+	var myLayout = <%-JSON.stringify(mtnl.layout)%>
 		
-		var myLayout = <%-JSON.stringify(mtnl.layout)%>
-		
-		init();
-		animate();
+	
+	var metabolicNodes;	
+	var metabolicEdges;
+	metabolicNodes = selectedMetabolicData[1];
+	metabolicEdges = selectedMetabolicData[2];	
+	var nbMetabolites=0;
+	var nbReactions=0;
+	for (var i = 0, ii= metabolicNodes.length;i<ii;i++){
+			if (metabolicNodes[i][6]==2){
+				nbMetabolites++;
+			}
+			if (metabolicNodes[i][6]==4){
+				nbReactions++;
+			}
+	}	
+	
+	
+	var nameComp=[];
+	var mapComp = {'-1':-1};
+	
+	for (var i=0;i<listCompartments.length;i++){
+		mapComp[listCompartments[i][0]]=i;
+		nameComp.push(listCompartments[i][1]);
+	}
+	//console.log(listCompartments)
+	//console.log(mapComp)
+	//console.log(nameComp)
+	var subSystems;
+	var totalSubSystems;
+	var nbAreas;
+	
+	var segments =metabolicEdges.length;
+	var segmentPts =segments*2;
+	//console.log(nbMetabolites)
+	//console.log(nbReactions)
+	//console.log(segments)
+	//console.log(segmentPts)
+	
+	var particleP1Attributes;
+	var particleP1Uniforms;
+	var particle1ShaderMaterial;
+	var bgeometryP1;
+	var PointCloud1;
+	
+	var particleP2Attributes;
+	var particleP2Uniforms;
+	var particle2ShaderMaterial;
+	var bgeometryP2;
+	var PointCloud2;
+	
+	var linesAttributes;
+	var linesUniforms;
+	var linesShaderMaterial;
+	var bgeometryL1;
+	var meshL1;
+	
+	var idMap=[];
+	var typesMap=[];
+	for (var i=0;i<7;i++){
+		typesMap[i]=[];
+	};
+	var reactionMap=[];
+	var linesMap=[];
+	
+	
+	init();
+	animate();
 		
 		function toXYCoords (pos) {
 			//var vector = projector.projectVector(pos.clone(), camera);
@@ -155,19 +309,99 @@
 		}
 		function init() {
 
+		
+			//////////////////////////////////////////////////
+			// define shader attributes for group of particles proteins
+			particleP1Attributes = {
+
+				size: {	type: 'f', value: [] },
+				ca:   {	type: 'c', value: [] }
+				
+			};
+			particleP1Uniforms = {
+
+				//amplitude: { type: "f", value: 1.0 },
+				color:     { type: "c", value: new THREE.Color( 0xffffff ) },
+				texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "/images/disc.png" ) }
+				
+
+			};
+			particleP1Uniforms.texture.value.wrapS = particleP1Uniforms.texture.value.wrapT = THREE.RepeatWrapping;		
+			particle1ShaderMaterial = new THREE.ShaderMaterial( {
+
+				uniforms: 		particleP1Uniforms,
+				attributes:     particleP1Attributes,
+				vertexShader:   document.getElementById( 'vertexshaderP1' ).textContent,
+				fragmentShader: document.getElementById( 'fragmentshaderP1' ).textContent,
+				depthTest: 		false,
+				transparent:	true
+
+			});
+			//////////////////////////////////////////////////
+			// define shader attributes for group of particles standard pn
+			particleP2Attributes = {
+				size: {	type: 'f', value: [] },
+				ca:   {	type: 'c', value: [] }
+				
+			};
+			particleP2Uniforms = {
+				//amplitude: { type: "f", value: 1.0 },
+				color:     { type: "c", value: new THREE.Color( 0xffffff ) },
+				texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "/images/PN1.png" ) }
+			};
+			particleP2Uniforms.texture.value.wrapS = particleP1Uniforms.texture.value.wrapT = THREE.RepeatWrapping;
+			particle2ShaderMaterial = new THREE.ShaderMaterial( {
+
+				uniforms: 		particleP2Uniforms,
+				attributes:     particleP2Attributes,
+				vertexShader:   document.getElementById( 'vertexshaderP2' ).textContent,
+				fragmentShader: document.getElementById( 'fragmentshaderP2' ).textContent,
+				depthTest: 		false,
+				transparent:	true
+
+			});
+			//////////////////////////////////////////////
+			// define shader attributes for group of lines
+			linesAttributes = {
+
+				//displacement: {	type: 'v3', value: [] },
+				ca: {	type: 'c', value: [] },
+				op:{ type: "f", value: [] }
+
+			};
+			linesUniforms = {
+				//amplitude: { type: "f", value: 1.0 },
+				opacity:   { type: "f", value: 0.7 },
+				color:     { type: "c", value: new THREE.Color( 0xffffff ) }
+
+			};
+			// define shader material for group of lines
+			linesShaderMaterial = new THREE.ShaderMaterial( {
+				uniforms:       linesUniforms,
+				attributes:     linesAttributes,
+				vertexShader:   document.getElementById( 'vertexshaderL1' ).textContent,
+				fragmentShader: document.getElementById( 'fragmentshaderL1' ).textContent,
+				blending:       THREE.AdditiveBlending,
+				depthTest:      false,
+				transparent:    true
+
+			});
+			linesShaderMaterial.linewidth = 1;
+		
+		
 			container = document.getElementById( 'container' );
 			//document.body.appendChild( container );
 
-			camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
-			camera.position.z = -800;
-			camera.position.y = 500;
+			camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 100000 );
+			camera.position.z = -8000;
+			camera.position.y = 5000;
 			//camera.position.x = -800;
 			
 			scene = new THREE.Scene();
 			scene.add( new THREE.AmbientLight( 0xffffff,2.5 ) );
 
 			var light = new THREE.SpotLight( 0xffffff, 2.5 );
-			light.position.set( 0, 500, 2000 );
+			light.position.set( 0, 5000, 20000 );
 			light.castShadow = true;
 
 			light.shadowCameraNear = 200;
@@ -189,9 +423,9 @@
 				var object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: 0x777777, side: THREE.BackSide}));//, transparent: true, opacity: 0.5} ) );
 				//var object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: (1.0-((i/maxNbComp)*0.5)) * 0xffffff, side: THREE.BackSide}));
 				object.material.ambient = object.material.color;
-				object.position.x = -9999999;
-				object.position.y = -9999999;
-				object.position.z = -9999999;
+				object.position.x = -99999999;
+				object.position.y = -99999999;
+				object.position.z = -99999999;
 				object.scale.y = 0.5;
 				
 				scene.add( object );
@@ -222,7 +456,7 @@
 			
 			
 			plane = new THREE.Mesh(
-				new THREE.PlaneBufferGeometry( 2000, 2000, 8, 8 ),
+				new THREE.PlaneBufferGeometry( 20000, 20000, 8, 8 ),
 				smaterial
 				//new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.45, transparent: true } )
 			);
@@ -231,6 +465,377 @@
 			plane.visible = true;
 			scene.add( plane );
 
+			
+			
+			/////////////////////////////////////////////
+			// defines first buffergeometry for protein particles
+			bgeometryP1 = new THREE.BufferGeometry();			
+			bgeometryP1.dynamic = true;
+			var positionsP1 = new Float32Array( nbMetabolites * 3 );
+			var values_colorP1 = new Float32Array( nbMetabolites * 3 );
+			var values_sizeP1 = new Float32Array( nbMetabolites );
+			var compartmentP1 = new Float32Array( nbMetabolites );
+			var color = new THREE.Color( 0xff9900 );;
+			var color2 = new THREE.Color( 0x55ff55 );
+			var radius =400;
+			var bv=0;
+			for( var bw = 0 , bww= metabolicNodes.length; bw < bww; bw++ ) {
+				if (metabolicNodes[bw][6]==2){
+					values_sizeP1[ bv ] = 3;
+					compartmentP1[ bv ] = mapComp[metabolicNodes[bw][3]];
+					idMap[bw]=[2,bv];
+					typesMap[2][bv]=bw;
+					
+					var rm;
+					var rr;
+					
+					
+					rm=bv*0.008*2*Math.PI;
+					rr = ((bv*0.02)+0.05*radius);
+					positionsP1[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+					positionsP1[ bv * 3 + 1 ] = yStartDisplacement+0+(bv*0.02);
+					
+					
+					positionsP1[ bv * 3 + 2 ] = Math.sin(rm) *rr;
+					
+					values_colorP1[ bv * 3 + 0 ] = color.r;
+					values_colorP1[ bv * 3 + 1 ] = color.g;
+					values_colorP1[ bv * 3 + 2 ] = color.b;
+					bv++;
+				}
+			}
+			bgeometryP1.addAttribute( 'position', new THREE.BufferAttribute( positionsP1, 3 ) );
+			bgeometryP1.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP1, 3 ) );
+			bgeometryP1.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP1, 1 ) );
+			bgeometryP1.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP1, 1 ) );
+			
+			b1values_size = bgeometryP1.attributes.size.array;
+			b1positions = bgeometryP1.attributes.position.array;
+			b1values_color = bgeometryP1.attributes.ca.array;
+			b1values_compartment = bgeometryP1.attributes.compartment.array;
+			
+			bgeometryP1.computeBoundingSphere();
+			// associate first particle system with bufferGeometry
+			PointCloud1 = new THREE.PointCloud( bgeometryP1, particle1ShaderMaterial );
+
+			PointCloud1.dynamic = true;
+			PointCloud1.sortParticles = true;
+			PointCloud1.geometry.__dirtyVertices = true;
+			
+			scene.add( PointCloud1 );
+			
+			/////////////////////////////////////////////
+			// defines first buffergeometry for PN particles
+			bgeometryP2 = new THREE.BufferGeometry();
+			var positionsP2 = new Float32Array( nbReactions * 3 );
+			var values_colorP2 = new Float32Array( nbReactions * 3 );
+			var values_sizeP2 = new Float32Array( nbReactions );
+			var compartmentP2 = new Float32Array( nbReactions );
+			bgeometryP2.dynamic = true;
+			var color = new THREE.Color( 0xffffff );					
+			var color2 = new THREE.Color( 0x55ffff );
+			var radius =400;
+			var bv=0;
+			// now allocate a nb of nodes by sub systems
+			subSystems={};
+			totalSubSystems=0;			
+			totalNbreactions=0;
+			for( var bs = 0 , bww= metabolicNodes.length; bs < bww; bs++ ) {
+				if (metabolicNodes[bs][6]==4){
+					if (metabolicNodes[bs][4][1] && metabolicNodes[bs][4][1][0]){
+						if (subSystems[metabolicNodes[bs][4][1][0]]=== undefined){
+							subSystems[metabolicNodes[bs][4][1][0]]=1;
+							totalSubSystems++;
+						}
+						else{
+							subSystems[metabolicNodes[bs][4][1][0]]++;
+							totalSubSystems++;
+						}
+						
+					}
+					totalNbreactions++;
+				}
+			}
+			totalOutsideSubSystems=totalNbreactions-totalSubSystems;
+			nbSubSystems=Object.keys(subSystems).length
+			if (totalOutsideSubSystems>0){
+				nbAreas=nbSubSystems+1;
+				subSystems["Not present"]=totalOutsideSubSystems;
+			}
+			else{
+				nbAreas=nbSubSystems;
+			}
+			// if there is no subsystem identified just use standard spiral layout			
+			// if there are n subsystems then display circular region of width proportional to the nb of nodes in each subsystem
+			// first make a list of widths
+			// total nb of reactions will dictate the overall nb of points that must be displayed on the ring.
+			// depth of the ring is 30 points. there are for 0.004 *2Pi=1.44 degrees = 250 graduations on a circle 
+			var listWidthSubSystems={};
+			var nbCircleGraduations=250;
+			var minCircleFraction=1/nbCircleGraduations;
+			var nbNodesDepth=40;
+			var totalWidth=0;
+			for (var key in subSystems) {
+				if (subSystems.hasOwnProperty(key)) {
+					var width= Math.ceil(subSystems[key]/nbNodesDepth);
+					listWidthSubSystems[key]=[subSystems[key]/*nb of nodes*/,width,/*counter value*/0];
+					totalWidth+=width;
+				}
+			}
+			nbNodesDepth=Math.ceil((40*totalWidth)/244);
+			listWidthSubSystems={};
+			var totalWidth=0;
+			var cumulativeWidth=0;
+			var colorswap=1.0;
+			for (var key in subSystems) {
+				if (subSystems.hasOwnProperty(key)) {
+					var width= Math.ceil(subSystems[key]/nbNodesDepth);
+					listWidthSubSystems[key]=[subSystems[key]/*nb of nodes*/,width,cumulativeWidth,/*counter value*/0,colorswap];
+					totalWidth+=width;
+					cumulativeWidth+=width;
+					if (colorswap==1.0){
+					colorswap=0.7;
+					}
+					else{colorswap=1.0}
+				}
+			}
+			
+			var localRSeparator=0;
+			for( var bw = 0 , bww= metabolicNodes.length; bw < bww; bw++ ) {
+				if (metabolicNodes[bw][6]==4){
+					values_sizeP2[ bv ] = 3;
+					//b5values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;					
+					// try to assign the compartment of the majority of the products the reaction is linked to 
+					// if there is no product, assign the compartment of the majority of modifiers
+					// if there is no modifier, assign the compartment of the majority of reactants
+					var listProducts= metabolicNodes[bw][11][0];
+					var listModifiers= metabolicNodes[bw][11][1];
+					var listReactants= metabolicNodes[bw][11][2];
+					
+					if (listProducts.length>0){
+						var votes=[];
+						for (var ncc=0;ncc<nbCompartments;ncc++){
+							votes[ncc]=0;
+						}
+						for(var lp=0;lp<listProducts.length;lp++){
+							if (mapComp[metabolicNodes[listProducts[lp]][3]]>=0)
+								votes[mapComp[metabolicNodes[listProducts[lp]][3]]]++;
+						}
+						var winner= votes.indexOf(Math.max.apply( Math, votes ));
+						compartmentP2[ bv ] = winner;
+						if (winner==-1){
+							compartmentP2[ bv ] = mapComp[metabolicNodes[bw][3]];
+						}
+					} 
+					else if (listModifiers.length>0){
+						var votes=[];
+						for (var ncc=0;ncc<nbCompartments;ncc++){
+							votes[ncc]=0;
+						}
+						for(var lp=0;lp<listModifiers.length;lp++){
+							if (mapComp[metabolicNodes[listModifiers[lp]][3]]>=0)
+								votes[mapComp[metabolicNodes[listModifiers[lp]][3]]]++;
+						}
+						var winner= votes.indexOf(Math.max.apply( Math, votes ));
+						compartmentP2[ bv ] = winner;
+						if (winner==-1){
+							compartmentP2[ bv ] = mapComp[metabolicNodes[bw][3]];
+						}
+					}
+					else if (listReactants.length>0){
+						var votes=[];
+						for (var ncc=0;ncc<nbCompartments;ncc++){
+							votes[ncc]=0;
+						}
+						for(var lp=0;lp<listReactants.length;lp++){
+							if (mapComp[metabolicNodes[listReactants[lp]][3]]>=0)
+								votes[mapComp[metabolicNodes[listReactants[lp]][3]]]++;
+						}
+						var winner= votes.indexOf(Math.max.apply( Math, votes ));
+						compartmentP2[ bv ] = winner;
+						if (winner==-1){
+							compartmentP2[ bv ] = mapComp[metabolicNodes[bw][3]];
+						}
+					}
+					else {
+						compartmentP2[ bv ] = mapComp[metabolicNodes[bw][3]];
+					}
+					idMap[bw]=[4,bv];
+					typesMap[4][bv]=bw;
+					var rm;
+					var rr; 
+					var yModifier=0;
+					var mDepth=0;
+					if (metabolicNodes[bw][4][1] && metabolicNodes[bw][4][1][0]){						
+						if (listWidthSubSystems.hasOwnProperty(metabolicNodes[bw][4][1][0])) {
+						
+							var startingW=listWidthSubSystems[metabolicNodes[bw][4][1][0]][2];
+							var maxWidth=listWidthSubSystems[metabolicNodes[bw][4][1][0]][1];
+							var maxDepth=nbNodesDepth;
+							var maxNbNodes=listWidthSubSystems[metabolicNodes[bw][4][1][0]][0];
+							var presentIndex= listWidthSubSystems[metabolicNodes[bw][4][1][0]][3];
+							if (presentIndex<maxNbNodes){							
+								var localWPos=0;
+								var localRR=0;
+								localWPos=Math.floor(presentIndex/maxDepth);
+								localRR=presentIndex%maxDepth;
+								yModifier=	localRR;
+								mDepth=maxDepth;
+								rm=((startingW+localRSeparator+localWPos)*0.004*(2*Math.PI));								
+								rr= ((radius-maxDepth*5)+(localRR*5));
+								listWidthSubSystems[metabolicNodes[bw][4][1][0]][3]++;
+								color.r=listWidthSubSystems[metabolicNodes[bw][4][1][0]][4];
+								if (color.r==1.0){
+								color.g=1.0;
+								color.b=1.0;
+								}
+								else{
+								color.g=0.4;
+								color.b=1.0;
+								}
+							}
+						}
+					}
+					else{						
+						if (listWidthSubSystems.hasOwnProperty("Not present")) {						
+							var startingW=listWidthSubSystems["Not present"][2];
+							var maxWidth=listWidthSubSystems["Not present"][1];
+							var maxDepth=nbNodesDepth;
+							var maxNbNodes=listWidthSubSystems["Not present"][0];
+							var presentIndex= listWidthSubSystems["Not present"][3];
+							if (presentIndex<maxNbNodes){
+								var localWPos=0;
+								var localRR=0;
+								localWPos=Math.floor(presentIndex/maxDepth);
+								localRR=presentIndex%maxDepth;
+								yModifier=	localRR;	
+								mDepth=maxDepth;
+								rm=((startingW+localRSeparator+localWPos)*0.004*(2*Math.PI));
+								rr= ((radius-maxDepth*5)+(localRR*5));
+								listWidthSubSystems["Not present"][3]++;
+								color = new THREE.Color( 0xff0000 );
+							}
+						}
+					}
+					positionsP2[ bv * 3 + 1 ] = yStartDisplacement-(mDepth*4)+(yModifier*4);
+					positionsP2[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+					positionsP2[ bv * 3 + 2 ] = Math.sin(rm) *rr;
+					values_colorP2[ bv * 3 + 0 ] = color.r;
+					values_colorP2[ bv * 3 + 1 ] = color.g;
+					values_colorP2[ bv * 3 + 2 ] = color.b;
+					bv++;
+				}
+			}
+			bgeometryP2.addAttribute( 'position', new THREE.BufferAttribute( positionsP2, 3 ) );
+			bgeometryP2.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP2, 3 ) );
+			bgeometryP2.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP2, 1 ) );
+			bgeometryP2.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP2, 1 ) );
+			
+			//bgeometryP5.attributes.size.needsUpdate = true;
+			//bgeometryP5.attributes.position.needsUpdate = true;
+			//bgeometryP5.attributes.ca.needsUpdate = true;
+			//bgeometryP5.attributes.compartment.needsUpdate = true;
+
+			b2values_size = bgeometryP2.attributes.size.array;
+			b2positions = bgeometryP2.attributes.position.array;
+			b2values_color = bgeometryP2.attributes.ca.array;
+			b2values_compartment = bgeometryP2.attributes.compartment.array;
+									
+			// associate first particle system with bufferGeometry
+			PointCloud2 = new THREE.PointCloud( bgeometryP2, particle2ShaderMaterial );
+
+			PointCloud2.dynamic = true;
+			PointCloud2.sortParticles = true;
+			PointCloud2.geometry.__dirtyVertices = true;
+			
+			scene.add( PointCloud2 );
+			
+			/////////////////////////////////////////////
+			// defines buffergeometry for lines
+			bgeometryL1 = new THREE.BufferGeometry();
+			var positionsL1 = new Float32Array( (segmentPts) * 3 );
+			var colorsL1 = new Float32Array( (segmentPts) * 3 );
+			var opL1 = new Float32Array((segmentPts));
+			var compartmentL1 = new Float32Array( (segments)*2 );
+			var fluxL1 = new Float32Array( (segments) );
+			var boundsL1= new Float32Array( (segments) * 2 );
+			var r = 800;
+			var col = new THREE.Color( 0x00ffff );
+			var col2 = new THREE.Color( 0x55ff55 );
+			
+			var iv=0;
+			for ( var i = 0; i < segments; i ++ ) {
+			
+				var t1 = metabolicNodes[metabolicEdges[i][0]][6]
+				var t2 = metabolicNodes[metabolicEdges[i][1]][6]
+				var ivList=[]
+				
+				if (t1==2){
+					positionsL1[ (iv * 3)+0 ] = b1positions[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+					positionsL1[ (iv * 3) + 1 ] = b1positions[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
+					positionsL1[ (iv * 3) + 2 ] = b1positions[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+					compartmentL1[ (i*2)+0 ] = b1values_compartment[ (idMap[metabolicEdges[i][0]][1]) ];
+					opL1[iv]=0.25;
+					colorsL1[ iv * 3 ] = 0.0;
+					colorsL1[ iv * 3 + 1 ] = 1.0;
+					colorsL1[ iv * 3 + 2 ] = 1.0;
+					ivList.push(iv)
+					//linesMap[i]=iv
+					
+					iv++;
+				}
+				else if (t1==4){
+					positionsL1[ (iv * 3)+0 ] = b2positions[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+					positionsL1[ (iv * 3) + 1 ] = b2positions[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
+					positionsL1[ (iv * 3) + 2 ] = b2positions[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+					compartmentL1[ (i*2)+0 ] = b2values_compartment[ (idMap[metabolicEdges[i][0]][1]) ];
+					opL1[iv]=0.25;
+					colorsL1[ iv * 3 ] = 0.0;
+					colorsL1[ iv * 3 + 1 ] = 1.0;
+					colorsL1[ iv * 3 + 2 ] = 1.0;
+					//linesMap[i]=iv
+					ivList.push(iv)
+					iv++;
+				}
+				if (t2 ==2){
+					positionsL1[ (iv * 3)+0 ] = b1positions[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+					positionsL1[ (iv * 3) + 1 ] = b1positions[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;
+					positionsL1[ (iv * 3) + 2 ] = b1positions[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;
+					compartmentL1[ (i*2)+1 ] = b1values_compartment[ (idMap[metabolicEdges[i][1]][1]) ];
+					opL1[iv]=0.25;
+					colorsL1[ iv * 3 ] = 0.0;
+					colorsL1[ iv * 3 + 1 ] = 1.0;
+					colorsL1[ iv * 3 + 2 ] = 1.0;
+					//linesMap[i]=iv
+					ivList.push(iv)
+					iv++;
+				}
+				else if (t2 ==4){
+					positionsL1[ (iv * 3)+0 ] = b2positions[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+					positionsL1[ (iv * 3) + 1 ] = b2positions[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;
+					positionsL1[ (iv * 3) + 2 ] = b2positions[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;
+					compartmentL1[ (i*2)+1 ] = b2values_compartment[ (idMap[metabolicEdges[i][1]][1]) ];
+					opL1[iv]=0.25;
+					colorsL1[ iv * 3 ] = 0.0;
+					colorsL1[ iv * 3 + 1 ] = 1.0;
+					colorsL1[ iv * 3 + 2 ] = 1.0;
+					//linesMap[i]=iv
+					ivList.push(iv)
+					iv++;
+				}
+				linesMap[i]=ivList
+			}
+			bgeometryL1.addAttribute( 'position', new THREE.BufferAttribute( positionsL1, 3 ) );	
+			bgeometryL1.addAttribute( 'ca', new THREE.BufferAttribute( colorsL1, 3 ) );
+			bgeometryL1.addAttribute( 'op', new THREE.BufferAttribute( opL1, 1 ) );
+			bgeometryL1.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentL1, 2 ) );
+			bgeometryL1.computeBoundingSphere();
+			meshL1 = new THREE.Line( bgeometryL1, linesShaderMaterial,THREE.LinePieces );
+			scene.add( meshL1 );
+			
+			
+			
+			
 			renderer = new THREE.WebGLRenderer( { antialias: true } );
 			//renderer.setClearColor( 0xf5f5f5 );
 			renderer.setClearColor( 0xe0e0e0 );
@@ -894,14 +1499,62 @@
 								stopThreeJsMouseEvent=true;
 								}
 							}
+							else{
+								// adjust all metabolic nodes and lines positions
+								var indexStartNodes=maxNbComp+3;
+								nbCompartments= listCompartments.length;
+								//var indSelectedComp= SELECTED
+								var sInd=-1;
+								for (var i=0; i<listCompartments.length;i++ ){
+									if (SELECTED.name==objects[i].name){
+										sInd=i;
+									}
+								}
+								//console.log(SELECTED.name)
+								//console.log(listCompartments.length);
+								//console.log(scene.children[indexStartNodes])
+								for (var c=indexStartNodes;c<indexStartNodes+2;c++){
+									for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
+										for (var g=0;g<nbCompartments;g++){
+											if (scene.children[c].geometry.attributes.compartment.array[h]==g){
+											//nameComp[g]
+											scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
+											scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
+											scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
+											//scene.children[c].geometry.attributes.position.array[h*3+1]+=1000;
+											//scene.children[c].geometry.attributes.position.array[h*3+2]+=1000;
+											}
+										}
+									}
+									scene.children[c].geometry.attributes.position.needsUpdate = true;
+								}
+							}
+							
+							
+							
 							SELECTED = null;
 							myLayout["compartments_layout"]["structure"]=generalLayout;
 							var layoutdata={};
 							for (var j=0; j<listCompartments.length;j++ ){
-								layoutdata[objects[j].name]={"position":objects[j].position, "scale":objects[j].scale}
+								layoutdata[objects[j].name]={"position":new THREE.Vector3(objects[j].position.x,objects[j].position.y,objects[j].position.z), "scale":new THREE.Vector3(objects[j].scale.x,objects[j].scale.y,objects[j].scale.z)}
 							}
 							myLayout["compartments_layout"]["spatial-layout"]=layoutdata;
 							//console.log(myLayout)
+							
+							
+							
+							//var c=3;
+							//for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
+							//	for (var g=0;g<nbOrganelles;g++){
+							//		if (scene.children[c].geometry.attributes.compartment.array[h]==g){
+									//console.log(g)
+							//			scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
+							//			scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
+							//		}
+									
+							//	}
+							//}
+							//scene.children[c].geometry.attributes.position.needsUpdate = true;
 						}						
 						container.style.cursor = 'auto';
 					case 1: // middle
@@ -1014,9 +1667,9 @@
 			}
 			// delete meshes
 			for ( var i = 0; i < maxNbComp; i ++ ) {
-					objects[i].position.x = -9999999;
-					objects[i].position.y = -9999999;
-					objects[i].position.z = -9999999;
+					objects[i].position.x = -99999999;
+					objects[i].position.y = -99999999;
+					objects[i].position.z = -99999999;
 					objects[i].name="";
 					txtComp[i].innerHTML = 'hello ';
 					txtComp[i].style.top = 4000 + 'px';
@@ -1622,9 +2275,36 @@
 		myLayout["compartments_layout"]["structure"]=generalLayout;
 		var layoutdata={};
 		for (var j=0; j<listCompartments.length;j++ ){
-			layoutdata[objects[j].name]={"position":objects[j].position, "scale":objects[j].scale}
+			layoutdata[objects[j].name]={"position":new THREE.Vector3(objects[j].position.x,objects[j].position.y,objects[j].position.z), "scale":new THREE.Vector3(objects[j].scale.x,objects[j].scale.y,objects[j].scale.z)}
 		}
 		myLayout["compartments_layout"]["spatial-layout"]=layoutdata;
+		var indexStartNodes=maxNbComp+3;
+		nbCompartments= listCompartments.length;
+		//var indSelectedComp= SELECTED
+		var sInd=-1;
+		for (var i=0; i<listCompartments.length;i++ ){
+			if (cName==objects[i].name){
+				sInd=i;
+			}
+		}
+		//console.log(SELECTED.name)
+		//console.log(listCompartments.length);
+		//console.log(scene.children[indexStartNodes])
+		for (var c=indexStartNodes;c<indexStartNodes+2;c++){
+			for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
+				//for (var g=0;g<nbCompartments;g++){
+					if (scene.children[c].geometry.attributes.compartment.array[h]==sInd){
+					//nameComp[g]
+					scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[sInd].position.x-initialPos.x;
+					scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[sInd].position.y-initialPos.y;
+					scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[sInd].position.z-initialPos.z;
+					//scene.children[c].geometry.attributes.position.array[h*3+1]+=1000;
+					//scene.children[c].geometry.attributes.position.array[h*3+2]+=1000;
+					}
+				//}
+			}
+			scene.children[c].geometry.attributes.position.needsUpdate = true;
+		}
 		//console.log(myLayout);
 	}
 	
