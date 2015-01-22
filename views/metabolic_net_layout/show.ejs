@@ -20,8 +20,8 @@
 	<br>
 	<h3 id="titleEditor" style="position: absolute;left: 20px;">Layout Editor:  
 	<select id="modeSelector" onchange="runModeSelector()">
-  <option value="0">between compartments</option>
-  <option value="1">inside compartments</option>
+  <option value="0">for compartments</option>
+  <option value="1">for nodes</option>
 	</select></h3>
 	<div id="container"  style="position: absolute;left: 0px; overflow: inherit">  </div>
 	
@@ -175,13 +175,13 @@
 	
 	$('#layout1menu').hide();
 	$('#layout1menu').zIndex(2000);
-	
+	var generalLayout={};
 	var stopThreeJsMouseEvent = false;	
 	var initialPos=new THREE.Vector3( 0, 0, 0 );
 	var initialName="";
-	var spacing=1200;
-	var radiusComp=400;
-	var yStartDisplacement=400;
+	var spacing=1650;
+	var radiusComp=550;
+	var yStartDisplacement=0;
 	
 	var selectedMetabolicData = <%-JSON.stringify(mtb.file)%>
 	//console.log("getting metabolic data from default file recon2");
@@ -872,8 +872,8 @@
 
 		}
 			
-		var list_merged_chains={};	
-		var generalLayout ={'merged':{},'above':{},'outer':{},'satellite':{},'in':{}};
+		
+		generalLayout ={'merged':{},'above':{},'outer':{},'satellite':{},'in':{}};
 		//generalLayout['merged']
 		
 		function isMerged(comp,cType) {
@@ -920,333 +920,333 @@
 			
 		var button1 = document.getElementById( 'b_merge' );
 			button1.addEventListener( 'click', function ( event ) {
-		
-			stopThreeJsMouseEvent=false;
-			
-			
-			var targetContainer=isMerged(INTERSECTED.name,'merged');
-			var refContainer=isMerged(INTERSECTED2.name,'merged');
-			// target and ref items dont exist in the merged list
-			if ((targetContainer=="") && (refContainer=="")){
-				generalLayout['merged'][INTERSECTED2.name]=[];
-				generalLayout['merged'][INTERSECTED2.name].push(INTERSECTED.name)
-			}
-			// target doesnt exist in the merged list while ref exists
-			else if ((targetContainer=="") && (refContainer!="")){
-				if (generalLayout['merged'][refContainer].indexOf(INTERSECTED.name)==-1){
-					generalLayout['merged'][refContainer].push(INTERSECTED.name)
-				}
-			}
-			// target doesnt exist in the merged list while ref exists
-			else if ((targetContainer!="") && (refContainer=="")){
-				if (generalLayout['merged'][targetContainer].indexOf(INTERSECTED2.name)==-1){
-					generalLayout['merged'][targetContainer].push(INTERSECTED2.name)
-				}
-			}
-			// we want to merge two existing merged groups already
-			else{
-				var newcontent=$.unique(generalLayout['merged'][targetContainer].concat(generalLayout['merged'][refContainer]));
-				if (newcontent.length<listCompartments.length-1){
-					newcontent.push(targetContainer);
-					generalLayout['merged'][refContainer]=newcontent;
-					delete generalLayout['merged'][targetContainer];
-				}
+			if ($('#modeSelector').val()=="0"){
+				stopThreeJsMouseEvent=false;
 				
+				
+				var targetContainer=isMerged(INTERSECTED.name,'merged');
+				var refContainer=isMerged(INTERSECTED2.name,'merged');
+				// target and ref items dont exist in the merged list
+				if ((targetContainer=="") && (refContainer=="")){
+					generalLayout['merged'][INTERSECTED2.name]=[];
+					generalLayout['merged'][INTERSECTED2.name].push(INTERSECTED.name)
+				}
+				// target doesnt exist in the merged list while ref exists
+				else if ((targetContainer=="") && (refContainer!="")){
+					if (generalLayout['merged'][refContainer].indexOf(INTERSECTED.name)==-1){
+						generalLayout['merged'][refContainer].push(INTERSECTED.name)
+					}
+				}
+				// target doesnt exist in the merged list while ref exists
+				else if ((targetContainer!="") && (refContainer=="")){
+					if (generalLayout['merged'][targetContainer].indexOf(INTERSECTED2.name)==-1){
+						generalLayout['merged'][targetContainer].push(INTERSECTED2.name)
+					}
+				}
+				// we want to merge two existing merged groups already
+				else{
+					var newcontent=$.unique(generalLayout['merged'][targetContainer].concat(generalLayout['merged'][refContainer]));
+					if (newcontent.length<listCompartments.length-1){
+						newcontent.push(targetContainer);
+						generalLayout['merged'][refContainer]=newcontent;
+						delete generalLayout['merged'][targetContainer];
+					}					
+				}								
+				placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name, 'merged');
+				$('#layout1menu').hide();
 			}
-			
-			//compLayout["merged"]=[];
-			//for (el in generalLayout['merged']){
-			//	if (generalLayout['merged'].hasOwnProperty(el)){
-			//		for (var i=0; i<generalLayout['merged'][el].length;i++){
-			//			compLayout["merged"].push([generalLayout['merged'][el][i], el])
-			//		}
-			//	}
-			//}
-			
-			
-			//generalLayout['merged']=list_merged_chains;
-			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name, 'merged');
-			$('#layout1menu').hide();
-			
 		});
 			
 		var button2 = document.getElementById( 'b_above' );
 		button2.addEventListener( 'click', function ( event ) {
-			//console.log("above");
-			stopThreeJsMouseEvent=false;
-			
-			var targetContainer=isMerged(INTERSECTED.name,'above');
-			var refContainer=isMerged(INTERSECTED2.name,'above');
-			// target and ref items dont exist in the merged list
-			if ((targetContainer=="") && (refContainer=="")){
-				generalLayout['above'][INTERSECTED2.name]=[];
-				generalLayout['above'][INTERSECTED2.name].push(INTERSECTED.name)
-			}
-			// target doesnt exist in the merged list while ref exists
-			else if ((targetContainer=="") && (refContainer!="")){
-				if (generalLayout['above'][refContainer].indexOf(INTERSECTED.name)==-1){
-					generalLayout['above'][refContainer].push(INTERSECTED.name)
+			if ($('#modeSelector').val()=="0"){
+				//console.log("above");
+				stopThreeJsMouseEvent=false;
+				
+				var targetContainer=isMerged(INTERSECTED.name,'above');
+				var refContainer=isMerged(INTERSECTED2.name,'above');
+				// target and ref items dont exist in the merged list
+				if ((targetContainer=="") && (refContainer=="")){
+					generalLayout['above'][INTERSECTED2.name]=[];
+					generalLayout['above'][INTERSECTED2.name].push(INTERSECTED.name)
 				}
-			}
-			// target doesnt exist in the merged list while ref exists
-			else if ((targetContainer!="") && (refContainer=="")){
-				if (generalLayout['above'][targetContainer].indexOf(INTERSECTED2.name)==-1){
-					generalLayout['above'][targetContainer].push(INTERSECTED2.name)
+				// target doesnt exist in the merged list while ref exists
+				else if ((targetContainer=="") && (refContainer!="")){
+					if (generalLayout['above'][refContainer].indexOf(INTERSECTED.name)==-1){
+						generalLayout['above'][refContainer].push(INTERSECTED.name)
+					}
 				}
-			}
-			// we want to merge two existing merged groups already
-			else{
-				var newcontent=$.unique(generalLayout['above'][targetContainer].concat(generalLayout['above'][refContainer]));
-				if (newcontent.length<listCompartments.length-1){
-					newcontent.push(targetContainer);
-					generalLayout['above'][refContainer]=newcontent;
-					delete generalLayout['above'][targetContainer];
+				// target doesnt exist in the merged list while ref exists
+				else if ((targetContainer!="") && (refContainer=="")){
+					if (generalLayout['above'][targetContainer].indexOf(INTERSECTED2.name)==-1){
+						generalLayout['above'][targetContainer].push(INTERSECTED2.name)
+					}
+				}
+				// we want to merge two existing merged groups already
+				else{
+					var newcontent=$.unique(generalLayout['above'][targetContainer].concat(generalLayout['above'][refContainer]));
+					if (newcontent.length<listCompartments.length-1){
+						newcontent.push(targetContainer);
+						generalLayout['above'][refContainer]=newcontent;
+						delete generalLayout['above'][targetContainer];
+					}
+					
 				}
 				
+				
+				
+				//compLayout["above"].push([INTERSECTED.name, INTERSECTED2.name] );
+				//console.log(compLayout);
+				placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name,'above');
+				$('#layout1menu').hide();
 			}
-			
-			
-			
-			//compLayout["above"].push([INTERSECTED.name, INTERSECTED2.name] );
-			//console.log(compLayout);
-			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name,'above');
-			$('#layout1menu').hide();
 		});
 		var button3 = document.getElementById( 'b_below' );
 		button3.addEventListener( 'click', function ( event ) {
-			//console.log("below");
-			stopThreeJsMouseEvent=false;
-			
-			var targetContainer=isMerged(INTERSECTED.name,'above');
-			var refContainer=isMerged(INTERSECTED2.name,'above');
-			// target and ref items dont exist in the merged list
-			if ((targetContainer=="") && (refContainer=="")){
-				generalLayout['above'][INTERSECTED.name]=[];
-				generalLayout['above'][INTERSECTED.name].push(INTERSECTED2.name)
-			}
-			// target doesnt exist in the merged list while ref exists
-			else if ((targetContainer=="") && (refContainer!="")){
-				var newcontent=generalLayout['above'][refContainer].slice();
+			if ($('#modeSelector').val()=="0"){
+				//console.log("below");
+				stopThreeJsMouseEvent=false;
 				
-				if (newcontent.length<listCompartments.length-1){
-					newcontent.unshift(refContainer);
-					generalLayout['above'][INTERSECTED.name]=newcontent
-					delete generalLayout['above'][refContainer];
+				var targetContainer=isMerged(INTERSECTED.name,'above');
+				var refContainer=isMerged(INTERSECTED2.name,'above');
+				// target and ref items dont exist in the merged list
+				if ((targetContainer=="") && (refContainer=="")){
+					generalLayout['above'][INTERSECTED.name]=[];
+					generalLayout['above'][INTERSECTED.name].push(INTERSECTED2.name)
 				}
-			}
-			// target does exist in the merged list while ref doesnt exist
-			else if ((targetContainer!="") && (refContainer=="")){
-				if (generalLayout['above'][targetContainer].indexOf(INTERSECTED2.name)==-1){
-					generalLayout['above'][targetContainer].push(INTERSECTED2.name)
+				// target doesnt exist in the merged list while ref exists
+				else if ((targetContainer=="") && (refContainer!="")){
+					var newcontent=generalLayout['above'][refContainer].slice();
+					
+					if (newcontent.length<listCompartments.length-1){
+						newcontent.unshift(refContainer);
+						generalLayout['above'][INTERSECTED.name]=newcontent
+						delete generalLayout['above'][refContainer];
+					}
 				}
-			}
-			// we want to merge two existing merged groups already
-			else{
-				var newcontent=$.unique(generalLayout['above'][targetContainer].concat(generalLayout['above'][refContainer]));
-				if (newcontent.length<listCompartments.length-1){
-					newcontent.unshift(refContainer);
-					generalLayout['above'][targetContainer]=newcontent;
-					delete generalLayout['above'][refContainer];
+				// target does exist in the merged list while ref doesnt exist
+				else if ((targetContainer!="") && (refContainer=="")){
+					if (generalLayout['above'][targetContainer].indexOf(INTERSECTED2.name)==-1){
+						generalLayout['above'][targetContainer].push(INTERSECTED2.name)
+					}
+				}
+				// we want to merge two existing merged groups already
+				else{
+					var newcontent=$.unique(generalLayout['above'][targetContainer].concat(generalLayout['above'][refContainer]));
+					if (newcontent.length<listCompartments.length-1){
+						newcontent.unshift(refContainer);
+						generalLayout['above'][targetContainer]=newcontent;
+						delete generalLayout['above'][refContainer];
+					}
+					
 				}
 				
+				
+				//compLayout["above"].push([INTERSECTED2.name, INTERSECTED.name] );
+				//console.log(compLayout);
+				placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name,'below');
+				$('#layout1menu').hide();
 			}
-			
-			
-			//compLayout["above"].push([INTERSECTED2.name, INTERSECTED.name] );
-			//console.log(compLayout);
-			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name,'below');
-			$('#layout1menu').hide();
 		});
 		var button4 = document.getElementById( 'b_inner' );
 		button4.addEventListener( 'click', function ( event ) {
-			//console.log("inner");
-			stopThreeJsMouseEvent=false;
-			
-			var targetContainer=isMerged(INTERSECTED.name,'outer');
-			var refContainer=isMerged(INTERSECTED2.name,'outer');
-			// target and ref items dont exist in the merged list
-			if ((targetContainer=="") && (refContainer=="")){
-				generalLayout['outer'][INTERSECTED.name]=[];
-				generalLayout['outer'][INTERSECTED.name].push(INTERSECTED2.name)
-			}
-			// target doesnt exist in the merged list while ref exists
-			else if ((targetContainer=="") && (refContainer!="")){
-				var newcontent=generalLayout['outer'][refContainer].slice();
+			if ($('#modeSelector').val()=="0"){
+				//console.log("inner");
+				stopThreeJsMouseEvent=false;
 				
-				if (newcontent.length<listCompartments.length-1){
-					newcontent.unshift(refContainer);
-					generalLayout['outer'][INTERSECTED.name]=newcontent
-					delete generalLayout['outer'][refContainer];
+				var targetContainer=isMerged(INTERSECTED.name,'outer');
+				var refContainer=isMerged(INTERSECTED2.name,'outer');
+				// target and ref items dont exist in the merged list
+				if ((targetContainer=="") && (refContainer=="")){
+					generalLayout['outer'][INTERSECTED.name]=[];
+					generalLayout['outer'][INTERSECTED.name].push(INTERSECTED2.name)
 				}
-			}
-			// target does exist in the merged list while ref doesnt exist
-			else if ((targetContainer!="") && (refContainer=="")){
-				if (generalLayout['outer'][targetContainer].indexOf(INTERSECTED2.name)==-1){
-					generalLayout['outer'][targetContainer].push(INTERSECTED2.name)
+				// target doesnt exist in the merged list while ref exists
+				else if ((targetContainer=="") && (refContainer!="")){
+					var newcontent=generalLayout['outer'][refContainer].slice();
+					
+					if (newcontent.length<listCompartments.length-1){
+						newcontent.unshift(refContainer);
+						generalLayout['outer'][INTERSECTED.name]=newcontent
+						delete generalLayout['outer'][refContainer];
+					}
 				}
-			}
-			// we want to merge two existing merged groups already
-			else{
-				var newcontent=$.unique(generalLayout['outer'][targetContainer].concat(generalLayout['outer'][refContainer]));
-				if (newcontent.length<listCompartments.length-1){
-					newcontent.unshift(refContainer);
-					generalLayout['outer'][targetContainer]=newcontent;
-					delete generalLayout['outer'][refContainer];
+				// target does exist in the merged list while ref doesnt exist
+				else if ((targetContainer!="") && (refContainer=="")){
+					if (generalLayout['outer'][targetContainer].indexOf(INTERSECTED2.name)==-1){
+						generalLayout['outer'][targetContainer].push(INTERSECTED2.name)
+					}
+				}
+				// we want to merge two existing merged groups already
+				else{
+					var newcontent=$.unique(generalLayout['outer'][targetContainer].concat(generalLayout['outer'][refContainer]));
+					if (newcontent.length<listCompartments.length-1){
+						newcontent.unshift(refContainer);
+						generalLayout['outer'][targetContainer]=newcontent;
+						delete generalLayout['outer'][refContainer];
+					}
+					
 				}
 				
+				
+				//compLayout["outer"].push([INTERSECTED2.name, INTERSECTED.name] );
+				//console.log(compLayout);
+				placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name,'outer');
+				$('#layout1menu').hide();
 			}
-			
-			
-			//compLayout["outer"].push([INTERSECTED2.name, INTERSECTED.name] );
-			//console.log(compLayout);
-			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name,'outer');
-			$('#layout1menu').hide();
 		});
 		var button5 = document.getElementById( 'b_outer' );
 		button5.addEventListener( 'click', function ( event ) {
-			//console.log("outer");
-			stopThreeJsMouseEvent=false;
-			
-			var targetContainer=isMerged(INTERSECTED.name,'outer');
-			var refContainer=isMerged(INTERSECTED2.name,'outer');
-			// target and ref items dont exist in the merged list
-			if ((targetContainer=="") && (refContainer=="")){
-				generalLayout['outer'][INTERSECTED2.name]=[];
-				generalLayout['outer'][INTERSECTED2.name].push(INTERSECTED.name)
-			}
-			// target doesnt exist in the merged list while ref exists
-			else if ((targetContainer=="") && (refContainer!="")){
-				if (generalLayout['outer'][refContainer].indexOf(INTERSECTED.name)==-1){
-					generalLayout['outer'][refContainer].push(INTERSECTED.name)
-				}
-			}
-			// target doesnt exist in the merged list while ref exists
-			else if ((targetContainer!="") && (refContainer=="")){
-				if (generalLayout['outer'][targetContainer].indexOf(INTERSECTED2.name)==-1){
-					generalLayout['outer'][targetContainer].push(INTERSECTED2.name)
-				}
-			}
-			// we want to merge two existing merged groups already
-			else{
-				var newcontent=$.unique(generalLayout['outer'][targetContainer].concat(generalLayout['outer'][refContainer]));
-				if (newcontent.length<listCompartments.length-1){
-					newcontent.push(targetContainer);
-					generalLayout['outer'][refContainer]=newcontent;
-					delete generalLayout['outer'][targetContainer];
-				}
+			if ($('#modeSelector').val()=="0"){
+				//console.log("outer");
+				stopThreeJsMouseEvent=false;
 				
+				var targetContainer=isMerged(INTERSECTED.name,'outer');
+				var refContainer=isMerged(INTERSECTED2.name,'outer');
+				// target and ref items dont exist in the merged list
+				if ((targetContainer=="") && (refContainer=="")){
+					generalLayout['outer'][INTERSECTED2.name]=[];
+					generalLayout['outer'][INTERSECTED2.name].push(INTERSECTED.name)
+				}
+				// target doesnt exist in the merged list while ref exists
+				else if ((targetContainer=="") && (refContainer!="")){
+					if (generalLayout['outer'][refContainer].indexOf(INTERSECTED.name)==-1){
+						generalLayout['outer'][refContainer].push(INTERSECTED.name)
+					}
+				}
+				// target doesnt exist in the merged list while ref exists
+				else if ((targetContainer!="") && (refContainer=="")){
+					if (generalLayout['outer'][targetContainer].indexOf(INTERSECTED2.name)==-1){
+						generalLayout['outer'][targetContainer].push(INTERSECTED2.name)
+					}
+				}
+				// we want to merge two existing merged groups already
+				else{
+					var newcontent=$.unique(generalLayout['outer'][targetContainer].concat(generalLayout['outer'][refContainer]));
+					if (newcontent.length<listCompartments.length-1){
+						newcontent.push(targetContainer);
+						generalLayout['outer'][refContainer]=newcontent;
+						delete generalLayout['outer'][targetContainer];
+					}
+					
+				}
+				//console.log(generalLayout['outer']);
+				//compLayout["outer"].push([INTERSECTED.name, INTERSECTED2.name] );
+				//console.log(compLayout);
+				placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name,'outer');
+				$('#layout1menu').hide();
 			}
-			//console.log(generalLayout['outer']);
-			//compLayout["outer"].push([INTERSECTED.name, INTERSECTED2.name] );
-			//console.log(compLayout);
-			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name,'outer');
-			$('#layout1menu').hide();
 		});
 		var button6 = document.getElementById( 'b_satellite' );
 		button6.addEventListener( 'click', function ( event ) {
 			//console.log(INTERSECTED2.name);
-			
-			stopThreeJsMouseEvent=false;
-			var refComp=INTERSECTED2.name;
-			for (var ref in generalLayout["outer"]){
-				if (generalLayout["outer"].hasOwnProperty(ref)){
-					var indComp=generalLayout["outer"][ref].indexOf(INTERSECTED2.name);
-					if (INTERSECTED2.name==ref || indComp!=-1 ){
-						refComp=ref;
+			if ($('#modeSelector').val()=="0"){
+				stopThreeJsMouseEvent=false;
+				var refComp=INTERSECTED2.name;
+				for (var ref in generalLayout["outer"]){
+					if (generalLayout["outer"].hasOwnProperty(ref)){
+						var indComp=generalLayout["outer"][ref].indexOf(INTERSECTED2.name);
+						if (INTERSECTED2.name==ref || indComp!=-1 ){
+							refComp=ref;
+						}
 					}
 				}
-			}
-			//console.log(refComp);
-			var targetContainer=isCenterMerged(INTERSECTED.name,'satellite');
-			var targetContainer2=isPeripheralMerged(INTERSECTED.name,'satellite');
-			var refContainer=isCenterMerged(refComp,'satellite');
-			var refContainer2=isPeripheralMerged(refComp,'satellite');
-			if (!(targetContainer2!="")){
-				if((targetContainer=="") && (refContainer=="")){
-					generalLayout['satellite'][refComp]=[];
-					generalLayout['satellite'][refComp].push(INTERSECTED.name)
-				}
-				else if ((targetContainer=="") && !(refContainer=="")){
-					if (generalLayout['satellite'][refComp].indexOf(INTERSECTED.name)==-1){
-						generalLayout['satellite'][refComp].push(INTERSECTED.name);
+				//console.log(refComp);
+				var targetContainer=isCenterMerged(INTERSECTED.name,'satellite');
+				var targetContainer2=isPeripheralMerged(INTERSECTED.name,'satellite');
+				var refContainer=isCenterMerged(refComp,'satellite');
+				var refContainer2=isPeripheralMerged(refComp,'satellite');
+				if (!(targetContainer2!="")){
+					if((targetContainer=="") && (refContainer=="")){
+						generalLayout['satellite'][refComp]=[];
+						generalLayout['satellite'][refComp].push(INTERSECTED.name)
 					}
-				}
-				else if (!(targetContainer=="") && (refContainer=="")){
-					generalLayout['satellite'][refComp.name]=[];
-					if (generalLayout['satellite'][refComp].indexOf(INTERSECTED.name)==-1){
-						generalLayout['satellite'][refComp].push(INTERSECTED.name);
+					else if ((targetContainer=="") && !(refContainer=="")){
+						if (generalLayout['satellite'][refComp].indexOf(INTERSECTED.name)==-1){
+							generalLayout['satellite'][refComp].push(INTERSECTED.name);
+						}
 					}
-				}
-				else{
-					if (generalLayout['satellite'][refComp].indexOf(INTERSECTED.name)==-1){
-						generalLayout['satellite'][refComp].push(INTERSECTED.name);
+					else if (!(targetContainer=="") && (refContainer=="")){
+						generalLayout['satellite'][refComp.name]=[];
+						if (generalLayout['satellite'][refComp].indexOf(INTERSECTED.name)==-1){
+							generalLayout['satellite'][refComp].push(INTERSECTED.name);
+						}
 					}
+					else{
+						if (generalLayout['satellite'][refComp].indexOf(INTERSECTED.name)==-1){
+							generalLayout['satellite'][refComp].push(INTERSECTED.name);
+						}
+					}
+					
+					
 				}
 				
-				
+				//compLayout["satellite"].push([INTERSECTED.name, INTERSECTED2.name] );
+				//console.log(generalLayout['satellite']);
+				placeCompFromLayout(INTERSECTED.name, refComp,'satellite');
+				$('#layout1menu').hide();
 			}
-			
-			//compLayout["satellite"].push([INTERSECTED.name, INTERSECTED2.name] );
-			//console.log(generalLayout['satellite']);
-			placeCompFromLayout(INTERSECTED.name, refComp,'satellite');
-			$('#layout1menu').hide();
 		});
 		var button7 = document.getElementById( 'b_subset' );
 		button7.addEventListener( 'click', function ( event ) {
-			//console.log("subset");
-			stopThreeJsMouseEvent=false;
-			
-			var targetContainer=isCenterMerged(INTERSECTED.name,'in');
-			var targetContainer2=isPeripheralMerged(INTERSECTED.name,'in');
-			var refContainer=isCenterMerged(INTERSECTED2.name,'in');
-			var refContainer2=isPeripheralMerged(INTERSECTED2.name,'in');
-			if (!(targetContainer2!="")){
-				if((targetContainer=="") && (refContainer=="")){
-					generalLayout['in'][INTERSECTED2.name]=[];
-					generalLayout['in'][INTERSECTED2.name].push(INTERSECTED.name)
-				}
-				else if ((targetContainer=="") && !(refContainer=="")){
-					if (generalLayout['in'][INTERSECTED2.name].indexOf(INTERSECTED.name)==-1){
-						generalLayout['in'][INTERSECTED2.name].push(INTERSECTED.name);
+			if ($('#modeSelector').val()=="0"){
+				//console.log("subset");
+				stopThreeJsMouseEvent=false;
+				
+				var targetContainer=isCenterMerged(INTERSECTED.name,'in');
+				var targetContainer2=isPeripheralMerged(INTERSECTED.name,'in');
+				var refContainer=isCenterMerged(INTERSECTED2.name,'in');
+				var refContainer2=isPeripheralMerged(INTERSECTED2.name,'in');
+				if (!(targetContainer2!="")){
+					if((targetContainer=="") && (refContainer=="")){
+						generalLayout['in'][INTERSECTED2.name]=[];
+						generalLayout['in'][INTERSECTED2.name].push(INTERSECTED.name)
 					}
-				}
-				else if (!(targetContainer=="") && (refContainer=="")){
-					generalLayout['in'][INTERSECTED2.name]=[];
-					if (generalLayout['in'][INTERSECTED2.name].indexOf(INTERSECTED.name)==-1){
-						generalLayout['in'][INTERSECTED2.name].push(INTERSECTED.name);
+					else if ((targetContainer=="") && !(refContainer=="")){
+						if (generalLayout['in'][INTERSECTED2.name].indexOf(INTERSECTED.name)==-1){
+							generalLayout['in'][INTERSECTED2.name].push(INTERSECTED.name);
+						}
 					}
-				}
-				else{
-					if (generalLayout['in'][INTERSECTED2.name].indexOf(INTERSECTED.name)==-1){
-						generalLayout['in'][INTERSECTED2.name].push(INTERSECTED.name);
+					else if (!(targetContainer=="") && (refContainer=="")){
+						generalLayout['in'][INTERSECTED2.name]=[];
+						if (generalLayout['in'][INTERSECTED2.name].indexOf(INTERSECTED.name)==-1){
+							generalLayout['in'][INTERSECTED2.name].push(INTERSECTED.name);
+						}
 					}
+					else{
+						if (generalLayout['in'][INTERSECTED2.name].indexOf(INTERSECTED.name)==-1){
+							generalLayout['in'][INTERSECTED2.name].push(INTERSECTED.name);
+						}
+					}
+					
+					
 				}
 				
-				
+				//compLayout["in"].push([INTERSECTED.name,INTERSECTED2.name] );
+				//console.log(compLayout);
+				placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name,'in');
+				$('#layout1menu').hide();
 			}
-			
-			//compLayout["in"].push([INTERSECTED.name,INTERSECTED2.name] );
-			//console.log(compLayout);
-			placeCompFromLayout(INTERSECTED.name, INTERSECTED2.name,'in');
-			$('#layout1menu').hide();
 		});
 		var button8 = document.getElementById( 'b_cancel' );
 		button8.addEventListener( 'click', function ( event ) {
-			//console.log("cancel");
-			stopThreeJsMouseEvent=false;
-			for ( var i = 0; i < listCompartments.length; i ++ ) {
-				if (objects[i].name==initialName){
-					objects[i].position.x=initialPos.x;
-					objects[i].position.y=initialPos.y;
-					objects[i].position.z=initialPos.z;
-					SELECTED = null;
-					SELECTED2=null;
+			if ($('#modeSelector').val()=="0"){
+				//console.log("cancel");
+				stopThreeJsMouseEvent=false;
+				for ( var i = 0; i < listCompartments.length; i ++ ) {
+					if (objects[i].name==initialName){
+						objects[i].position.x=initialPos.x;
+						objects[i].position.y=initialPos.y;
+						objects[i].position.z=initialPos.z;
+						SELECTED = null;
+						SELECTED2=null;
+					}
 				}
+				
+				
+				
+				$('#layout1menu').hide();
 			}
-			
-			
-			
-			$('#layout1menu').hide();
 		});
 			
 
@@ -1260,51 +1260,53 @@
 			}
 
 			function onDocumentMouseMove( event ) {
-				if (stopThreeJsMouseEvent==false){
-					event.preventDefault();
-					mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-					mouse.y = - ( (event.clientY-$("#container").position().top+window.pageYOffset) / window.innerHeight ) * 2 + 1;
-					var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 ).unproject( camera );
-					var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
-					if ( SELECTED ) {
-						var intersects2 = raycaster.intersectObjects( objects );
-						if ( intersects2.length > 1 ) {
-							if (SELECTED.name==intersects2[0].object.name)
-								INTERSECTED2=intersects2[1].object;
-							else
-								INTERSECTED2=intersects2[0].object;
-						}
-						else{
-							INTERSECTED2=null;
-						}
-						//plane.position.y=SELECTED.position.y;
-						var intersects = raycaster.intersectObject( plane );						
-						var mustMove=true;
-						
-						
-						
-						if( mustMove==true){
-						SELECTED.position.copy( intersects[ 0 ].point );
-						
-						
-						}
-						
-						
-						stackCompToMove=[];
-						
-						function addToStack(cname){
-							for (var typeComp in generalLayout){
-								if (generalLayout.hasOwnProperty(typeComp)){
-									for (var ref in generalLayout[typeComp]){
-										if (generalLayout[typeComp].hasOwnProperty(ref)){
-											var indComp=generalLayout[typeComp][ref].indexOf(cname);
-											if (cname==ref || indComp!=-1 ){
-												if (stackCompToMove.indexOf(ref)==-1){
-													stackCompToMove.push(ref);
-												}
-												for (var i=0; i<generalLayout[typeComp][ref].length;i++ ){
-													if (stackCompToMove.indexOf(generalLayout[typeComp][ref][i])==-1){
-														stackCompToMove.push(generalLayout[typeComp][ref][i]);
+				if ($('#modeSelector').val()=="0"){
+					if (stopThreeJsMouseEvent==false){
+						event.preventDefault();
+						mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+						mouse.y = - ( (event.clientY-$("#container").position().top+window.pageYOffset) / window.innerHeight ) * 2 + 1;
+						var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 ).unproject( camera );
+						var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+						if ( SELECTED ) {
+							var intersects2 = raycaster.intersectObjects( objects );
+							if ( intersects2.length > 1 ) {
+								if (SELECTED.name==intersects2[0].object.name)
+									INTERSECTED2=intersects2[1].object;
+								else
+									INTERSECTED2=intersects2[0].object;
+							}
+							else{
+								INTERSECTED2=null;
+							}
+							//plane.position.y=SELECTED.position.y;
+							var intersects = raycaster.intersectObject( plane );						
+							var mustMove=true;
+							
+							
+							
+							if( mustMove==true){
+							SELECTED.position.copy( intersects[ 0 ].point );
+							
+							
+							}
+							
+							
+							stackCompToMove=[];
+							
+							function addToStack(cname){
+								for (var typeComp in generalLayout){
+									if (generalLayout.hasOwnProperty(typeComp)){
+										for (var ref in generalLayout[typeComp]){
+											if (generalLayout[typeComp].hasOwnProperty(ref)){
+												var indComp=generalLayout[typeComp][ref].indexOf(cname);
+												if (cname==ref || indComp!=-1 ){
+													if (stackCompToMove.indexOf(ref)==-1){
+														stackCompToMove.push(ref);
+													}
+													for (var i=0; i<generalLayout[typeComp][ref].length;i++ ){
+														if (stackCompToMove.indexOf(generalLayout[typeComp][ref][i])==-1){
+															stackCompToMove.push(generalLayout[typeComp][ref][i]);
+														}
 													}
 												}
 											}
@@ -1312,115 +1314,115 @@
 									}
 								}
 							}
+							
+							
+							addToStack(SELECTED.name);
+							for (var i=0; i<stackCompToMove.length;i++ ){
+								addToStack(stackCompToMove[i]);
+							}
+							//console.log(stackCompToMove)
+							
+							var displacement =new THREE.Vector3();
+							displacement.subVectors(SELECTED.position,initialPos );
+							displacement.y=0;
+							//console.log(displacement)
+							
+							
+							
+							function moveComp(compName){
+								for (var ref in generalLayout["merged"]){
+									if (generalLayout["merged"].hasOwnProperty(ref)){
+										if (compName==ref || generalLayout["merged"][ref].indexOf(compName)!=-1 ){
+											mustMove=true;
+											for (var j=0; j<listCompartments.length;j++ ){
+												if (objects[j].name==ref || generalLayout["merged"][ref].indexOf(objects[j].name)!=-1){	
+													objects[j].position.addVectors(stackCompInitialPos[objects[j].name],displacement);	
+												}
+											}
+										}
+									}
+								}
+								for (var ref in generalLayout["above"]){
+									if (generalLayout["above"].hasOwnProperty(ref)){
+										if (compName==ref || generalLayout["above"][ref].indexOf(compName)!=-1 ){
+											mustMove=true;
+											for (var j=0; j<listCompartments.length;j++ ){
+												if (objects[j].name==ref || generalLayout["above"][ref].indexOf(objects[j].name)!=-1){	
+													objects[j].position.addVectors(stackCompInitialPos[objects[j].name],displacement);	
+												}
+											}
+										}
+									}
+								}
+								for (var ref in generalLayout["outer"]){
+									if (generalLayout["outer"].hasOwnProperty(ref)){
+										if (compName==ref || generalLayout["outer"][ref].indexOf(compName)!=-1 ){
+											mustMove=true;
+											for (var j=0; j<listCompartments.length;j++ ){
+												if (objects[j].name==ref || generalLayout["outer"][ref].indexOf(objects[j].name)!=-1){	
+													objects[j].position.addVectors(stackCompInitialPos[objects[j].name],displacement);	
+												}
+											}
+										}
+									}
+								}
+								for (var ref in generalLayout["in"]){
+									if (generalLayout["in"].hasOwnProperty(ref)){
+										if (compName==ref || generalLayout["in"][ref].indexOf(compName)!=-1 ){
+											mustMove=true;
+											for (var j=0; j<listCompartments.length;j++ ){
+												if (objects[j].name==ref || generalLayout["in"][ref].indexOf(objects[j].name)!=-1){	
+													objects[j].position.addVectors(stackCompInitialPos[objects[j].name],displacement);	
+												}
+											}
+										}
+									}
+								}
+								for (var ref in generalLayout["satellite"]){
+									if (generalLayout["satellite"].hasOwnProperty(ref)){
+										if (compName==ref || generalLayout["satellite"][ref].indexOf(compName)!=-1 ){
+											mustMove=true;
+											for (var j=0; j<listCompartments.length;j++ ){
+												if (objects[j].name==ref || generalLayout["satellite"][ref].indexOf(objects[j].name)!=-1){	
+													objects[j].position.addVectors(stackCompInitialPos[objects[j].name],displacement);	
+												}
+											}
+										}
+									}
+								}
+							}
+							
+							for (var i=0; i<stackCompToMove.length;i++ ){
+								moveComp(stackCompToMove[i]);
+								//console.log(stackCompInitialPos)
+							}
+							
+							
+							
+							//plane.position.copy( intersects[ 0 ].point);						
+							return;
 						}
-						
-						
-						addToStack(SELECTED.name);
-						for (var i=0; i<stackCompToMove.length;i++ ){
-							addToStack(stackCompToMove[i]);
-						}
-						//console.log(stackCompToMove)
-						
-						var displacement =new THREE.Vector3();
-						displacement.subVectors(SELECTED.position,initialPos );
-						displacement.y=0;
-						//console.log(displacement)
-						
-						
-						
-						function moveComp(compName){
-							for (var ref in generalLayout["merged"]){
-								if (generalLayout["merged"].hasOwnProperty(ref)){
-									if (compName==ref || generalLayout["merged"][ref].indexOf(compName)!=-1 ){
-										mustMove=true;
-										for (var j=0; j<listCompartments.length;j++ ){
-											if (objects[j].name==ref || generalLayout["merged"][ref].indexOf(objects[j].name)!=-1){	
-												objects[j].position.addVectors(stackCompInitialPos[objects[j].name],displacement);	
-											}
-										}
+						var intersects = raycaster.intersectObjects( objects );
+						if ( intersects.length > 0 ) {						
+								if ( INTERSECTED != intersects[ 0 ].object ) {
+									if ( INTERSECTED ) {
+										INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
 									}
+									INTERSECTED = intersects[ 0 ].object;
+									INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+									//console.log(generalLayout);
+									//plane.rotation.x -= (90*(Math.PI / 180));
 								}
-							}
-							for (var ref in generalLayout["above"]){
-								if (generalLayout["above"].hasOwnProperty(ref)){
-									if (compName==ref || generalLayout["above"][ref].indexOf(compName)!=-1 ){
-										mustMove=true;
-										for (var j=0; j<listCompartments.length;j++ ){
-											if (objects[j].name==ref || generalLayout["above"][ref].indexOf(objects[j].name)!=-1){	
-												objects[j].position.addVectors(stackCompInitialPos[objects[j].name],displacement);	
-											}
-										}
-									}
-								}
-							}
-							for (var ref in generalLayout["outer"]){
-								if (generalLayout["outer"].hasOwnProperty(ref)){
-									if (compName==ref || generalLayout["outer"][ref].indexOf(compName)!=-1 ){
-										mustMove=true;
-										for (var j=0; j<listCompartments.length;j++ ){
-											if (objects[j].name==ref || generalLayout["outer"][ref].indexOf(objects[j].name)!=-1){	
-												objects[j].position.addVectors(stackCompInitialPos[objects[j].name],displacement);	
-											}
-										}
-									}
-								}
-							}
-							for (var ref in generalLayout["in"]){
-								if (generalLayout["in"].hasOwnProperty(ref)){
-									if (compName==ref || generalLayout["in"][ref].indexOf(compName)!=-1 ){
-										mustMove=true;
-										for (var j=0; j<listCompartments.length;j++ ){
-											if (objects[j].name==ref || generalLayout["in"][ref].indexOf(objects[j].name)!=-1){	
-												objects[j].position.addVectors(stackCompInitialPos[objects[j].name],displacement);	
-											}
-										}
-									}
-								}
-							}
-							for (var ref in generalLayout["satellite"]){
-								if (generalLayout["satellite"].hasOwnProperty(ref)){
-									if (compName==ref || generalLayout["satellite"][ref].indexOf(compName)!=-1 ){
-										mustMove=true;
-										for (var j=0; j<listCompartments.length;j++ ){
-											if (objects[j].name==ref || generalLayout["satellite"][ref].indexOf(objects[j].name)!=-1){	
-												objects[j].position.addVectors(stackCompInitialPos[objects[j].name],displacement);	
-											}
-										}
-									}
-								}
-							}
-						}
-						
-						for (var i=0; i<stackCompToMove.length;i++ ){
-							moveComp(stackCompToMove[i]);
-							//console.log(stackCompInitialPos)
-						}
-						
-						
-						
-						//plane.position.copy( intersects[ 0 ].point);						
-						return;
-					}
-					var intersects = raycaster.intersectObjects( objects );
-					if ( intersects.length > 0 ) {						
-							if ( INTERSECTED != intersects[ 0 ].object ) {
-								if ( INTERSECTED ) {
-									INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
-								}
-								INTERSECTED = intersects[ 0 ].object;
-								INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
-								//console.log(generalLayout);
-								//plane.rotation.x -= (90*(Math.PI / 180));
-							}
-							container.style.cursor = 'pointer';						
-					} else {
+								container.style.cursor = 'pointer';						
+						} else {
 
-						if ( INTERSECTED ) {
-							INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+							if ( INTERSECTED ) {
+								INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+							}
+							INTERSECTED = null;
+							INTERSECTED2 = null;
+							container.style.cursor = 'auto';
 						}
-						INTERSECTED = null;
-						INTERSECTED2 = null;
-						container.style.cursor = 'auto';
 					}
 				}
 			}
@@ -1429,30 +1431,32 @@
 				event.preventDefault();
 				switch ( event.button ) {
 					case 0: // left 
-						var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 ).unproject( camera );
-						var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
-						var intersects = raycaster.intersectObjects( objects );
-						if ( intersects.length > 0 ) {							
-								controls.enabled = false;
-								if(SELECTED==null){
-									initialPos.x=intersects[ 0 ].object.position.x;
-									initialPos.y=intersects[ 0 ].object.position.y;
-									initialPos.z=intersects[ 0 ].object.position.z;
-									initialName = intersects[ 0 ].object.name;
-									//console.log(initialPos)
-								}
-								SELECTED = intersects[ 0 ].object;
-								plane.position.y=SELECTED.position.y;
-								
-								// store initial position of all other compartments 
-								stackCompInitialPos={};
-								for (var i=0; i<listCompartments.length;i++ ){
-									stackCompInitialPos[objects[i].name]= new THREE.Vector3(objects[i].position.x,objects[i].position.y,objects[i].position.z);
-								}
-								
-								//var intersects = raycaster.intersectObject( plane );
-								//offset.copy( intersects[ 0 ].point ).sub( plane.position );
-								container.style.cursor = 'move';							
+						if ($('#modeSelector').val()=="0"){
+							var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 ).unproject( camera );
+							var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+							var intersects = raycaster.intersectObjects( objects );
+							if ( intersects.length > 0 ) {							
+									controls.enabled = false;
+									if(SELECTED==null){
+										initialPos.x=intersects[ 0 ].object.position.x;
+										initialPos.y=intersects[ 0 ].object.position.y;
+										initialPos.z=intersects[ 0 ].object.position.z;
+										initialName = intersects[ 0 ].object.name;
+										//console.log(initialPos)
+									}
+									SELECTED = intersects[ 0 ].object;
+									plane.position.y=SELECTED.position.y;
+									
+									// store initial position of all other compartments 
+									stackCompInitialPos={};
+									for (var i=0; i<listCompartments.length;i++ ){
+										stackCompInitialPos[objects[i].name]= new THREE.Vector3(objects[i].position.x,objects[i].position.y,objects[i].position.z);
+									}
+									
+									//var intersects = raycaster.intersectObject( plane );
+									//offset.copy( intersects[ 0 ].point ).sub( plane.position );
+									container.style.cursor = 'move';							
+							}
 						}
 					case 1: // middle
 						break;
@@ -1465,98 +1469,211 @@
 				switch ( event.button ) {
 					case 0: // left 						
 						event.preventDefault();
-						controls.enabled = true;
-						if ( INTERSECTED ) {							
-							if ( INTERSECTED2!=null ) {								
-								var prevent =false;								
-								for (var typeLink in generalLayout){
-									if (generalLayout.hasOwnProperty(typeLink)){
-										for (var ref in generalLayout[typeLink]){
-											if (generalLayout[typeLink].hasOwnProperty(ref)){
-												if ((INTERSECTED2.name==ref && generalLayout[typeLink][ref].indexOf(INTERSECTED.name)!=-1)||
-												(INTERSECTED.name==ref && generalLayout[typeLink][ref].indexOf(INTERSECTED2.name)!=-1) ||
-												(generalLayout[typeLink][ref].indexOf(INTERSECTED.name)!=-1 && generalLayout[typeLink][ref].indexOf(INTERSECTED2.name)!=-1)
-												){
-													prevent =true;
+						if ($('#modeSelector').val()=="0"){
+							controls.enabled = true;
+							if ( INTERSECTED ) {							
+								if ( INTERSECTED2!=null ) {
+								
+									var prevent =false;								
+									for (var typeLink in generalLayout){
+										if (generalLayout.hasOwnProperty(typeLink)){
+											for (var ref in generalLayout[typeLink]){
+												if (generalLayout[typeLink].hasOwnProperty(ref)){
+													if ((INTERSECTED2.name==ref && generalLayout[typeLink][ref].indexOf(INTERSECTED.name)!=-1)||
+													(INTERSECTED.name==ref && generalLayout[typeLink][ref].indexOf(INTERSECTED2.name)!=-1) ||
+													(generalLayout[typeLink][ref].indexOf(INTERSECTED.name)!=-1 && generalLayout[typeLink][ref].indexOf(INTERSECTED2.name)!=-1)
+													){
+														prevent =true;
+													}
 												}
 											}
 										}
 									}
-								}
-								if (prevent ==false){
-								
-								
-								
-								
-								//console.log(INTERSECTED.name+" dragged and dropped on :"+INTERSECTED2.name)
-								$('#layout1menu').show();
-								var vector = new THREE.Vector3(INTERSECTED2.position.x,INTERSECTED2.position.y,INTERSECTED2.position.z);
-								var pp = toXYCoords(vector	);
-					
-					
-								document.getElementById("layout1menu").style.top = (pp.y+$('#container').position().top) + 'px';
-								document.getElementById("layout1menu").style.left = (pp.x)+ 'px';
-								stopThreeJsMouseEvent=true;
-								}
-							}
-							else{
-								// adjust all metabolic nodes and lines positions
-								var indexStartNodes=maxNbComp+3;
-								nbCompartments= listCompartments.length;
-								//var indSelectedComp= SELECTED
-								var sInd=-1;
-								for (var i=0; i<listCompartments.length;i++ ){
-									if (SELECTED.name==objects[i].name){
-										sInd=i;
+									if (prevent ==false){
+									
+									
+									
+									
+									//console.log(INTERSECTED.name+" dragged and dropped on :"+INTERSECTED2.name)
+									$('#layout1menu').show();
+									var vector = new THREE.Vector3(INTERSECTED2.position.x,INTERSECTED2.position.y,INTERSECTED2.position.z);
+									var pp = toXYCoords(vector	);
+						
+						
+									document.getElementById("layout1menu").style.top = (pp.y+$('#container').position().top) + 'px';
+									document.getElementById("layout1menu").style.left = (pp.x)+ 'px';
+									stopThreeJsMouseEvent=true;
+									
 									}
-								}
-								//console.log(SELECTED.name)
-								//console.log(listCompartments.length);
-								//console.log(scene.children[indexStartNodes])
-								for (var c=indexStartNodes;c<indexStartNodes+2;c++){
-									for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
-										for (var g=0;g<nbCompartments;g++){
-											if (scene.children[c].geometry.attributes.compartment.array[h]==g){
-											//nameComp[g]
-											scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
-											scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
-											scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
-											//scene.children[c].geometry.attributes.position.array[h*3+1]+=1000;
-											//scene.children[c].geometry.attributes.position.array[h*3+2]+=1000;
+									else{
+										// adjust all metabolic nodes and lines positions
+										var indexStartNodes=maxNbComp+3;
+										nbCompartments= listCompartments.length;
+										//var indSelectedComp= SELECTED
+										var sInd=-1;
+										for (var i=0; i<listCompartments.length;i++ ){
+											if (SELECTED.name==objects[i].name){
+												sInd=i;
 											}
 										}
+										//console.log(SELECTED.name)
+										//console.log(listCompartments.length);
+										//console.log(scene.children[indexStartNodes])
+										for (var c=indexStartNodes;c<indexStartNodes+2;c++){
+											for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
+												for (var g=0;g<nbCompartments;g++){
+													if (scene.children[c].geometry.attributes.compartment.array[h]==g){
+													//nameComp[g]
+													scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
+													scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
+													scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
+													//scene.children[c].geometry.attributes.position.array[h*3+1]+=1000;
+													//scene.children[c].geometry.attributes.position.array[h*3+2]+=1000;
+													}
+												}
+											}
+											scene.children[c].geometry.attributes.position.needsUpdate = true;
+										}
+										var iv=0;
+										for ( var i = 0; i < segments; i ++ ) {
+											var t1 = metabolicNodes[metabolicEdges[i][0]][6]
+											var t2 = metabolicNodes[metabolicEdges[i][1]][6]
+											//console.log(t1)
+											//console.log(t2)
+											//var ivList=[]
+											var doIt=0
+											if (t1==2){
+												//console.log(idMap[jsonObj2[i][0]][1])
+												scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+												scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;					
+												scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+												
+												iv++;
+											}
+											else if (t1==4){
+												//console.log(idMap[jsonObj2[i][0]][1])
+												scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+												scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
+												scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+												iv++;
+											}
+											if (t2 ==2){
+												scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+												scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;						
+												scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;	
+												iv++;
+											}
+											else if (t2 ==4){
+												scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+												scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;
+												scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;				
+												iv++;
+											}
+											
+										}
+										scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
 									}
-									scene.children[c].geometry.attributes.position.needsUpdate = true;
-								}
-							}
-							
-							
-							
-							SELECTED = null;
-							myLayout["compartments_layout"]["structure"]=generalLayout;
-							var layoutdata={};
-							for (var j=0; j<listCompartments.length;j++ ){
-								layoutdata[objects[j].name]={"position":new THREE.Vector3(objects[j].position.x,objects[j].position.y,objects[j].position.z), "scale":new THREE.Vector3(objects[j].scale.x,objects[j].scale.y,objects[j].scale.z)}
-							}
-							myLayout["compartments_layout"]["spatial-layout"]=layoutdata;
-							//console.log(myLayout)
-							
-							
-							
-							//var c=3;
-							//for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
-							//	for (var g=0;g<nbOrganelles;g++){
-							//		if (scene.children[c].geometry.attributes.compartment.array[h]==g){
-									//console.log(g)
-							//			scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
-							//			scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
-							//		}
 									
-							//	}
-							//}
-							//scene.children[c].geometry.attributes.position.needsUpdate = true;
-						}						
-						container.style.cursor = 'auto';
+									
+								}
+								else{
+									// adjust all metabolic nodes and lines positions
+									var indexStartNodes=maxNbComp+3;
+									nbCompartments= listCompartments.length;
+									//var indSelectedComp= SELECTED
+									var sInd=-1;
+									for (var i=0; i<listCompartments.length;i++ ){
+										if (SELECTED.name==objects[i].name){
+											sInd=i;
+										}
+									}
+									//console.log(SELECTED.name)
+									//console.log(listCompartments.length);
+									//console.log(scene.children[indexStartNodes])
+									for (var c=indexStartNodes;c<indexStartNodes+2;c++){
+										for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
+											for (var g=0;g<nbCompartments;g++){
+												if (scene.children[c].geometry.attributes.compartment.array[h]==g){
+												//nameComp[g]
+												scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
+												scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
+												scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
+												//scene.children[c].geometry.attributes.position.array[h*3+1]+=1000;
+												//scene.children[c].geometry.attributes.position.array[h*3+2]+=1000;
+												}
+											}
+										}
+										scene.children[c].geometry.attributes.position.needsUpdate = true;
+									}
+									var iv=0;
+									for ( var i = 0; i < segments; i ++ ) {
+										var t1 = metabolicNodes[metabolicEdges[i][0]][6]
+										var t2 = metabolicNodes[metabolicEdges[i][1]][6]
+										//console.log(t1)
+										//console.log(t2)
+										//var ivList=[]
+										var doIt=0
+										if (t1==2){
+											//console.log(idMap[jsonObj2[i][0]][1])
+											scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+											scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;					
+											scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+											
+											iv++;
+										}
+										else if (t1==4){
+											//console.log(idMap[jsonObj2[i][0]][1])
+											scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+											scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
+											scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+											iv++;
+										}
+										if (t2 ==2){
+											scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+											scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;						
+											scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;	
+											iv++;
+										}
+										else if (t2 ==4){
+											scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+											scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;
+											scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;				
+											iv++;
+										}
+										
+									}
+									scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
+								}
+								
+								
+								
+								SELECTED = null;
+								myLayout["compartments_layout"]["structure"]=generalLayout;
+								var layoutdata={};
+								for (var j=0; j<listCompartments.length;j++ ){
+									layoutdata[objects[j].name]={"position":new THREE.Vector3(objects[j].position.x,objects[j].position.y,objects[j].position.z), "scale":new THREE.Vector3(objects[j].scale.x,objects[j].scale.y,objects[j].scale.z)}
+								}
+								myLayout["compartments_layout"]["spatial-layout"]=layoutdata;
+								//console.log(myLayout)
+								
+								
+								
+								//var c=3;
+								//for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
+								//	for (var g=0;g<nbOrganelles;g++){
+								//		if (scene.children[c].geometry.attributes.compartment.array[h]==g){
+										//console.log(g)
+								//			scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
+								//			scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
+								//		}
+										
+								//	}
+								//}
+								//scene.children[c].geometry.attributes.position.needsUpdate = true;
+							}
+							
+							container.style.cursor = 'auto';
+						}
 					case 1: // middle
 						break;
 					case 2: // right
@@ -1593,21 +1710,35 @@
 						document.getElementById("txt"+i).style.top = 4000 + 'px';
 						document.getElementById("txt"+i).style.left = 4000+ 'px';
 					}
-					for (el in list_merged_chains){
-						if (list_merged_chains.hasOwnProperty(el)){
-							if (objects[i].name==el){
+					for (var ref in generalLayout["merged"]){
+						if (generalLayout["merged"].hasOwnProperty(ref)){
+							if (objects[i].name==ref){
 								document.getElementById("txt"+i).style.top = (pp.y+poscont.position().top+(0*12)) + 'px';
 								document.getElementById("txt"+i).style.left = (pp.x +20)+ 'px';
 							}
-							for (var j=0;j<list_merged_chains[el].length;j++){
-								if (objects[i].name==list_merged_chains[el][j]){
-									document.getElementById("txt"+i).style.top = (pp.y+poscont.position().top+((j+1)*12)) + 'px';
-									document.getElementById("txt"+i).style.left = (pp.x +20)+ 'px';
+							for (var j=0;j<generalLayout["merged"][ref].length;j++){
+								if (objects[i].name==generalLayout["merged"][ref][j]){
+									 document.getElementById("txt"+i).style.top = (pp.y+poscont.position().top+((j+1)*12)) + 'px';
+									 document.getElementById("txt"+i).style.left = (pp.x +20)+ 'px';
 								}
-								
 							}
 						}
-					}					
+					}
+					// for (el in list_merged_chains){
+						// if (list_merged_chains.hasOwnProperty(el)){
+							// if (objects[i].name==el){
+								// document.getElementById("txt"+i).style.top = (pp.y+poscont.position().top+(0*12)) + 'px';
+								// document.getElementById("txt"+i).style.left = (pp.x +20)+ 'px';
+							// }
+							// for (var j=0;j<list_merged_chains[el].length;j++){
+								// if (objects[i].name==list_merged_chains[el][j]){
+									// document.getElementById("txt"+i).style.top = (pp.y+poscont.position().top+((j+1)*12)) + 'px';
+									// document.getElementById("txt"+i).style.left = (pp.x +20)+ 'px';
+								// }
+								
+							// }
+						// }
+					// }					
 					document.getElementById("txt"+i).innerHTML = objects[i].name;			
 				}			
 				renderer.render( scene, camera );
@@ -1665,8 +1796,13 @@
 				listCompartments.push([dt[i]['c_id'],dt[i]['c_name']]);
 				
 			}
+			nbCompartments= listCompartments.length;
+			compIds=[];
+			for (var i=0; i<listCompartments.length;i++){
+				compIds.push(listCompartments[i][0]);
+			}
 			// delete meshes
-			for ( var i = 0; i < maxNbComp; i ++ ) {
+			for ( var i = nbCompartments; i < maxNbComp; i ++ ) {
 					objects[i].position.x = -99999999;
 					objects[i].position.y = -99999999;
 					objects[i].position.z = -99999999;
@@ -1675,17 +1811,17 @@
 					txtComp[i].style.top = 4000 + 'px';
 					txtComp[i].style.left = 4000 + 'px';
 			}
-			for ( var i = 0; i < listCompartments.length; i ++ ) {
+			// for ( var i = 0; i < listCompartments.length; i ++ ) {
 			
-				objects[i].position.x = 0;
-				objects[i].position.y = 0;
-				objects[i].position.z = 0;
+				// objects[i].position.x = 0;
+				// objects[i].position.y = 0;
+				// objects[i].position.z = 0;
 				
-				objects[i].name=listCompartments[i][0]+" "+listCompartments[i][1];
-				objects[i].castShadow = true;
-				objects[i].receiveShadow = true;	
+				// objects[i].name=listCompartments[i][0]+" "+listCompartments[i][1];
+				// objects[i].castShadow = true;
+				// objects[i].receiveShadow = true;	
 				
-			}
+			// }
 			
 			//console.log(dt.length);
 			
@@ -1693,6 +1829,7 @@
 		}
 	  },
 	  afterChange: function(changes, source) {
+		//console.log(changes)
 		var dt = this.getData();		
 		if (dt[0]['c_id']!=null){
 			listCompartments=[];
@@ -1700,33 +1837,102 @@
 				listCompartments.push([dt[i]['c_id'],dt[i]['c_name']]);
 				
 			}
+			nbCompartments= listCompartments.length;
 			compIds=[];
 			for (var i=0; i<listCompartments.length;i++){
 				compIds.push(listCompartments[i][0]);
 			}
-			// delete meshes
-			for ( var i = 0; i < maxNbComp; i ++ ) {
-					objects[i].position.x = -9999999;
-					objects[i].position.y = -9999999;
-					objects[i].position.z = -9999999;
-					objects[i].name="";
-					txtComp[i].innerHTML = 'hello ';
-					txtComp[i].style.top = 4000 + 'px';
-					txtComp[i].style.left = 4000 + 'px';
-			}
+			
+			
+			
 			for ( var i = 0; i < listCompartments.length; i ++ ) {
-				objects[i].position.x = 0;
-				objects[i].position.y = 0;
-				objects[i].position.z = 0;
-				objects[i].name=listCompartments[i][0]+" "+listCompartments[i][1];
-				objects[i].castShadow = true;
-				objects[i].receiveShadow = true;	
+				if (!objects[i].name){
+					objects[i].position.x = 0;
+					objects[i].position.y = 0;
+					objects[i].position.z = 0;
+					objects[i].name=listCompartments[i][0]+" "+listCompartments[i][1];
+					objects[i].castShadow = true;
+					objects[i].receiveShadow = true;	
+				}
 				
 			}
+			
+			nameComp=[];
+			mapComp = {'-1':-1};
+			
+			for (var i=0;i<listCompartments.length;i++){
+				mapComp[listCompartments[i][0]]=i;
+				nameComp.push(listCompartments[i][1]);
+			}
+			
+			var indexStartNodes=maxNbComp+3;
+			
+			
+			
+			
 			//console.log(listCompartments);
 			//console.log(dt.length);
 			
-			selectedMetabolicData[0]=listCompartments;
+			// selectedMetabolicData[0]=listCompartments;
+			// var indexStartNodes=maxNbComp+3;
+			// nbCompartments= listCompartments.length;
+			// stackCompInitialPos={};
+			// for (var i=0; i<listCompartments.length;i++ ){
+				// stackCompInitialPos[objects[i].name]= new THREE.Vector3(objects[i].position.x,objects[i].position.y,objects[i].position.z);
+			// }
+			// for (var c=indexStartNodes;c<indexStartNodes+2;c++){
+				// for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
+					// for (var g=0;g<nbCompartments;g++){
+						// if (scene.children[c].geometry.attributes.compartment.array[h]==g){
+						// //nameComp[g]
+						// scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
+						// scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
+						// scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
+						// //scene.children[c].geometry.attributes.position.array[h*3+1]+=1000;
+						// //scene.children[c].geometry.attributes.position.array[h*3+2]+=1000;
+						// }
+					// }
+				// }
+				// scene.children[c].geometry.attributes.position.needsUpdate = true;
+			// }
+			// var iv=0;
+			// for ( var i = 0; i < segments; i ++ ) {
+				// var t1 = metabolicNodes[metabolicEdges[i][0]][6]
+				// var t2 = metabolicNodes[metabolicEdges[i][1]][6]
+				// //console.log(t1)
+				// //console.log(t2)
+				// //var ivList=[]
+				// var doIt=0
+				// if (t1==2){
+					// //console.log(idMap[jsonObj2[i][0]][1])
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;					
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+					
+					// iv++;
+				// }
+				// else if (t1==4){
+					// //console.log(idMap[jsonObj2[i][0]][1])
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+					// iv++;
+				// }
+				// if (t2 ==2){
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;						
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;	
+					// iv++;
+				// }
+				// else if (t2 ==4){
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;				
+					// iv++;
+				// }
+				
+			// }
+			// scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
 			//console.log(selectedMetabolicData[0]);
 		}
 		
@@ -1778,6 +1984,74 @@
 			selectedMetabolicData[1][dt[0][0]][1]=dt[0][1];
 			// change compartment
 			selectedMetabolicData[1][dt[0][0]][3]=dt[0][2];
+			
+			var indexStartNodes=maxNbComp+3;
+			nbCompartments= listCompartments.length;
+			
+			nameComp=[];
+			mapComp = {'-1':-1};
+			
+			for (var i=0;i<listCompartments.length;i++){
+				mapComp[listCompartments[i][0]]=i;
+				nameComp.push(listCompartments[i][1]);
+			}
+			
+			//scene.children[indexStartNodes].geometry.attributes.compartment.array[h]
+	
+			for (var c=indexStartNodes;c<indexStartNodes+2;c++){
+				for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
+					for (var g=0;g<nbCompartments;g++){
+						if (scene.children[c].geometry.attributes.compartment.array[h]==g){
+						//nameComp[g]
+						scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
+						scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
+						scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
+						//scene.children[c].geometry.attributes.position.array[h*3+1]+=1000;
+						//scene.children[c].geometry.attributes.position.array[h*3+2]+=1000;
+						}
+					}
+				}
+				scene.children[c].geometry.attributes.position.needsUpdate = true;
+			}
+			var iv=0;
+			for ( var i = 0; i < segments; i ++ ) {
+				var t1 = metabolicNodes[metabolicEdges[i][0]][6]
+				var t2 = metabolicNodes[metabolicEdges[i][1]][6]
+				//console.log(t1)
+				//console.log(t2)
+				//var ivList=[]
+				var doIt=0
+				if (t1==2){
+					//console.log(idMap[jsonObj2[i][0]][1])
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;					
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+					
+					iv++;
+				}
+				else if (t1==4){
+					//console.log(idMap[jsonObj2[i][0]][1])
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+					iv++;
+				}
+				if (t2 ==2){
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;						
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;	
+					iv++;
+				}
+				else if (t2 ==4){
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;				
+					iv++;
+				}
+				
+			}
+			scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
+			
 		}
 		
 		
@@ -2281,37 +2555,70 @@
 		var indexStartNodes=maxNbComp+3;
 		nbCompartments= listCompartments.length;
 		//var indSelectedComp= SELECTED
-		var sInd=-1;
-		for (var i=0; i<listCompartments.length;i++ ){
-			if (cName==objects[i].name){
-				sInd=i;
-			}
-		}
+		
 		//console.log(SELECTED.name)
 		//console.log(listCompartments.length);
 		//console.log(scene.children[indexStartNodes])
 		for (var c=indexStartNodes;c<indexStartNodes+2;c++){
 			for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
-				//for (var g=0;g<nbCompartments;g++){
-					if (scene.children[c].geometry.attributes.compartment.array[h]==sInd){
+				for (var g=0;g<nbCompartments;g++){
+					if (scene.children[c].geometry.attributes.compartment.array[h]==g){
 					//nameComp[g]
-					scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[sInd].position.x-initialPos.x;
-					scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[sInd].position.y-initialPos.y;
-					scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[sInd].position.z-initialPos.z;
+					scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
+					scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
+					scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
 					//scene.children[c].geometry.attributes.position.array[h*3+1]+=1000;
 					//scene.children[c].geometry.attributes.position.array[h*3+2]+=1000;
 					}
-				//}
+				}
 			}
 			scene.children[c].geometry.attributes.position.needsUpdate = true;
 		}
+		var iv=0;
+		for ( var i = 0; i < segments; i ++ ) {
+			var t1 = metabolicNodes[metabolicEdges[i][0]][6]
+			var t2 = metabolicNodes[metabolicEdges[i][1]][6]
+			//console.log(t1)
+			//console.log(t2)
+			//var ivList=[]
+			var doIt=0
+			if (t1==2){
+				//console.log(idMap[jsonObj2[i][0]][1])
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;					
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+				
+				iv++;
+			}
+			else if (t1==4){
+				//console.log(idMap[jsonObj2[i][0]][1])
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+				iv++;
+			}
+			if (t2 ==2){
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;						
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;	
+				iv++;
+			}
+			else if (t2 ==4){
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;				
+				iv++;
+			}
+			
+		}
+		scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
 		//console.log(myLayout);
 	}
 	
 	$("#container2").css({top:  $("#mtnTable").position().top + $("#mtnTable").height()+40});
 	
 	function runModeSelector(){
-		console.log($('#modeSelector').val());
+		//console.log($('#modeSelector').val());
 	}
 	
 	</script>	
