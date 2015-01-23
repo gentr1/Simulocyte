@@ -181,7 +181,7 @@
 	var initialName="";
 	var spacing=1650;
 	var radiusComp=550;
-	var yStartDisplacement=0;
+	var yStartDisplacement=100;
 	
 	var selectedMetabolicData = <%-JSON.stringify(mtb.file)%>
 	//console.log("getting metabolic data from default file recon2");
@@ -197,6 +197,8 @@
 	var compLayout={"merged":[],"above":[], "outer":[], "satellite":[], "in":[]};
 	var stackCompToMove=[];
 	var stackCompInitialPos={};
+	
+	
 	//console.log(listCompartments.length)
 	for (var i=0;i<maxNbComp;i++){
 		txtComp[i] = document.createElement('div');
@@ -392,7 +394,7 @@
 			container = document.getElementById( 'container' );
 			//document.body.appendChild( container );
 
-			camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 100000 );
+			camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000000 );
 			camera.position.z = -8000;
 			camera.position.y = 5000;
 			//camera.position.x = -800;
@@ -404,7 +406,7 @@
 			light.position.set( 0, 5000, 20000 );
 			light.castShadow = true;
 
-			light.shadowCameraNear = 200;
+			light.shadowCameraNear = 2000;
 			light.shadowCameraFar = camera.far;
 			light.shadowCameraFov = 50;
 
@@ -420,7 +422,7 @@
 			var geometry = new THREE.SphereGeometry( radiusComp, 50, 15 );
 
 			for ( var i = 0; i < maxNbComp; i ++ ) {
-				var object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: 0x777777, side: THREE.BackSide}));//, transparent: true, opacity: 0.5} ) );
+				var object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: 0x777777, side: THREE.BackSide}));//THREE.BackSide}));//, transparent: true, opacity: 0.5} ) );
 				//var object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: (1.0-((i/maxNbComp)*0.5)) * 0xffffff, side: THREE.BackSide}));
 				object.material.ambient = object.material.color;
 				object.position.x = -99999999;
@@ -436,9 +438,11 @@
 				objects[i].position.y = 0;
 				objects[i].position.z = 0;
 				objects[i].name=listCompartments[i][0]+" "+listCompartments[i][1];
+				stackCompInitialPos[objects[i].name]= new THREE.Vector3(objects[i].position.x,objects[i].position.y,objects[i].position.z);
 				//objects[i].castShadow = true;
 				//objects[i].receiveShadow = true;	
 			}
+			
 			
 			uniforms = {
 				time: { type: "f", value: 1.0 },
@@ -1656,7 +1660,9 @@
 								myLayout["compartments_layout"]["spatial-layout"]=layoutdata;
 								//console.log(myLayout)
 								
-								
+								for ( var i = 0; i < listCompartments.length; i ++ ) {
+									stackCompInitialPos[objects[i].name]= new THREE.Vector3(objects[i].position.x,objects[i].position.y,objects[i].position.z);
+								}
 								
 								//var c=3;
 								//for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
@@ -1851,8 +1857,8 @@
 					objects[i].position.y = 0;
 					objects[i].position.z = 0;
 					objects[i].name=listCompartments[i][0]+" "+listCompartments[i][1];
-					objects[i].castShadow = true;
-					objects[i].receiveShadow = true;	
+					//objects[i].castShadow = true;
+					//objects[i].receiveShadow = true;	
 				}
 				
 			}
@@ -1867,7 +1873,10 @@
 			
 			var indexStartNodes=maxNbComp+3;
 			
-			
+			for ( var i = 0; i < listCompartments.length; i ++ ) {
+				stackCompInitialPos[objects[i].name]= new THREE.Vector3(objects[i].position.x,objects[i].position.y,objects[i].position.z);
+				objects[i].name=listCompartments[i][0]+" "+listCompartments[i][1];
+			}
 			
 			
 			//console.log(listCompartments);
@@ -1981,9 +1990,13 @@
 		if (changes && changes[0] && changes[0][2]){			
 			var dt = this.getData(changes[0][0],0,0,2);			
 			// change name			
-			selectedMetabolicData[1][dt[0][0]][1]=dt[0][1];
+			selectedMetabolicData[1][dt[changes[0][0]][0]][1]=dt[0][1];
 			// change compartment
-			selectedMetabolicData[1][dt[0][0]][3]=dt[0][2];
+			selectedMetabolicData[1][dt[changes[0][0]][0]][3]=dt[0][2];
+			//console.log(changes)
+			//console.log(dt)
+			//console.log("new name: "+dt[changes[0][0]][1])
+			//console.log("new comp: "+dt[changes[0][0]][2])
 			
 			var indexStartNodes=maxNbComp+3;
 			nbCompartments= listCompartments.length;
@@ -1996,16 +2009,38 @@
 				nameComp.push(listCompartments[i][1]);
 			}
 			
+			//idMap[bw]=[2,bv];
 			//scene.children[indexStartNodes].geometry.attributes.compartment.array[h]
+			var oldComp;
+			if (idMap[dt[changes[0][0]][0]] && idMap[dt[changes[0][0]][0]][0]==2){
+				//console.log(dt[0][2])
+				//console.log(mapComp[dt[0][2]]);
+				//console.log (scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[0][0]][1]]);
+				oldComp = scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[changes[0][0]][0]][1]];
+				scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[changes[0][0]][0]][1]]=mapComp[dt[changes[0][0]][2]];
+				scene.children[indexStartNodes].geometry.attributes.compartment.needsUpdate = true;
+			}
+			for ( var i = 0; i < listCompartments.length; i ++ ) {
+				stackCompInitialPos[objects[i].name]= new THREE.Vector3(objects[i].position.x,objects[i].position.y,objects[i].position.z);
+				objects[i].name=listCompartments[i][0]+" "+listCompartments[i][1];
+			}
+			
 	
 			for (var c=indexStartNodes;c<indexStartNodes+2;c++){
 				for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
 					for (var g=0;g<nbCompartments;g++){
 						if (scene.children[c].geometry.attributes.compartment.array[h]==g){
+							if (g==mapComp[dt[changes[0][0]][2]] && h==idMap[dt[changes[0][0]][0]][1]){
+								scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x+(stackCompInitialPos[objects[g].name].x-stackCompInitialPos[objects[oldComp].name].x);//+stackCompInitialPos[objects[oldComp].name].x;
+								scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y+(stackCompInitialPos[objects[g].name].y-stackCompInitialPos[objects[oldComp].name].y);//+stackCompInitialPos[objects[oldComp].name].y;
+								scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z+(stackCompInitialPos[objects[g].name].z-stackCompInitialPos[objects[oldComp].name].z);//+stackCompInitialPos[objects[oldComp].name].z;
+							}
+							else{
 						//nameComp[g]
 						scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
 						scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
 						scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
+						}
 						//scene.children[c].geometry.attributes.position.array[h*3+1]+=1000;
 						//scene.children[c].geometry.attributes.position.array[h*3+2]+=1000;
 						}
