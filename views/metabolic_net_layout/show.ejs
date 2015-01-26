@@ -182,7 +182,7 @@
 	var spacing=1650;
 	var radiusComp=550;
 	var yStartDisplacement=100;
-	
+	var closest;
 	var selectedMetabolicData = <%-JSON.stringify(mtb.file)%>
 	//console.log("getting metabolic data from default file recon2");
 	var listCompartments=selectedMetabolicData[0];
@@ -197,7 +197,19 @@
 	var compLayout={"merged":[],"above":[], "outer":[], "satellite":[], "in":[]};
 	var stackCompToMove=[];
 	var stackCompInitialPos={};
-	
+	var positionContainer;
+	var text1 = document.createElement('div');
+	text1.style.position = 'absolute';
+	text1.style.width = 100;
+	text1.style.height = 100;
+	text1.style.color = "black";
+	text1.style.backgroundColor = "#FFFFCC";
+	//text1.innerHTML = ' <input type="text" name="first_name" value="" maxlength="100" />';
+	text1.innerHTML = 'hello ';
+	text1.style.top = 2000 + 'px';
+	text1.style.left = 2000 + 'px';
+	//text1.style.zIndex = -1;
+	document.body.appendChild(text1);
 	
 	//console.log(listCompartments.length)
 	for (var i=0;i<maxNbComp;i++){
@@ -222,6 +234,8 @@
 		document.body.appendChild(txtComp[i]);
 		
 	}
+	var text1PreviousPos= new THREE.Vector3( 2000, 2000, 1 );
+	var text1PreviousString="";
 	
 	var container, stats;
 	var camera, controls, scene, renderer, uniforms;
@@ -229,8 +243,8 @@
 
 	var mouse = new THREE.Vector2(),
 	offset = new THREE.Vector3(),
-	INTERSECTED,INTERSECTED2, SELECTED;
-	
+	INTERSECTED,INTERSECTED2, SELECTED,INTERSECTED_P;
+	INTERSECTED_P=-1;
 	var myLayout = <%-JSON.stringify(mtnl.layout)%>
 		
 	
@@ -297,6 +311,8 @@
 	var reactionMap=[];
 	var linesMap=[];
 	
+	var NodeEditingPlane;
+	var moveNode=false;
 	
 	init();
 	animate();
@@ -404,17 +420,17 @@
 
 			var light = new THREE.SpotLight( 0xffffff, 2.5 );
 			light.position.set( 0, 5000, 20000 );
-			light.castShadow = true;
+			//light.castShadow = true;
+			
+			//light.shadowCameraNear = 2000;
+			//light.shadowCameraFar = camera.far;
+			//light.shadowCameraFov = 50;
 
-			light.shadowCameraNear = 2000;
-			light.shadowCameraFar = camera.far;
-			light.shadowCameraFov = 50;
+			//light.shadowBias = -0.00022;
+			//light.shadowDarkness = 0.5;
 
-			light.shadowBias = -0.00022;
-			light.shadowDarkness = 0.5;
-
-			light.shadowMapWidth = 2048;
-			light.shadowMapHeight = 2048;
+			//light.shadowMapWidth = 2048;
+			//light.shadowMapHeight = 2048;
 
 			scene.add( light );
 
@@ -525,7 +541,7 @@
 			PointCloud1.dynamic = true;
 			PointCloud1.sortParticles = true;
 			PointCloud1.geometry.__dirtyVertices = true;
-			
+			PointCloud1.frustumCulled = false;
 			scene.add( PointCloud1 );
 			
 			/////////////////////////////////////////////
@@ -751,7 +767,7 @@
 			PointCloud2.dynamic = true;
 			PointCloud2.sortParticles = true;
 			PointCloud2.geometry.__dirtyVertices = true;
-			
+			PointCloud2.frustumCulled = false;
 			scene.add( PointCloud2 );
 			
 			/////////////////////////////////////////////
@@ -835,10 +851,30 @@
 			bgeometryL1.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentL1, 2 ) );
 			bgeometryL1.computeBoundingSphere();
 			meshL1 = new THREE.Line( bgeometryL1, linesShaderMaterial,THREE.LinePieces );
+			meshL1.frustumCulled = false;
 			scene.add( meshL1 );
 			
+			var spriteMaterial = new THREE.SpriteMaterial( { 
+				map: new THREE.ImageUtils.loadTexture( '/images/glow.png' ), 
+				useScreenCoordinates: false, //alignment: THREE.SpriteAlignment.center,
+				color: 0xff0000, transparent: false, blending: THREE.AdditiveBlending
+			});
+			sprite = new THREE.Sprite( spriteMaterial );
+			sprite.scale.set(8, 8, 8);
+			//crateGlow.add(sprite); // this centers the glow at the mesh
+			//if (marker==0){
+			sprite.position.set(-50000,-10000,10000);
+			//sprite.transparent=true;
+			//}		
+			scene.add( sprite );
 			
-			
+			NodeEditingPlane= new THREE.Mesh(
+				new THREE.PlaneBufferGeometry( 20000, 20000, 8, 8 ),
+				new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.0, transparent: true,side: THREE.DoubleSide } )
+			);
+			NodeEditingPlane.rotation.x -= (90*(Math.PI / 180));
+			NodeEditingPlane.visible = false;
+			scene.add( NodeEditingPlane );
 			
 			renderer = new THREE.WebGLRenderer( { antialias: true } );
 			//renderer.setClearColor( 0xf5f5f5 );
@@ -850,7 +886,7 @@
 			renderer.shadowMapType = THREE.PCFShadowMap;
 
 			container.appendChild( renderer.domElement );
-
+			positionContainer = $("#container").position();
 			controls = new THREE.OrbitControls( camera, renderer.domElement) ;
 			
 			controls.damping = 0.2;
@@ -1429,6 +1465,144 @@
 						}
 					}
 				}
+				if ($('#modeSelector').val()=="1"){
+					event.preventDefault();
+					mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+					mouse.y = - ( (event.clientY-$("#container").position().top+window.pageYOffset) / window.innerHeight ) * 2 + 1;
+					var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 ).unproject( camera );
+					var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+					
+					
+					
+						var indexStartNodes=maxNbComp+3;
+						var particles;
+						var distance=99999999;
+						var listretPointsIndexes=[];
+						var listretPointsDistances=[];	
+						var listretPointsTypes=[];	
+						var listretPointsIndexesL=[];
+						var listretPointsDistancesL=[];	
+						var listretPointsTypesL=[];	
+						var point = new THREE.Vector3(0,0,0);		
+						var myray=raycaster.ray;
+						var point1 = new THREE.Vector3(0,0,0);	
+						var point2 = new THREE.Vector3(0,0,0);
+						for(var i=indexStartNodes, ii=indexStartNodes+2;i<ii;i++){
+							if (scene.children[i] instanceof THREE.PointCloud){
+								var a1 = scene.children[i].geometry.attributes.position.array;
+								var a2 = scene.children[i].geometry.attributes.size.array;
+								particles = a2.length;
+								var a3 = scene.children[i].geometry.attributes.ca.array;
+								for(var j=0;j<particles;j++){
+									point.x = (a1[j*3]);
+									point.y = (a1[j*3+1]);
+									point.z = (a1[j*3+2]);
+									distance = myray.distanceToPoint(point);
+									if ( distance <=2 ) {
+										listretPointsIndexes.push(j);
+										listretPointsDistances.push(distance);	
+										listretPointsTypes.push(i);	
+									}
+								}
+							}
+							var h1 = listretPointsDistances.length;
+							var myr;
+							var mymin = Math.min.apply(Math, listretPointsDistances);
+							var v1=0;
+							while(h1--){
+								if (listretPointsDistances[h1]==mymin){
+									myr=h1;
+										}
+										if (myr==h1)
+											break;
+										
+							}						
+							closest = listretPointsIndexes[myr];
+							if (moveNode==true && INTERSECTED_P>-1){
+								if (idMap[INTERSECTED_P]){
+									
+									var indexStartNodes=maxNbComp+3;
+									if (idMap[INTERSECTED_P][0]==2){
+										NodeEditingPlane.position.y= scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1];
+										NodeEditingPlane.updateMatrixWorld( true );
+										var intersects = raycaster.intersectObject( NodeEditingPlane );	
+										scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0]=intersects[ 0 ].point.x;
+										//scene.children[23].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1]=intersects[ 0 ].point.y;
+										scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2]=intersects[ 0 ].point.z;
+										scene.children[indexStartNodes].geometry.attributes.position.needsUpdate = true;
+										//console.log(scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0])
+									}
+									if (idMap[INTERSECTED_P][0]==4){
+										NodeEditingPlane.position.y= scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1];
+										NodeEditingPlane.updateMatrixWorld( true );
+										var intersects = raycaster.intersectObject( NodeEditingPlane );	
+										scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0]=intersects[ 0 ].point.x;
+										//scene.children[23].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1]=intersects[ 0 ].point.y;
+										scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2]=intersects[ 0 ].point.z;
+										scene.children[indexStartNodes+1].geometry.attributes.position.needsUpdate = true;
+										//console.log(scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0])
+									}
+									
+									
+									//console.log(intersects[ 0 ].point)		
+								}		
+							}
+							if (closest>=0){
+							
+								//console.log(closest)
+								//console.log(myr)
+								//console.log(listretPointsTypes[myr])
+								if (listretPointsTypes[myr]>=0){
+									sprite.position.set(scene.children[listretPointsTypes[myr]].geometry.attributes.position.array[closest*3],scene.children[listretPointsTypes[myr]].geometry.attributes.position.array[closest*3+1],scene.children[listretPointsTypes[myr]].geometry.attributes.position.array[closest*3+2]);	
+									var pp = toXYCoords(sprite.position);
+									var dat;
+									if (listretPointsTypes[myr]==indexStartNodes)
+										dat=typesMap[2][closest];
+									if (listretPointsTypes[myr]==(indexStartNodes+1))
+										dat=typesMap[4][closest];
+									
+									//if (INTERSECTED_P>-1){
+									
+									//else{
+										INTERSECTED_P=dat;
+									//}
+									//console.log(INTERSECTED_P)
+									if ((text1PreviousPos.x != pp.x) && (text1PreviousPos.y != pp.y)){
+										text1.style.top = (positionContainer.top )+ 'px';								
+										text1.style.left = (positionContainer.left+100)+ 'px';
+										text1PreviousPos = pp;
+										var stringTxt="";
+										//console.log(listretPointsTypes[myr])
+										var dat;
+										if (listretPointsTypes[myr]==indexStartNodes)
+											dat=typesMap[2][closest];
+										if (listretPointsTypes[myr]==(indexStartNodes+1))
+											dat=typesMap[4][closest];
+										
+										if(metabolicNodes[dat]){
+											
+											stringTxt = metabolicNodes[dat][0]+" "+metabolicNodes[dat][2];
+											if (metabolicNodes[dat][4][1] && metabolicNodes[dat][4][1][0]){
+												stringTxt = metabolicNodes[dat][0]+" "+metabolicNodes[dat][2]+" ("+metabolicNodes[dat][4][1][0]+")";
+											}
+										}
+										if (text1PreviousString!=stringTxt){
+											text1.innerHTML=stringTxt;
+											text1PreviousString=stringTxt;
+										}
+									}
+								
+								
+								}
+								container.style.cursor = 'pointer';	
+							}
+							else{
+								//INTERSECTED_P=-1;
+								container.style.cursor = 'auto';
+							}
+						}
+					
+				}
 			}
 
 			function onDocumentMouseDown( event ) {				
@@ -1462,6 +1636,54 @@
 									container.style.cursor = 'move';							
 							}
 						}
+						if ($('#modeSelector').val()=="1"){
+							if (INTERSECTED_P!=-1){
+								controls.enabled = false;
+								container.style.cursor = 'move';
+								moveNode=true;
+								//var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 ).unproject( camera );
+								//var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+								//NodeEditingPlane.position.y= 
+								// if (idMap[INTERSECTED_P]){
+									
+									// var indexStartNodes=maxNbComp+3;
+									// if (idMap[INTERSECTED_P][0]==2){
+										// NodeEditingPlane.position.y= scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1];
+										// NodeEditingPlane.updateMatrixWorld( true );
+										// var intersects = raycaster.intersectObject( NodeEditingPlane );	
+										// scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0]=intersects[ 0 ].point.x;
+										// //scene.children[23].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1]=intersects[ 0 ].point.y;
+										// scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2]=intersects[ 0 ].point.z;
+										// scene.children[indexStartNodes].geometry.attributes.position.needsUpdate = true;
+										// //console.log(scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0])
+									// }
+									// if (idMap[INTERSECTED_P][0]==4){
+										// NodeEditingPlane.position.y= scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1];
+										// NodeEditingPlane.updateMatrixWorld( true );
+										// var intersects = raycaster.intersectObject( NodeEditingPlane );	
+										// scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0]=intersects[ 0 ].point.x;
+										// //scene.children[23].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1]=intersects[ 0 ].point.y;
+										// scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2]=intersects[ 0 ].point.z;
+										// scene.children[indexStartNodes+1].geometry.attributes.position.needsUpdate = true;
+										// //console.log(scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0])
+									// }
+									
+									
+									// //console.log(intersects[ 0 ].point)		
+								// }								
+								//var mustMove=true;
+								//scene.children[listretPointsTypes[myr]].geometry.attributes.position.array[closest*3],scene.children[listretPointsTypes[myr]].geometry.attributes.position.array[closest*3+1],scene.children[listretPointsTypes[myr]].geometry.attributes.position.array[closest*3+2]);
+							
+							
+								//if( mustMove==true){
+								//SELECTED.position.copy( intersects[ 0 ].point );
+								
+								
+								//}
+							}
+							//INTERSECTED_P=null;
+							
+						}
 					case 1: // middle
 						break;
 					case 2: // right
@@ -1476,7 +1698,7 @@
 						if ($('#modeSelector').val()=="0"){
 							controls.enabled = true;
 							if ( INTERSECTED ) {							
-								if ( INTERSECTED2!=null ) {
+								if ( INTERSECTED2 ) {
 								
 									var prevent =false;								
 									for (var typeLink in generalLayout){
@@ -1679,6 +1901,13 @@
 							}
 							
 							container.style.cursor = 'auto';
+						}
+						
+						if ($('#modeSelector').val()=="1"){
+							controls.enabled = true;
+							container.style.cursor = 'auto';
+							INTERSECTED_P=-1;
+							moveNode=false;
 						}
 					case 1: // middle
 						break;
@@ -2651,8 +2880,17 @@
 	}
 	
 	$("#container2").css({top:  $("#mtnTable").position().top + $("#mtnTable").height()+40});
-	
+	positionContainer = $("#container").position();
 	function runModeSelector(){
+		if ($('#modeSelector').val()=="0"){
+			plane.visible = true;
+			text1.innerHTML = '';
+			text1.style.top = 2000 + 'px';
+			text1.style.left = 2000 + 'px';
+		}
+		if ($('#modeSelector').val()=="1"){
+			plane.visible = false;
+		}
 		//console.log($('#modeSelector').val());
 	}
 	
