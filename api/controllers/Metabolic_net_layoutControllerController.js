@@ -20,7 +20,7 @@ module.exports = {
 				name: req.param('name'),
 				comment: req.param('comment'),
 				metabolic_net: req.param('metabolic_net'),
-				layout: JSON.parse('{"compartments_layout":{}, "nodes_layout":{}}')
+				layout: JSON.parse('{"list_compartments":[],"compartments_layout":{}, "nodes_layout":{},"nodes_compartments":{}}')
 			}
 			Metabolic_net_layout.create(metabolic_net_layoutObj, function mtnlCreated(err, mtnl) {
 				if (err) {
@@ -60,6 +60,47 @@ module.exports = {
 				});
 		  
 			});
+		  
+		  
+		});
+	},
+	index: function(req, res, next) {
+		// Get an array of all users in the User collection(e.g. table)
+		Metabolic_net_layout.find(function foundQms(err, mtnls) {
+			if (err) return next(err);	
+			var listLayouts=[];
+			for (var i=0;i<mtnls.length;i++){
+				listLayouts.push([mtnls[i].id, mtnls[i].name, mtnls[i].comment, mtnls[i].metabolic_net]);
+			}
+			// pass the array down to the /views/index.ejs page
+			
+			
+			  res.view({
+				mtnls: listLayouts
+			  });
+		
+		});
+	},
+	update: function(req, res, next) {
+		Metabolic_net_layout.findOne(req.param('id'), function foundQm(err, mtnl) {
+			if (err) return next(err);
+			if (!mtnl) return next();
+			var stringLayouts=req.param('layouts0')+req.param('layouts1')+req.param('layouts2')+req.param('layouts3')+req.param('layouts4')+req.param('layouts5')+req.param('layouts6')+req.param('layouts7')+req.param('layouts8')+req.param('layouts9');
+			var tmp=mtnl.layout;
+			if (req.param('layouts0') ){
+				tmp = JSON.parse(stringLayouts);
+				//console.log(tmp)
+			}
+			var metabolic_net_layoutObj = {
+				name: mtnl.name,
+				comment: mtnl.comment,
+				metabolic_net: mtnl.metabolic_net,
+				layout: tmp
+			}
+			Metabolic_net_layout.update(req.param('id'), metabolic_net_layoutObj, function mtnlUpdated(err) {
+					res.redirect('/metabolic_net_layout/show/' + mtnl.id);
+			});
+			
 		  
 		  
 		});

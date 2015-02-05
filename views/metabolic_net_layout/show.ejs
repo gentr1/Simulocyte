@@ -8,6 +8,9 @@
 	<%= mtnl.comment %>
 	<h2>Metabolic network: </h2>
 	<%= mtnl.metabolic_net %>
+	<%
+	var allLayout=JSON.stringify({});
+	%>
 	<hr>
 	<h3 id="titleComp" style="position: absolute;left: 20px;">Edit/Add New Compartments:</h3>
 	<div id="compTable" style="position: absolute;left: 20px;"></div>
@@ -22,9 +25,12 @@
 	<select id="modeSelector" onchange="runModeSelector()">
   <option value="0">for compartments</option>
   <option value="1">for nodes</option>
-	</select></h3>
-	<div id="container"  style="position: absolute;left: 0px; overflow: inherit">  </div>
+	</select>
 	
+	</h3>
+	
+	<div id="container"  style="position: absolute;left: 0px; overflow: inherit">  </div>
+	<input type="image" id ="editplane" src="/images/editplane1.png" value="0" width="32" height="32" style="position: absolute;left: 0px; overflow: inherit" onclick="changeEditingPlane()">
 	<div id="container2"  style="position: absolute;left: 0px; overflow: inherit">  </div>
 	<div id="layout1menu" class="btn-group-vertical" role="group" aria-label="..." style="position: absolute;left: 0px;">
 		<button class="btn btn-default btn-xs" title="Merge" id="b_merge" style="position: relative;left: 20px;">Merge</button>
@@ -37,8 +43,34 @@
 		<button class="btn btn-warning btn-xs" title="Cancel" id="b_cancel" style="position: relative;left: 20px;">Cancel</button>
 	</div>
 	
-	
+<form action="/metabolic_net_layout/update/<%= mtnl.id %>" id="mtnl-update-form"  method="POST" style="left:0px;height:5%;width:40%;position: absolute;">	
+	<input type="text" name="layouts0" id ="layouts0" style="visibility: hidden;" value=<%=allLayout%>>
+	<input type="text"  name="layouts1" id ="layouts1" style="visibility: hidden;" value="">
+	<input type="text"  name="layouts2" id ="layouts2" style="visibility: hidden;" value="">
+	<input type="text"  name="layouts3" id ="layouts3" style="visibility: hidden;" value="">
+	<input type="text"  name="layouts4" id ="layouts4" style="visibility: hidden;" value="">
+	<input type="text"  name="layouts5" id ="layouts5" style="visibility: hidden;" value="">
+	<input type="text"  name="layouts6" id ="layouts6" style="visibility: hidden;" value="">
+	<input type="text"  name="layouts7" id ="layouts7" style="visibility: hidden;" value="">
+	<input type="text"  name="layouts8" id ="layouts8" style="visibility: hidden;" value="">
+	<input type="text"  name="layouts9" id ="layouts9" style="visibility: hidden;" value="">
+	<input type="submit" value="Save" class="btn btn-lg btn-primary btn-block"  style="top:0px;left:0px;position: relative;"/>
+	<input type="hidden" name="_csrf" value="<%= _csrf %>" />
+	</form>			
 </div>	
+
+<nav>
+		<a href="" id="menuToggle" title="show menu">
+		<span class="navClosed"><i>show menu</i></span>
+		</a>
+		<a href="#" title="Item 1">Hide/Show</a>		
+		<br><p style="position: relative;left: 20px;color:white">Line Opacity: <input id="defaultSlider" type="range" min="0.0" max="20.0" value="15" step="0.005" onchange="updateSlider(this.value)" style="position: relative;left: 20px"/></p>			
+	</nav>
+	
+	<div id="menu" >
+	
+	
+	</div>
 
 	<script id="fragmentShader" type="x-shader/x-fragment">
 			
@@ -171,30 +203,67 @@
 	
 	<script>
 	
+	(function($){
+		$(document).ready(function(){
+		$('#menuToggle').click(function(e){
+		var $parent = $(this).parent('nav');
+		$parent.toggleClass("open");
+		var navState = $parent.hasClass('open') ? "hide" : "show";
+		$(this).attr("title", navState + " navigation");
+		// Set the timeout to the animation length in the CSS.
+		setTimeout(function(){
+		//console.log("timeout set");
+		$('#menuToggle > span').toggleClass("navClosed").toggleClass("navOpen");
+		}, 200);
+		e.preventDefault();
+		});
+		});
+	})(jQuery);
+	
 	if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 	
 	$('#layout1menu').hide();
 	$('#layout1menu').zIndex(2000);
-	var generalLayout={};
+	
+	var mtnlLayout = <%-JSON.stringify(mtnl.layout)%>
+	//console.log(mtnlLayout)
+	
+	var generalLayout ={'merged':{},'above':{},'outer':{},'satellite':{},'in':{}};
 	var stopThreeJsMouseEvent = false;	
 	var initialPos=new THREE.Vector3( 0, 0, 0 );
 	var initialName="";
 	var spacing=1650;
 	var radiusComp=550;
 	var yStartDisplacement=100;
+	var nodeSize=5;
+	var lineOpacity=0.1;
 	var closest;
 	var selectedMetabolicData = <%-JSON.stringify(mtb.file)%>
 	//console.log("getting metabolic data from default file recon2");
-	var listCompartments=selectedMetabolicData[0];
+	//if (mtnlLayout["list_compartments"])
+	
+	var listCompartments=[];
+	
+	if (mtnlLayout["list_compartments"] && mtnlLayout["list_compartments"].length==0){
+		listCompartments=selectedMetabolicData[0];
+		
+		//console.log("initial empty list of compartments")
+	}
+	else if (mtnlLayout["list_compartments"] && mtnlLayout["list_compartments"].length>0){
+		listCompartments=mtnlLayout["list_compartments"];
+		//console.log("initial existing list of compartments")
+	}
+	mtnlLayout["list_compartments"]=listCompartments;
+	
+	//console.log(listCompartments)
 	var nbCompartments=listCompartments.length
 	var compIds=[];
 	for (var i=0; i<listCompartments.length;i++){
 		compIds.push(listCompartments[i][0]);
 	}
-	var listNodes=selectedMetabolicData[1];
+	
 	var txtComp=[]
 	var maxNbComp=20;
-	var compLayout={"merged":[],"above":[], "outer":[], "satellite":[], "in":[]};
 	var stackCompToMove=[];
 	var stackCompInitialPos={};
 	var positionContainer;
@@ -245,13 +314,32 @@
 	offset = new THREE.Vector3(),
 	INTERSECTED,INTERSECTED2, SELECTED,INTERSECTED_P;
 	INTERSECTED_P=-1;
-	var myLayout = <%-JSON.stringify(mtnl.layout)%>
+	//var myLayout = <%-JSON.stringify(mtnl.layout)%>
 		
 	
 	var metabolicNodes;	
 	var metabolicEdges;
+	
+	// change compartment nodes attribution from data
+	if (mtnlLayout["nodes_compartments"]){
+		var listChangedNodes = Object.keys(mtnlLayout["nodes_compartments"]);
+		if (listChangedNodes.length>0){
+		
+			for(var i=0, ii= listChangedNodes.length;i<ii;i++){			
+				//console.log(selectedMetabolicData[1][listChangedNodes[i]])
+				selectedMetabolicData[1][listChangedNodes[i]][1]=mtnlLayout["nodes_compartments"][listChangedNodes[i]][0];
+				selectedMetabolicData[1][listChangedNodes[i]][3]=mtnlLayout["nodes_compartments"][listChangedNodes[i]][1];
+				//console.log(selectedMetabolicData[1][listChangedNodes[i]])
+			}
+		}
+		
+	}
+	
+	
+	var listNodes=selectedMetabolicData[1];
 	metabolicNodes = selectedMetabolicData[1];
 	metabolicEdges = selectedMetabolicData[2];	
+	//console.log(metabolicEdges.length)
 	var nbMetabolites=0;
 	var nbReactions=0;
 	for (var i = 0, ii= metabolicNodes.length;i<ii;i++){
@@ -314,6 +402,10 @@
 	var NodeEditingPlane;
 	var moveNode=false;
 	
+	var arrowX;
+	var arrowY;
+	var arrowz;
+	
 	init();
 	animate();
 		
@@ -351,7 +443,7 @@
 				attributes:     particleP1Attributes,
 				vertexShader:   document.getElementById( 'vertexshaderP1' ).textContent,
 				fragmentShader: document.getElementById( 'fragmentshaderP1' ).textContent,
-				depthTest: 		false,
+				depthTest: 		true,
 				transparent:	true
 
 			});
@@ -374,7 +466,7 @@
 				attributes:     particleP2Attributes,
 				vertexShader:   document.getElementById( 'vertexshaderP2' ).textContent,
 				fragmentShader: document.getElementById( 'fragmentshaderP2' ).textContent,
-				depthTest: 		false,
+				depthTest: 		true,
 				transparent:	true
 
 			});
@@ -404,9 +496,12 @@
 				transparent:    true
 
 			});
-			linesShaderMaterial.linewidth = 1;
-		
-		
+			linesShaderMaterial.linewidth = 0.1;
+			linesShaderMaterial.blending = THREE.AdditiveBlending;//THREE.SubtractiveBlending;//THREE.NoBlending;//THREE.MultiplyBlending;//THREE.NormalBlending;//THREE.AdditiveBlending;
+			
+			linesShaderMaterial.transparent = true;
+			//linesShaderMaterial.depthTest = true;
+			
 			container = document.getElementById( 'container' );
 			//document.body.appendChild( container );
 
@@ -416,9 +511,9 @@
 			//camera.position.x = -800;
 			
 			scene = new THREE.Scene();
-			scene.add( new THREE.AmbientLight( 0xffffff,2.5 ) );
+			scene.add( new THREE.AmbientLight( 0xffffff,0.5 ) );
 
-			var light = new THREE.SpotLight( 0xffffff, 2.5 );
+			var light = new THREE.SpotLight( 0xffffff, 1.5 );
 			light.position.set( 0, 5000, 20000 );
 			//light.castShadow = true;
 			
@@ -449,6 +544,11 @@
 				scene.add( object );
 				objects.push( object );
 			}
+			
+			//mtnlLayout["compartments_layout"]["name-position-scale"]=[];
+			//for (var i=0; i<listCompartments.length;i++ ){
+			//	mtnlLayout["compartments_layout"]["name-position-scale"][i]=[objects[i].name, objects[i].position , objects[i].scale];
+			//}
 			for ( var i = 0; i < listCompartments.length; i ++ ) {
 				objects[i].position.x = 0;
 				objects[i].position.y = 0;
@@ -458,6 +558,27 @@
 				//objects[i].castShadow = true;
 				//objects[i].receiveShadow = true;	
 			}
+			if (mtnlLayout["compartments_layout"] && mtnlLayout["compartments_layout"].hasOwnProperty("name-position-scale")){
+				if (mtnlLayout["compartments_layout"]["name-position-scale"].length>0){
+					for ( var i = 0; i < mtnlLayout["compartments_layout"]["name-position-scale"].length; i ++ ) {
+						objects[i].position.x = mtnlLayout["compartments_layout"]["name-position-scale"][i][1].x;
+						objects[i].position.y = mtnlLayout["compartments_layout"]["name-position-scale"][i][1].y;
+						objects[i].position.z = mtnlLayout["compartments_layout"]["name-position-scale"][i][1].z;
+						objects[i].name = mtnlLayout["compartments_layout"]["name-position-scale"][i][0];
+						stackCompInitialPos[objects[i].name]= new THREE.Vector3(objects[i].position.x,objects[i].position.y,objects[i].position.z);
+						objects[i].scale.x = mtnlLayout["compartments_layout"]["name-position-scale"][i][2].x;
+						objects[i].scale.y = mtnlLayout["compartments_layout"]["name-position-scale"][i][2].y;
+						objects[i].scale.z = mtnlLayout["compartments_layout"]["name-position-scale"][i][2].z;
+					}
+				}
+			}
+			
+			if (mtnlLayout["compartments_layout"] && mtnlLayout["compartments_layout"].hasOwnProperty("relations")){
+				generalLayout=mtnlLayout["compartments_layout"]["relations"];
+			}
+			
+			
+			
 			
 			
 			uniforms = {
@@ -487,6 +608,7 @@
 
 			
 			
+			
 			/////////////////////////////////////////////
 			// defines first buffergeometry for protein particles
 			bgeometryP1 = new THREE.BufferGeometry();			
@@ -501,7 +623,7 @@
 			var bv=0;
 			for( var bw = 0 , bww= metabolicNodes.length; bw < bww; bw++ ) {
 				if (metabolicNodes[bw][6]==2){
-					values_sizeP1[ bv ] = 3;
+					values_sizeP1[ bv ] = nodeSize;
 					compartmentP1[ bv ] = mapComp[metabolicNodes[bw][3]];
 					idMap[bw]=[2,bv];
 					typesMap[2][bv]=bw;
@@ -524,6 +646,12 @@
 					bv++;
 				}
 			}
+			
+			
+			
+			
+			
+			
 			bgeometryP1.addAttribute( 'position', new THREE.BufferAttribute( positionsP1, 3 ) );
 			bgeometryP1.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP1, 3 ) );
 			bgeometryP1.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP1, 1 ) );
@@ -623,7 +751,7 @@
 			var localRSeparator=0;
 			for( var bw = 0 , bww= metabolicNodes.length; bw < bww; bw++ ) {
 				if (metabolicNodes[bw][6]==4){
-					values_sizeP2[ bv ] = 3;
+					values_sizeP2[ bv ] = nodeSize;
 					//b5values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;					
 					// try to assign the compartment of the majority of the products the reaction is linked to 
 					// if there is no product, assign the compartment of the majority of modifiers
@@ -795,7 +923,7 @@
 					positionsL1[ (iv * 3) + 1 ] = b1positions[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
 					positionsL1[ (iv * 3) + 2 ] = b1positions[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
 					compartmentL1[ (i*2)+0 ] = b1values_compartment[ (idMap[metabolicEdges[i][0]][1]) ];
-					opL1[iv]=0.25;
+					opL1[iv]=lineOpacity;
 					colorsL1[ iv * 3 ] = 0.0;
 					colorsL1[ iv * 3 + 1 ] = 1.0;
 					colorsL1[ iv * 3 + 2 ] = 1.0;
@@ -809,7 +937,7 @@
 					positionsL1[ (iv * 3) + 1 ] = b2positions[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
 					positionsL1[ (iv * 3) + 2 ] = b2positions[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
 					compartmentL1[ (i*2)+0 ] = b2values_compartment[ (idMap[metabolicEdges[i][0]][1]) ];
-					opL1[iv]=0.25;
+					opL1[iv]=lineOpacity;
 					colorsL1[ iv * 3 ] = 0.0;
 					colorsL1[ iv * 3 + 1 ] = 1.0;
 					colorsL1[ iv * 3 + 2 ] = 1.0;
@@ -822,7 +950,7 @@
 					positionsL1[ (iv * 3) + 1 ] = b1positions[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;
 					positionsL1[ (iv * 3) + 2 ] = b1positions[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;
 					compartmentL1[ (i*2)+1 ] = b1values_compartment[ (idMap[metabolicEdges[i][1]][1]) ];
-					opL1[iv]=0.25;
+					opL1[iv]=lineOpacity;
 					colorsL1[ iv * 3 ] = 0.0;
 					colorsL1[ iv * 3 + 1 ] = 1.0;
 					colorsL1[ iv * 3 + 2 ] = 1.0;
@@ -835,7 +963,7 @@
 					positionsL1[ (iv * 3) + 1 ] = b2positions[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;
 					positionsL1[ (iv * 3) + 2 ] = b2positions[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;
 					compartmentL1[ (i*2)+1 ] = b2values_compartment[ (idMap[metabolicEdges[i][1]][1]) ];
-					opL1[iv]=0.25;
+					opL1[iv]=lineOpacity;
 					colorsL1[ iv * 3 ] = 0.0;
 					colorsL1[ iv * 3 + 1 ] = 1.0;
 					colorsL1[ iv * 3 + 2 ] = 1.0;
@@ -876,6 +1004,25 @@
 			NodeEditingPlane.visible = false;
 			scene.add( NodeEditingPlane );
 			
+			arrowX = new THREE.ArrowHelper( new THREE.Vector3( radiusComp, 0, 0 ), new THREE.Vector3( 0, 0, 0 ), 50 );
+			arrowX.position.set( -99999999, -99999999, -99999999 );
+			scene.add( arrowX );
+			
+			arrowY = new THREE.ArrowHelper( new THREE.Vector3( 0, radiusComp, 0 ), new THREE.Vector3( 0, 0, 0 ), 50 );
+			arrowY.position.set( -99999999, -99999999, -99999999 );
+			scene.add( arrowY );
+			
+			arrowZ = new THREE.ArrowHelper( new THREE.Vector3( 0, 0, radiusComp ), new THREE.Vector3( 0, 0, 0 ), 50 );
+			arrowZ.position.set( -99999999, -99999999, -99999999 );
+			scene.add( arrowZ );
+			
+			
+		
+			
+			
+			
+			
+			
 			renderer = new THREE.WebGLRenderer( { antialias: true } );
 			//renderer.setClearColor( 0xf5f5f5 );
 			renderer.setClearColor( 0xe0e0e0 );
@@ -909,11 +1056,16 @@
 			//
 
 			window.addEventListener( 'resize', onWindowResize, false );
+			
+			
+			
+			
+			
 
 		}
 			
 		
-		generalLayout ={'merged':{},'above':{},'outer':{},'satellite':{},'in':{}};
+		
 		//generalLayout['merged']
 		
 		function isMerged(comp,cType) {
@@ -1474,7 +1626,100 @@
 					
 					
 					
-						var indexStartNodes=maxNbComp+3;
+									
+							
+							
+							
+								
+							if (moveNode==true && INTERSECTED_P>-1 && container.style.cursor == 'pointer'){
+								if (idMap[INTERSECTED_P]){
+									
+									var indexStartNodes=maxNbComp+3;
+									if (idMap[INTERSECTED_P][0]==2){
+										sprite.position.set(scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0],scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1],scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2]);	
+										if ($('#editplane').val()=="0"){
+											
+											NodeEditingPlane.position.y= scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1];
+											NodeEditingPlane.updateMatrixWorld( true );
+											var intersects = raycaster.intersectObject( NodeEditingPlane );	
+											if (intersects && intersects[ 0 ]){
+												scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0]=intersects[ 0 ].point.x;
+												//scene.children[23].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1]=intersects[ 0 ].point.y;
+												scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2]=intersects[ 0 ].point.z;
+												scene.children[indexStartNodes].geometry.attributes.position.needsUpdate = true;
+												mtnlLayout["nodes_layout"][INTERSECTED_P]=new THREE.Vector3(intersects[ 0 ].point.x,scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1],intersects[ 0 ].point.z);
+												//console.log(INTERSECTED_P)
+											}
+											arrowX.position.set( scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0], scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1], scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2] );
+											arrowX.position.needsUpdate = true;
+											arrowZ.position.set( scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0], scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1], scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2] );
+											arrowZ.position.needsUpdate = true;
+										}
+										if ($('#editplane').val()=="1"){
+											NodeEditingPlane.position.z= scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2];
+											NodeEditingPlane.updateMatrixWorld( true );
+											var intersects = raycaster.intersectObject( NodeEditingPlane );	
+											if (intersects && intersects[ 0 ]){
+												scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0]=intersects[ 0 ].point.x;
+												//scene.children[23].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1]=intersects[ 0 ].point.y;
+												scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1]=intersects[ 0 ].point.y;
+												scene.children[indexStartNodes].geometry.attributes.position.needsUpdate = true;
+												mtnlLayout["nodes_layout"][INTERSECTED_P]=new THREE.Vector3(intersects[ 0 ].point.x,intersects[ 0 ].point.y,scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2]);
+												//console.log(INTERSECTED_P)
+											}
+											arrowX.position.set( scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0], scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1], scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2] );
+											arrowX.position.needsUpdate = true;
+											arrowY.position.set( scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0], scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1], scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2] );
+											arrowY.position.needsUpdate = true;
+										}
+										
+										//console.log(scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0])
+									}
+									if (idMap[INTERSECTED_P][0]==4){
+										sprite.position.set(scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0],scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1],scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2]);	
+										if ($('#editplane').val()=="0"){
+											NodeEditingPlane.position.y= scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1];
+											NodeEditingPlane.updateMatrixWorld( true );
+											var intersects = raycaster.intersectObject( NodeEditingPlane );	
+											if (intersects && intersects[ 0 ]){
+												scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0]=intersects[ 0 ].point.x;
+												//scene.children[23].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1]=intersects[ 0 ].point.y;
+												scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2]=intersects[ 0 ].point.z;
+												scene.children[indexStartNodes+1].geometry.attributes.position.needsUpdate = true;
+												mtnlLayout["nodes_layout"][INTERSECTED_P]=new THREE.Vector3(intersects[ 0 ].point.x,scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1],intersects[ 0 ].point.z);
+											}
+											arrowX.position.set( scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0], scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1], scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2] );
+											arrowX.position.needsUpdate = true;
+											arrowZ.position.set( scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0], scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1], scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2] );
+											arrowZ.position.needsUpdate = true;
+											
+										}
+										if ($('#editplane').val()=="1"){
+											NodeEditingPlane.position.z= scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2];
+											NodeEditingPlane.updateMatrixWorld( true );
+											var intersects = raycaster.intersectObject( NodeEditingPlane );	
+											if (intersects && intersects[ 0 ]){
+												scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0]=intersects[ 0 ].point.x;
+												//scene.children[23].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1]=intersects[ 0 ].point.y;
+												scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1]=intersects[ 0 ].point.y;
+												scene.children[indexStartNodes+1].geometry.attributes.position.needsUpdate = true;
+												mtnlLayout["nodes_layout"][INTERSECTED_P]=new THREE.Vector3(intersects[ 0 ].point.x,intersects[ 0 ].point.y,scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2]);
+											}
+											arrowX.position.set( scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0], scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1], scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2] );
+											arrowX.position.needsUpdate = true;
+											arrowY.position.set( scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0], scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1], scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2] );
+											arrowY.position.needsUpdate = true;
+										}
+										//console.log(scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0])
+									}
+									
+									
+									//console.log(intersects[ 0 ].point)		
+								}		
+							}
+							else {
+							
+							var indexStartNodes=maxNbComp+3;
 						var particles;
 						var distance=99999999;
 						var listretPointsIndexes=[];
@@ -1516,89 +1761,61 @@
 										if (myr==h1)
 											break;
 										
-							}						
+							}			
 							closest = listretPointsIndexes[myr];
-							if (moveNode==true && INTERSECTED_P>-1){
-								if (idMap[INTERSECTED_P]){
-									
-									var indexStartNodes=maxNbComp+3;
-									if (idMap[INTERSECTED_P][0]==2){
-										NodeEditingPlane.position.y= scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1];
-										NodeEditingPlane.updateMatrixWorld( true );
-										var intersects = raycaster.intersectObject( NodeEditingPlane );	
-										scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0]=intersects[ 0 ].point.x;
-										//scene.children[23].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1]=intersects[ 0 ].point.y;
-										scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2]=intersects[ 0 ].point.z;
-										scene.children[indexStartNodes].geometry.attributes.position.needsUpdate = true;
-										//console.log(scene.children[indexStartNodes].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0])
-									}
-									if (idMap[INTERSECTED_P][0]==4){
-										NodeEditingPlane.position.y= scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1];
-										NodeEditingPlane.updateMatrixWorld( true );
-										var intersects = raycaster.intersectObject( NodeEditingPlane );	
-										scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0]=intersects[ 0 ].point.x;
-										//scene.children[23].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+1]=intersects[ 0 ].point.y;
-										scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+2]=intersects[ 0 ].point.z;
-										scene.children[indexStartNodes+1].geometry.attributes.position.needsUpdate = true;
-										//console.log(scene.children[indexStartNodes+1].geometry.attributes.position.array[idMap[INTERSECTED_P][1]*3+0])
-									}
-									
-									
-									//console.log(intersects[ 0 ].point)		
-								}		
-							}
-							if (closest>=0){
-							
-								//console.log(closest)
-								//console.log(myr)
-								//console.log(listretPointsTypes[myr])
-								if (listretPointsTypes[myr]>=0){
-									sprite.position.set(scene.children[listretPointsTypes[myr]].geometry.attributes.position.array[closest*3],scene.children[listretPointsTypes[myr]].geometry.attributes.position.array[closest*3+1],scene.children[listretPointsTypes[myr]].geometry.attributes.position.array[closest*3+2]);	
-									var pp = toXYCoords(sprite.position);
-									var dat;
-									if (listretPointsTypes[myr]==indexStartNodes)
-										dat=typesMap[2][closest];
-									if (listretPointsTypes[myr]==(indexStartNodes+1))
-										dat=typesMap[4][closest];
-									
-									//if (INTERSECTED_P>-1){
-									
-									//else{
-										INTERSECTED_P=dat;
-									//}
-									//console.log(INTERSECTED_P)
-									if ((text1PreviousPos.x != pp.x) && (text1PreviousPos.y != pp.y)){
-										text1.style.top = (positionContainer.top )+ 'px';								
-										text1.style.left = (positionContainer.left+100)+ 'px';
-										text1PreviousPos = pp;
-										var stringTxt="";
-										//console.log(listretPointsTypes[myr])
+								if (closest>=0){
+								
+									//console.log(closest)
+									//console.log(myr)
+									//console.log(listretPointsTypes[myr])
+									if (listretPointsTypes[myr]>=0){
+										sprite.position.set(scene.children[listretPointsTypes[myr]].geometry.attributes.position.array[closest*3],scene.children[listretPointsTypes[myr]].geometry.attributes.position.array[closest*3+1],scene.children[listretPointsTypes[myr]].geometry.attributes.position.array[closest*3+2]);	
+										var pp = toXYCoords(sprite.position);
 										var dat;
 										if (listretPointsTypes[myr]==indexStartNodes)
 											dat=typesMap[2][closest];
 										if (listretPointsTypes[myr]==(indexStartNodes+1))
 											dat=typesMap[4][closest];
 										
-										if(metabolicNodes[dat]){
+										//if (INTERSECTED_P>-1){
+										
+										//else{
+											INTERSECTED_P=dat;
+										//}
+										//console.log(INTERSECTED_P)
+										if ((text1PreviousPos.x != pp.x) && (text1PreviousPos.y != pp.y)){
+											text1.style.top = (positionContainer.top )+ 'px';								
+											text1.style.left = (positionContainer.left+100)+ 'px';
+											text1PreviousPos = pp;
+											var stringTxt="";
+											//console.log(listretPointsTypes[myr])
+											var dat;
+											if (listretPointsTypes[myr]==indexStartNodes)
+												dat=typesMap[2][closest];
+											if (listretPointsTypes[myr]==(indexStartNodes+1))
+												dat=typesMap[4][closest];
 											
-											stringTxt = metabolicNodes[dat][0]+" "+metabolicNodes[dat][2];
-											if (metabolicNodes[dat][4][1] && metabolicNodes[dat][4][1][0]){
-												stringTxt = metabolicNodes[dat][0]+" "+metabolicNodes[dat][2]+" ("+metabolicNodes[dat][4][1][0]+")";
+											if(metabolicNodes[dat]){
+												
+												stringTxt = metabolicNodes[dat][0]+" "+metabolicNodes[dat][2];
+												if (metabolicNodes[dat][4][1] && metabolicNodes[dat][4][1][0]){
+													stringTxt = metabolicNodes[dat][0]+" "+metabolicNodes[dat][2]+" ("+metabolicNodes[dat][4][1][0]+")";
+												}
+											}
+											if (text1PreviousString!=stringTxt){
+												text1.innerHTML=stringTxt;
+												text1PreviousString=stringTxt;
 											}
 										}
-										if (text1PreviousString!=stringTxt){
-											text1.innerHTML=stringTxt;
-											text1PreviousString=stringTxt;
-										}
+									
+									
 									}
-								
-								
+									container.style.cursor = 'pointer';	
 								}
-								container.style.cursor = 'pointer';	
-							}
-							else{
-								//INTERSECTED_P=-1;
-								container.style.cursor = 'auto';
+								else{
+									//INTERSECTED_P=-1;
+									container.style.cursor = 'auto';
+								}
 							}
 						}
 					
@@ -1800,19 +2017,13 @@
 										scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
 									}
 									
-									
 								}
 								else{
 									// adjust all metabolic nodes and lines positions
 									var indexStartNodes=maxNbComp+3;
 									nbCompartments= listCompartments.length;
 									//var indSelectedComp= SELECTED
-									var sInd=-1;
-									for (var i=0; i<listCompartments.length;i++ ){
-										if (SELECTED.name==objects[i].name){
-											sInd=i;
-										}
-									}
+									
 									//console.log(SELECTED.name)
 									//console.log(listCompartments.length);
 									//console.log(scene.children[indexStartNodes])
@@ -1869,45 +2080,81 @@
 										
 									}
 									scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
+									//console.log("reset initial positions")
+									for ( var i = 0; i < listCompartments.length; i ++ ) {
+										stackCompInitialPos[objects[i].name]= new THREE.Vector3(objects[i].position.x,objects[i].position.y,objects[i].position.z);
+									}
 								}
 								
 								
 								
 								SELECTED = null;
-								myLayout["compartments_layout"]["structure"]=generalLayout;
-								var layoutdata={};
-								for (var j=0; j<listCompartments.length;j++ ){
-									layoutdata[objects[j].name]={"position":new THREE.Vector3(objects[j].position.x,objects[j].position.y,objects[j].position.z), "scale":new THREE.Vector3(objects[j].scale.x,objects[j].scale.y,objects[j].scale.z)}
-								}
-								myLayout["compartments_layout"]["spatial-layout"]=layoutdata;
-								//console.log(myLayout)
 								
-								for ( var i = 0; i < listCompartments.length; i ++ ) {
-									stackCompInitialPos[objects[i].name]= new THREE.Vector3(objects[i].position.x,objects[i].position.y,objects[i].position.z);
+								
+								mtnlLayout["compartments_layout"]["name-position-scale"]=[];
+								for (var i=0; i<listCompartments.length;i++ ){
+									mtnlLayout["compartments_layout"]["name-position-scale"][i]=[objects[i].name, objects[i].position , objects[i].scale];
 								}
 								
-								//var c=3;
-								//for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
-								//	for (var g=0;g<nbOrganelles;g++){
-								//		if (scene.children[c].geometry.attributes.compartment.array[h]==g){
-										//console.log(g)
-								//			scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
-								//			scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
-								//		}
-										
-								//	}
-								//}
-								//scene.children[c].geometry.attributes.position.needsUpdate = true;
+								saveLayout();
+								
+								
 							}
 							
 							container.style.cursor = 'auto';
 						}
 						
 						if ($('#modeSelector').val()=="1"){
+							var indexStartNodes=maxNbComp+3;
+							var iv=0;
+							for ( var i = 0; i < segments; i ++ ) {
+								var t1 = metabolicNodes[metabolicEdges[i][0]][6]
+								var t2 = metabolicNodes[metabolicEdges[i][1]][6]
+								//console.log(t1)
+								//console.log(t2)
+								//var ivList=[]
+								var doIt=0
+								if (t1==2){
+									//console.log(idMap[jsonObj2[i][0]][1])
+									scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+									scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;					
+									scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+									
+									iv++;
+								}
+								else if (t1==4){
+									//console.log(idMap[jsonObj2[i][0]][1])
+									scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+									scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
+									scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+									iv++;
+								}
+								if (t2 ==2){
+									scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+									scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;						
+									scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;	
+									iv++;
+								}
+								else if (t2 ==4){
+									scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+									scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;
+									scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;				
+									iv++;
+								}
+								
+							}
+							scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
 							controls.enabled = true;
 							container.style.cursor = 'auto';
 							INTERSECTED_P=-1;
 							moveNode=false;
+							arrowX.position.set(-99999999,-99999999,-99999999);
+							arrowX.position.needsUpdate = true;
+							arrowY.position.set( -99999999,-99999999,-99999999);
+							arrowY.position.needsUpdate = true;
+							arrowZ.position.set( -99999999,-99999999,-99999999);
+							arrowZ.position.needsUpdate = true;
+							saveLayout();
 						}
 					case 1: // middle
 						break;
@@ -1997,30 +2244,7 @@
 	  beforeRemoveRow: function(ind, numb){
 		var dt = this.getData();
 		
-		if (dt[0]['c_id']!=null){
-			
-			var id_removed = dt[ind]['c_id']+" "+dt[ind]['c_name'];
-			//console.log(id_removed)
-			var listL = Object.keys(compLayout);
-			for (var i=0; i<listL.length;i++){
-				var listI=[];
-				for (var j=0; j<compLayout[listL[i]].length;j++){
-					
-					if ((compLayout[listL[i]][j][0]==id_removed) || (compLayout[listL[i]][j][1]==id_removed)){
-						
-					}
-					else{
-						listI.push(compLayout[listL[i]][j])
-					}
-				}
-				compLayout[listL[i]]=listI;
-			}
-			
-			//console.log(compLayout);
-			//console.log(dt.length);
-			
-			
-		}
+		
 	  },
 	  afterRemoveRow: function(ind, numb){
 		var dt = this.getData();
@@ -2106,7 +2330,9 @@
 				stackCompInitialPos[objects[i].name]= new THREE.Vector3(objects[i].position.x,objects[i].position.y,objects[i].position.z);
 				objects[i].name=listCompartments[i][0]+" "+listCompartments[i][1];
 			}
-			
+			mtnlLayout["list_compartments"]=listCompartments;
+			saveLayout();
+			//console.log(mtnlLayout["list_compartments"])
 			
 			//console.log(listCompartments);
 			//console.log(dt.length);
@@ -2216,13 +2442,25 @@
 		
 	  },
 	  afterChange: function(changes, source) {
-		if (changes && changes[0] && changes[0][2]){			
-			var dt = this.getData(changes[0][0],0,0,2);			
+		
+		if (changes && changes[0] && changes[0][2]){	
+			
+					
+			var dt = this.getData(changes[0][0],0,0,2);		
+			//console.log(changes)	
+			//console.log(dt)	
+			//console.log(dt[changes[0][0]])	
 			// change name			
-			selectedMetabolicData[1][dt[changes[0][0]][0]][1]=dt[0][1];
+			selectedMetabolicData[1][dt[dt.length-1][0]][1]=dt[dt.length-1][1];
 			// change compartment
-			selectedMetabolicData[1][dt[changes[0][0]][0]][3]=dt[0][2];
-			//console.log(changes)
+			selectedMetabolicData[1][dt[dt.length-1][0]][3]=dt[dt.length-1][2];
+			metabolicNodes=selectedMetabolicData[1];
+			mtnlLayout["nodes_compartments"][dt[dt.length-1][0]]=[];
+			mtnlLayout["nodes_compartments"][dt[dt.length-1][0]].push(dt[dt.length-1][1]);
+			mtnlLayout["nodes_compartments"][dt[dt.length-1][0]].push(dt[dt.length-1][2]);
+			saveLayout();
+			//console.log(mtnlLayout["nodes_compartments"])
+			//console.log(mtnlLayout["nodes_compartments"][dt[dt.length-1][0]])
 			//console.log(dt)
 			//console.log("new name: "+dt[changes[0][0]][1])
 			//console.log("new comp: "+dt[changes[0][0]][2])
@@ -2254,6 +2492,73 @@
 				objects[i].name=listCompartments[i][0]+" "+listCompartments[i][1];
 			}
 			
+			
+			var bv=0;
+			for( var bw = 0 , bww= metabolicNodes.length; bw < bww; bw++ ) {
+				if (metabolicNodes[bw][6]==4){
+					
+					//b5values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;					
+					// try to assign the compartment of the majority of the products the reaction is linked to 
+					// if there is no product, assign the compartment of the majority of modifiers
+					// if there is no modifier, assign the compartment of the majority of reactants
+					var listProducts= metabolicNodes[bw][11][0];
+					var listModifiers= metabolicNodes[bw][11][1];
+					var listReactants= metabolicNodes[bw][11][2];
+					
+					if (listProducts.length>0){
+						var votes=[];
+						for (var ncc=0;ncc<nbCompartments;ncc++){
+							votes[ncc]=0;
+						}
+						for(var lp=0;lp<listProducts.length;lp++){
+							if (mapComp[metabolicNodes[listProducts[lp]][3]]>=0)
+								votes[mapComp[metabolicNodes[listProducts[lp]][3]]]++;
+						}
+						var winner= votes.indexOf(Math.max.apply( Math, votes ));
+						//compartmentP2[ bv ] = winner;
+						scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv]= winner;
+						if (winner==-1){
+							scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = mapComp[metabolicNodes[bw][3]];
+						}
+					} 
+					else if (listModifiers.length>0){
+						var votes=[];
+						for (var ncc=0;ncc<nbCompartments;ncc++){
+							votes[ncc]=0;
+						}
+						for(var lp=0;lp<listModifiers.length;lp++){
+							if (mapComp[metabolicNodes[listModifiers[lp]][3]]>=0)
+								votes[mapComp[metabolicNodes[listModifiers[lp]][3]]]++;
+						}
+						var winner= votes.indexOf(Math.max.apply( Math, votes ));
+						scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = winner;
+						
+						if (winner==-1){
+							scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = mapComp[metabolicNodes[bw][3]];
+						}
+					}
+					else if (listReactants.length>0){
+						var votes=[];
+						for (var ncc=0;ncc<nbCompartments;ncc++){
+							votes[ncc]=0;
+						}
+						for(var lp=0;lp<listReactants.length;lp++){
+							if (mapComp[metabolicNodes[listReactants[lp]][3]]>=0)
+								votes[mapComp[metabolicNodes[listReactants[lp]][3]]]++;
+						}
+						var winner= votes.indexOf(Math.max.apply( Math, votes ));
+						scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = winner;
+						if (winner==-1){
+							scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = mapComp[metabolicNodes[bw][3]];
+						}
+					}
+					else {
+						scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv]= mapComp[metabolicNodes[bw][3]];
+					}
+					bv++;
+				}	
+			}		
+			scene.children[indexStartNodes+1].geometry.attributes.compartment.needsUpdate = true;
 	
 			for (var c=indexStartNodes;c<indexStartNodes+2;c++){
 				for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
@@ -2326,6 +2631,7 @@
 	
 	
 	
+	//listNodes=selectedMetabolicData[1];
 	var tempdata2=[];
 	for (var i=0, j= listNodes.length;i<j;i++){
 		tempdata2.push([i,listNodes[i][1],listNodes[i][3]])
@@ -2344,7 +2650,7 @@
 	$("#mtnTable").css({top:  $("#searchfield").position().top + $("#searchfield").height()+10});
 	$("#titleEditor").css({top:  $("#mtnTable").position().top + $("#mtnTable").height()+40});
 	$("#container").css({top:  $("#titleEditor").position().top + $("#titleEditor").height()+40});
-	
+	$("#editplane").css({top:  $("#container").position().top + $("#container").height()-40});
 	
 	$('#searchgrid').on('keyup',function(event){
 		var value = ('' + this.value).toLowerCase(),row,col,r_len,c_len,td;
@@ -2401,6 +2707,10 @@
 	});
 	
 	function placeCompFromLayout(cName, cRef, dropType){
+		var initialCnamePos= new THREE.Vector3(0,0,0);
+		
+		
+								
 		if (dropType=='merged'){
 			var indRef;
 			for (var j=0; j<listCompartments.length;j++ ){
@@ -2414,7 +2724,24 @@
 						
 						for (var j=0; j<listCompartments.length;j++ ){
 							if (objects[j].name==ref || generalLayout["merged"][ref].indexOf(objects[j].name)!=-1){
-								objects[j].position.copy( objects[indRef].position );
+								//if (generalLayout["merged"][ref].indexOf(objects[j].name)!=-1){
+								//stackCompInitialPos[objects[j].name].x=objects[indRef].position.x;
+								//stackCompInitialPos[objects[j].name].y=objects[indRef].position.y;
+								//stackCompInitialPos[objects[j].name].z=objects[indRef].position.z;
+								//}
+								//if (objects[j].name==cName){
+								//console.log(objects[j].position.x)
+								//console.log(stackCompInitialPos[cRef].x)
+								//initialCnamePos.x=stackCompInitialPos[cRef].x;
+								//initialCnamePos.y=stackCompInitialPos[cRef].y;
+								//initialCnamePos.z=stackCompInitialPos[cRef].z;
+								//}
+								
+								//objects[j].position.copy( objects[indRef].position );
+								//objects[j].position.x=objects[indRef].position.x;
+								//objects[j].position.y=objects[indRef].position.y;
+								//objects[j].position.z=objects[indRef].position.z;
+								
 								objects[j].scale.x=objects[indRef].scale.x;
 								objects[j].scale.y=objects[indRef].scale.y;
 								objects[j].scale.z=objects[indRef].scale.z;
@@ -2800,22 +3127,25 @@
 					}
 					for (var j=0; j<listCompartments.length;j++ ){
 						if (objects[j].name==ref || generalLayout["merged"][ref].indexOf(objects[j].name)!=-1){
+							
 							objects[j].position.copy( objects[indC].position );
 							objects[j].scale.x=objects[indC].scale.x;
 							objects[j].scale.y=objects[indC].scale.y;
 							objects[j].scale.z=objects[indC].scale.z;
+							
+							
 						}
 					}
 				
 			}
 		}
 		
-		myLayout["compartments_layout"]["structure"]=generalLayout;
-		var layoutdata={};
-		for (var j=0; j<listCompartments.length;j++ ){
-			layoutdata[objects[j].name]={"position":new THREE.Vector3(objects[j].position.x,objects[j].position.y,objects[j].position.z), "scale":new THREE.Vector3(objects[j].scale.x,objects[j].scale.y,objects[j].scale.z)}
-		}
-		myLayout["compartments_layout"]["spatial-layout"]=layoutdata;
+		//myLayout["compartments_layout"]["structure"]=generalLayout;
+		//var layoutdata={};
+		//for (var j=0; j<listCompartments.length;j++ ){
+		//	layoutdata[objects[j].name]={"position":new THREE.Vector3(objects[j].position.x,objects[j].position.y,objects[j].position.z), "scale":new THREE.Vector3(objects[j].scale.x,objects[j].scale.y,objects[j].scale.z)}
+		//}
+		//myLayout["compartments_layout"]["spatial-layout"]=layoutdata;
 		var indexStartNodes=maxNbComp+3;
 		nbCompartments= listCompartments.length;
 		//var indSelectedComp= SELECTED
@@ -2823,20 +3153,68 @@
 		//console.log(SELECTED.name)
 		//console.log(listCompartments.length);
 		//console.log(scene.children[indexStartNodes])
+		
 		for (var c=indexStartNodes;c<indexStartNodes+2;c++){
 			for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
 				for (var g=0;g<nbCompartments;g++){
+					//if (objects[g].scale<1.0){
+					//	scene.children[c].geometry
+					//}
 					if (scene.children[c].geometry.attributes.compartment.array[h]==g){
-					//nameComp[g]
-					scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
-					scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
-					scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
-					//scene.children[c].geometry.attributes.position.array[h*3+1]+=1000;
-					//scene.children[c].geometry.attributes.position.array[h*3+2]+=1000;
+						//console.log(scene.children[c].geometry)
+						if (objects[g].name==cName){						
+							scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[cName].x;//-stackCompInitialPos[cRef].x-stackCompInitialPos[cRef].x;
+							scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[cName].y;//-stackCompInitialPos[cRef].y-stackCompInitialPos[cRef].y;
+							scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[cName].z;//-stackCompInitialPos[cRef].z-stackCompInitialPos[cRef].z;
+							
+							var displacement = new THREE.Vector3(scene.children[c].geometry.attributes.position.array[h*3+0]- objects[g].position.x,
+																 scene.children[c].geometry.attributes.position.array[h*3+1]- objects[g].position.y,
+																 scene.children[c].geometry.attributes.position.array[h*3+2]- objects[g].position.z)
+							if (objects[g].scale.x<1.0){
+								scene.children[c].geometry.attributes.position.array[h*3+0]-=(displacement.x*(1-objects[g].scale.x));
+								scene.children[c].geometry.attributes.position.array[h*3+1]-=(displacement.y*(1-objects[g].scale.y));
+								scene.children[c].geometry.attributes.position.array[h*3+2]-=(displacement.z*(1-objects[g].scale.z));
+								scene.children[c].geometry.attributes.size.array[h]*=0.417777;
+							}
+							if (objects[g].scale.x>1.0){
+								var indLayer=-1;
+								for (var ref in generalLayout["outer"]){
+									if (generalLayout["outer"].hasOwnProperty(ref)){
+										indLayer =generalLayout["outer"][ref].indexOf(objects[g].name);
+										//if (indLayer!=-1){}
+									}
+								}
+								if (indLayer>-1){
+									var lengthV = displacement.length();
+									displacement.setLength(lengthV+((indLayer+0.5)*radiusComp));
+									scene.children[c].geometry.attributes.position.array[h*3+0]+=(displacement.x);
+									scene.children[c].geometry.attributes.position.array[h*3+1]+=(displacement.y+radiusComp);
+									scene.children[c].geometry.attributes.position.array[h*3+2]+=(displacement.z);
+									scene.children[c].geometry.attributes.size.array[h]/=0.417777;
+								}
+								
+								
+							}
+							//console.log(objects[g].scale.x)
+						}
+						else if (objects[g].name==cRef){
+							scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
+							scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
+							scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
+						}
+						else{
+							scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
+							scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
+							scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
+						}
+						
+						
+						
 					}
 				}
 			}
 			scene.children[c].geometry.attributes.position.needsUpdate = true;
+			scene.children[c].geometry.attributes.size.needsUpdate = true;
 		}
 		var iv=0;
 		for ( var i = 0; i < segments; i ++ ) {
@@ -2877,9 +3255,22 @@
 		}
 		scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
 		//console.log(myLayout);
+		mtnlLayout["compartments_layout"]={};
+		mtnlLayout["compartments_layout"]["relations"]=generalLayout;
+		mtnlLayout["compartments_layout"]["name-position-scale"]=[];
+		for (var i=0; i<listCompartments.length;i++ ){
+			mtnlLayout["compartments_layout"]["name-position-scale"][i]=[objects[i].name, objects[i].position , objects[i].scale];
+		}
+		
+		saveLayout();
+		//console.log(mtnlLayout)
+		//console.log(generalLayout)
 	}
 	
-	$("#container2").css({top:  $("#mtnTable").position().top + $("#mtnTable").height()+40});
+	//$("#container2").css({top:  $("#mtnTable").position().top + $("#mtnTable").height()+40});
+	$("#mtnl-update-form").css({top:  $("#container").position().top + $("#container").height()+40});
+	
+	
 	positionContainer = $("#container").position();
 	function runModeSelector(){
 		if ($('#modeSelector').val()=="0"){
@@ -2893,6 +3284,192 @@
 		}
 		//console.log($('#modeSelector').val());
 	}
+	
+	function changeEditingPlane(){
+		if ($('#editplane').val()=="0"){
+			$('#editplane').val("1");
+			$('#editplane').attr("src", "/images/editplane12.png");
+			NodeEditingPlane.rotation.x += (90*(Math.PI / 180));
+			//NodeEditingPlane.visible = true;
+			//console.log($('#editplane').val());
+		}
+		else{
+			$('#editplane').val("0");
+			$('#editplane').attr("src", "/images/editplane1.png");
+			NodeEditingPlane.rotation.x -= (90*(Math.PI / 180));
+		}
+	}
+	
+	function updateSlider(slideAmount){
+	//console.log(slideAmount)
+		var indexStartNodes=maxNbComp+3;
+		for (var i=0;i<segmentPts;i++){
+			scene.children[indexStartNodes+2].geometry.attributes.op.array[i]=(parseFloat(slideAmount)/100);	
+		}
+		scene.children[indexStartNodes+2].geometry.attributes.op.needsUpdate = true;
+	}
+	
+	function saveLayout(){
+		var mlength=JSON.stringify(mtnlLayout).length;
+		var nbArrays=1;
+		if (mlength>524288){
+			nbArrays=parseInt(Math.ceil(mlength/524288.0));
+		}
+		if (nbArrays==1){
+			document.getElementById("layouts0").value=JSON.stringify(mtnlLayout);
+			//console.log(document.getElementById("layouts"+0).value.length)
+		}
+		else{
+			var stringSfba=JSON.stringify(mtnlLayout);
+			var chunksize=524288;
+			var stringChunks=[];
+			//console.log(mlength)
+			for (var i=0;i<nbArrays;i++){
+				stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+				document.getElementById("layouts"+i).value=stringChunks[i];
+				//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+				//console.log(document.getElementById("layouts"+i).value.length)
+			}
+			//console.log(stringChunks)
+		}
+	}
+	
+	
+	var indexStartNodes=maxNbComp+3;
+		nbCompartments= listCompartments.length;
+		//var indSelectedComp= SELECTED
+		
+		
+		//console.log(listCompartments.length);
+		//console.log(scene.children[indexStartNodes])
+		
+		for (var c=indexStartNodes;c<indexStartNodes+2;c++){
+			for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
+				for (var g=0;g<nbCompartments;g++){
+					//if (objects[g].scale<1.0){
+					//	scene.children[c].geometry
+					//}
+					if (scene.children[c].geometry.attributes.compartment.array[h]==g){
+						//console.log(scene.children[c].geometry)
+						
+							scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x;//-stackCompInitialPos[cRef].x-stackCompInitialPos[cRef].x;
+							scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y;//-stackCompInitialPos[cRef].y-stackCompInitialPos[cRef].y;
+							scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z;//-stackCompInitialPos[cRef].z-stackCompInitialPos[cRef].z;
+							
+							var displacement = new THREE.Vector3(scene.children[c].geometry.attributes.position.array[h*3+0]- objects[g].position.x,
+																 scene.children[c].geometry.attributes.position.array[h*3+1]- objects[g].position.y,
+																 scene.children[c].geometry.attributes.position.array[h*3+2]- objects[g].position.z)
+							if (objects[g].scale.x<1.0){
+								scene.children[c].geometry.attributes.position.array[h*3+0]-=(displacement.x*(1-objects[g].scale.x));
+								scene.children[c].geometry.attributes.position.array[h*3+1]-=(displacement.y*(1-objects[g].scale.y));
+								scene.children[c].geometry.attributes.position.array[h*3+2]-=(displacement.z*(1-objects[g].scale.z));
+								scene.children[c].geometry.attributes.size.array[h]*=0.417777;
+							}
+							if (objects[g].scale.x>1.0){
+								var indLayer=-1;
+								for (var ref in generalLayout["outer"]){
+									if (generalLayout["outer"].hasOwnProperty(ref)){
+										indLayer =generalLayout["outer"][ref].indexOf(objects[g].name);
+										//if (indLayer!=-1){}
+									}
+								}
+								if (indLayer>-1){
+									var lengthV = displacement.length();
+									displacement.setLength(lengthV+((indLayer+0.5)*radiusComp));
+									scene.children[c].geometry.attributes.position.array[h*3+0]+=(displacement.x);
+									scene.children[c].geometry.attributes.position.array[h*3+1]+=(displacement.y+radiusComp/2);
+									scene.children[c].geometry.attributes.position.array[h*3+2]+=(displacement.z);
+									scene.children[c].geometry.attributes.size.array[h]/=0.417777;
+								}
+								
+								
+							}
+						
+						
+					}
+				}
+			}
+			scene.children[c].geometry.attributes.position.needsUpdate = true;
+			scene.children[c].geometry.attributes.size.needsUpdate = true;
+		}
+		
+		if (mtnlLayout["nodes_layout"]){
+			var listDisplacedNodes = Object.keys(mtnlLayout["nodes_layout"]);
+			if (listDisplacedNodes.length>0){
+				//console.log(mtnlLayout["nodes_layout"])
+				for(var i=0, ii= listDisplacedNodes.length;i<ii;i++){
+					var typeNode=idMap[listDisplacedNodes[i]][0];
+					var indexNode=idMap[listDisplacedNodes[i]][1];
+					if (typeNode==2){
+						scene.children[indexStartNodes].geometry.attributes.position.array[indexNode*3+0]=mtnlLayout["nodes_layout"][listDisplacedNodes[i]].x;
+						scene.children[indexStartNodes].geometry.attributes.position.array[indexNode*3+1]=mtnlLayout["nodes_layout"][listDisplacedNodes[i]].y;
+						scene.children[indexStartNodes].geometry.attributes.position.array[indexNode*3+2]=mtnlLayout["nodes_layout"][listDisplacedNodes[i]].z;
+						
+					}
+					if (typeNode==4){
+						scene.children[indexStartNodes+1].geometry.attributes.position.array[indexNode*3+0]=mtnlLayout["nodes_layout"][listDisplacedNodes[i]].x;
+						scene.children[indexStartNodes+1].geometry.attributes.position.array[indexNode*3+1]=mtnlLayout["nodes_layout"][listDisplacedNodes[i]].y;
+						scene.children[indexStartNodes+1].geometry.attributes.position.array[indexNode*3+2]=mtnlLayout["nodes_layout"][listDisplacedNodes[i]].z;
+					}
+				}
+				scene.children[indexStartNodes].geometry.attributes.position.needsUpdate = true;
+				scene.children[indexStartNodes+1].geometry.attributes.position.needsUpdate = true;
+				//
+				//
+				//if (typeNode==2){console.log(""+2)}
+				//if (typeNode==4){console.log(""+4)}
+				//
+				
+			}
+			//console.log("nodes layout")
+			//
+		}
+		
+		//console.log(metabolicNodes[9802])
+		
+		
+		var iv=0;
+		for ( var i = 0; i < segments; i ++ ) {
+			var t1 = metabolicNodes[metabolicEdges[i][0]][6]
+			var t2 = metabolicNodes[metabolicEdges[i][1]][6]
+			//console.log(t1)
+			//console.log(t2)
+			//var ivList=[]
+			var doIt=0
+			if (t1==2){
+				//console.log(idMap[jsonObj2[i][0]][1])
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;					
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+				
+				iv++;
+			}
+			else if (t1==4){
+				//console.log(idMap[jsonObj2[i][0]][1])
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+				iv++;
+			}
+			if (t2 ==2){
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;						
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;	
+				iv++;
+			}
+			else if (t2 ==4){
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;
+				scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;				
+				iv++;
+			}
+			
+		}
+		scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
+		
+		
+		
+		
 	
 	</script>	
 	

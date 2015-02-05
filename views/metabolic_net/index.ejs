@@ -13,11 +13,11 @@
 		
 
 		<% _.each(mtns, function(mtn) { %>
-		<tr data-id="<%= mtn.id %>" data-model="mtn">
+		<tr data-id="<%= mtn[0] %>" data-model="mtn">
 			
-			<td style="font-size:15px;"><b><%= mtn.name %></b></td>
-			<td style="font-size:15px;"><%= mtn.comment %></td>
-			<td><a href="/metabolic_net/show/<%= mtn.id %>" class="btn btn-sm btn-success">Show</a></td>
+			<td style="font-size:15px;"><b><%= mtn[1] %></b></td>
+			<td style="font-size:15px;"><%= mtn[2] %></td>
+			<td><a href="/metabolic_net/show/<%= mtn[0] %>" class="btn btn-sm btn-success">Show</a></td>
 		</tr> 
 
 		<% }) %>
@@ -35,7 +35,7 @@
 var mtns=<%- JSON.stringify(mtns) %>;
 var listMtns= [];
 for (var i=0;i<mtns.length;i++){
-	listMtns.push([mtns[i].name, mtns[i]['file'][0].length, mtns[i]['file'][1].length,mtns[i]['file'][2].length]);
+	listMtns.push([mtns[i][1], mtns[i][3], mtns[i][4],mtns[i][5]]);
 }
 //console.log(mtns)
 

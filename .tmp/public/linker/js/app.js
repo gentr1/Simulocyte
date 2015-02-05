@@ -27,6 +27,7 @@
     socket.get('/user/subscribe');
 	socket.get('/experiment/subscribe');
 	socket.get('/metabolic_net/subscribe');
+	socket.get('/metabolic_net_layout/subscribe');
 	socket.get('/qsspn_model/subscribe');
 	socket.get('/lab/subscribe');
 	socket.get('/fbaexperiment/subscribe');
@@ -135,11 +136,27 @@ function cometMessageReceivedFromServer(message) {
 	
 	
   }  
+	if(message.model === 'fbaexperiment') {
+		console.log("fba experiment recognised")
+		var page = document.location.pathname;
+		page = page.replace(/(\/)$/, '');
+		if (page==('/fbaexperiment/show/'+message.id)){
+			if (message.verb === 'update') {
+				console.log("message exp results: "+message.data.results);
+				setTimeout(function() {
+					location.reload();
+				}, 3000);
+			}
+		} 
+	}
   if (message.model === 'lab') {
 	console.log("lab update message id: "+message.id)
   } 
   if (message.model === 'metabolic_net') {
 	console.log("metabolic net update message id: "+message.id)
+  } 
+  if (message.model === 'metabolic_net_layout') {
+	console.log("metabolic net layout update message id: "+message.id)
   } 
   if (message.model === 'qsspn_model') {
 	console.log("qsspn model update message id: "+message.id)

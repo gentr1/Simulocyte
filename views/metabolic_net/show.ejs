@@ -7,7 +7,21 @@
 	
 	<%= mtn.comment %>
 	<hr>
-	<a href="/metabolic_net/layoutEditor/<%= mtn.id %>" class="btn btn-sm btn-success">Layout Editor</a>
+	<form action="/metabolic_net/show/<%= mtn.id %>" id="layout-select-form" method="POST" >
+	
+	<input type="text" name="mtnl-id" id ="mtnl-id" style="visibility: hidden;" value=""/>
+	<input type="submit" value="Select Layout:" class="btn btn-sm btn-success"/>
+	<select name="metabolic_net_layouts" id="layout-selector" onchange="selectLayout(this)">
+		<option value="">None</option>
+		<% _.each(mtnls, function(mtnl) {%>
+		   <option value=<%=mtnl[0]%>><%=mtnl[1]%></option>
+		<% }) %>
+	</select>&nbsp &nbsp &nbsp &nbsp &nbsp
+	<a href="/metabolic_net_layout/new" class="btn btn-sm btn-primary">Add new Layout</a>
+	<a href="/metabolic_net_layout/index" class="btn btn-sm btn-success">Edit/View layouts</a>
+	<input type="hidden" name="_csrf" value="<%= _csrf %>" />
+	</form>
+	
 	<hr>
 	<%var data=[];
 	_.each(mtn.file, function(compartment) {
@@ -22,19 +36,8 @@
 		<a href="" id="menuToggle" title="show menu">
 		<span class="navClosed"><i>show menu</i></span>
 		</a>
-		<a href="#" title="Item 1">Hide/Show</a>
-		<button class="btn btn-default btn-xs" title="Make metabolic network lines invisible/visible" id="view4" style="position: relative;left: 20px;">Lines</button>
-		<button class="btn btn-default btn-xs" title="Hide/show tokens (if problem, just refresh the page)" id="view5" style="position: relative;left: 20px;">Token</button>
-		<br><p style="position: relative;left: 20px;color:white">Line Opacity: <input id="defaultSlider" type="range" min="0" max="100" value="25" onchange="updateSlider(this.value)" style="position: relative;left: 20px"/></p>
-		
-		
-		<a href="#" title="Item 2">Layout</a>
-		<p style="position: relative;left: 20px;color:white">Choose Layout: <select name="select" id="selectLayout" onchange="selectValue(this)">
-		  <option value="default" selected>Default</option> 
-		  <option value="kegg map">Kegg Map</option> 
-		</select></p>
-		<button class="btn btn-default btn-xs" title="Explode metabolic network by compartment (if problem, just refresh the page)" id="view2" style="position: relative;left: 20px;">explode</button>
-		<button class="btn btn-default btn-xs" title="Put back initial view (if problem, just refresh the page)" id="view1" style="position: relative;left: 20px;">flatten</button>
+		<a href="#" title="Item 1">Hide/Show</a>		
+		<br><p style="position: relative;left: 20px;color:white">Line Opacity: <input id="defaultSlider" type="range" min="0.0" max="20.0" value="15" step="0.005" onchange="updateSlider(this.value)" style="position: relative;left: 20px"/></p>			
 	</nav>
 	
 	<div id="menu" >
@@ -367,7 +370,15 @@
 		
 		var cbColModel, idsOfSelectedRows = [];
 		
-		
+		var layouts = <%-JSON.stringify(mtnls)%>
+		var mtnl = <%-JSON.stringify(mtnl)%>
+		if (mtnl.hasOwnProperty("id")){
+			document.getElementById("layout-selector").value=mtnl.id;
+			//console.log(mtnl.id)
+		}
+		var mtnlLayout=mtnl.layout;
+		//console.log(mtnlLayout)
+		//console.log(layouts)
 		//var list_compartments=<%-JSON.stringify(data[0])%>;
 		//var list_nodes=<%-JSON.stringify(data[1])%>;
 		//var list_edges=<%-JSON.stringify(data[2])%>;
@@ -3341,960 +3352,960 @@
 			document.addEventListener( 'mousedown', onDocumentMouseDown, false );
 			document.addEventListener( 'mouseup', onDocumentMouseUp, false );
 			
-			
-			var button = document.getElementById( 'view4' );
-			button.addEventListener( 'click', function ( event ) {
-				//console.log("view3");
+		}	
+			// var button = document.getElementById( 'view4' );
+			// button.addEventListener( 'click', function ( event ) {
+				// //console.log("view3");
 				
-				if (toggledLines==0){
-					//console.log(scene.children[7].geometry.attributes.compartment.array.length);
-					//for ( var iv = 0; iv < scene.children[7].geometry.attributes.position.array.length; iv +=2) {
-					for ( var iv = 0; iv <extraLinesCnt; iv +=2) {
-						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] -=50000;
-						scene.children[7].geometry.attributes.position.array[ ((iv+1) * 3) + 2 ] -=50000;
-					}
+				// if (toggledLines==0){
+					// //console.log(scene.children[7].geometry.attributes.compartment.array.length);
+					// //for ( var iv = 0; iv < scene.children[7].geometry.attributes.position.array.length; iv +=2) {
+					// for ( var iv = 0; iv <extraLinesCnt; iv +=2) {
+						// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] -=50000;
+						// scene.children[7].geometry.attributes.position.array[ ((iv+1) * 3) + 2 ] -=50000;
+					// }
 					
-					scene.children[7].geometry.attributes.position.needsUpdate = true;
-					toggledLines=1
-				}
-				else{
-					//for ( var iv = 0; iv < scene.children[7].geometry.attributes.position.array.length; iv +=2) {
-					for ( var iv = 0; iv <extraLinesCnt; iv +=2) {
-						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] +=50000;
-						scene.children[7].geometry.attributes.position.array[ ((iv+1) * 3) + 2 ] +=50000;
-					}
+					// scene.children[7].geometry.attributes.position.needsUpdate = true;
+					// toggledLines=1
+				// }
+				// else{
+					// //for ( var iv = 0; iv < scene.children[7].geometry.attributes.position.array.length; iv +=2) {
+					// for ( var iv = 0; iv <extraLinesCnt; iv +=2) {
+						// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] +=50000;
+						// scene.children[7].geometry.attributes.position.array[ ((iv+1) * 3) + 2 ] +=50000;
+					// }
 					
-					scene.children[7].geometry.attributes.position.needsUpdate = true;
+					// scene.children[7].geometry.attributes.position.needsUpdate = true;
 					
 					
-					toggledLines=0
-				}
+					// toggledLines=0
+				// }
 
-			}, false );
+			// }, false );
 			
-			var button = document.getElementById( 'view5' );
-		button.addEventListener( 'click', function ( event ) {
-			//console.log("view3");
+			// var button = document.getElementById( 'view5' );
+		// button.addEventListener( 'click', function ( event ) {
+			// //console.log("view3");
 			
-			if (toggledToken==0){
-				var ii=0;
-				for ( var i = 0; i <segmentPts+maxNbTokenModel ; i +=2 ) {
+			// if (toggledToken==0){
+				// var ii=0;
+				// for ( var i = 0; i <segmentPts+maxNbTokenModel ; i +=2 ) {
 				
-					//scene.children[8].geometry.vertices[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
-					scene.children[8].geometry.vertices[ii].y-=50000;
-					//scene.children[8].geometry.vertices[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
-					ii++;
-				}
-				//console.log(tokenAttributes.endPosition.value[0]);
-				var ii=0;
-				for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
-					//tokenAttributes.endPosition.value[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
-					tokenAttributes.endPosition.value[ii].y-=50000;
-					//tokenAttributes.endPosition.value[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
-					ii++;
-				}
-				//console.log(tokenAttributes.endPosition.value[0]);
-				scene.children[8].geometry.verticesNeedUpdate = true;
-				tokenAttributes.endPosition.needsUpdate = true;
-				tokenUniforms.mixAmount.value = 0.0;
-				//var ii=0;
-				//for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
-				//	tokenAttributes.mixAmount.value[ii] = 0.0;
-				//	ii++;
-				//}
-				//tokenAttributes.mixAmount.needsUpdate = true;
-				toggledToken=1
-			}
-			else{
-				var ii=0;
-				for ( var i = 0; i <segmentPts+maxNbTokenModel ; i +=2 ) {
+					// //scene.children[8].geometry.vertices[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
+					// scene.children[8].geometry.vertices[ii].y-=50000;
+					// //scene.children[8].geometry.vertices[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
+					// ii++;
+				// }
+				// //console.log(tokenAttributes.endPosition.value[0]);
+				// var ii=0;
+				// for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
+					// //tokenAttributes.endPosition.value[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
+					// tokenAttributes.endPosition.value[ii].y-=50000;
+					// //tokenAttributes.endPosition.value[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
+					// ii++;
+				// }
+				// //console.log(tokenAttributes.endPosition.value[0]);
+				// scene.children[8].geometry.verticesNeedUpdate = true;
+				// tokenAttributes.endPosition.needsUpdate = true;
+				// tokenUniforms.mixAmount.value = 0.0;
+				// //var ii=0;
+				// //for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
+				// //	tokenAttributes.mixAmount.value[ii] = 0.0;
+				// //	ii++;
+				// //}
+				// //tokenAttributes.mixAmount.needsUpdate = true;
+				// toggledToken=1
+			// }
+			// else{
+				// var ii=0;
+				// for ( var i = 0; i <segmentPts+maxNbTokenModel ; i +=2 ) {
 				
-					//scene.children[8].geometry.vertices[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
-					scene.children[8].geometry.vertices[ii].y+=50000;
-					//scene.children[8].geometry.vertices[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
-					ii++;
-				}
-				//console.log(tokenAttributes.endPosition.value[0]);
-				var ii=0;
-				for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
-					//tokenAttributes.endPosition.value[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
-					tokenAttributes.endPosition.value[ii].y+=50000;
-					//tokenAttributes.endPosition.value[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
-					ii++;
-				}
-				//console.log(tokenAttributes.endPosition.value[0]);
-				scene.children[8].geometry.verticesNeedUpdate = true;
-				tokenAttributes.endPosition.needsUpdate = true;
-				tokenUniforms.mixAmount.value = 0.0;
-				//var ii=0;
-				//for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
-				//	tokenAttributes.mixAmount.value[ii] = 0.0;
-				//	ii++;
-				//}
-				//tokenAttributes.mixAmount.needsUpdate = true;
-				toggledToken=0
-			}
+					// //scene.children[8].geometry.vertices[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
+					// scene.children[8].geometry.vertices[ii].y+=50000;
+					// //scene.children[8].geometry.vertices[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
+					// ii++;
+				// }
+				// //console.log(tokenAttributes.endPosition.value[0]);
+				// var ii=0;
+				// for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
+					// //tokenAttributes.endPosition.value[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
+					// tokenAttributes.endPosition.value[ii].y+=50000;
+					// //tokenAttributes.endPosition.value[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
+					// ii++;
+				// }
+				// //console.log(tokenAttributes.endPosition.value[0]);
+				// scene.children[8].geometry.verticesNeedUpdate = true;
+				// tokenAttributes.endPosition.needsUpdate = true;
+				// tokenUniforms.mixAmount.value = 0.0;
+				// //var ii=0;
+				// //for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
+				// //	tokenAttributes.mixAmount.value[ii] = 0.0;
+				// //	ii++;
+				// //}
+				// //tokenAttributes.mixAmount.needsUpdate = true;
+				// toggledToken=0
+			// }
 
-		}, false );
+		// }, false );
 		
-		var button = document.getElementById( 'view2' );
-				button.addEventListener( 'click', function ( event ) {
+		// var button = document.getElementById( 'view2' );
+				// button.addEventListener( 'click', function ( event ) {
 				
-				if (exploded==false){
+				// if (exploded==false){
 				
-				focus_label=0;
+				// focus_label=0;
 				
-				//console.log(nbOrganelles)
-				for (var i=0;i<nbOrganelles;i++){
-					organelles[i].position.set( Math.sin((2*Math.PI)/nbOrganelles*i)*scaleExplosion, yStartDisplacement, Math.cos((2*Math.PI)/nbOrganelles*i)*scaleExplosion );
+				// //console.log(nbOrganelles)
+				// for (var i=0;i<nbOrganelles;i++){
+					// organelles[i].position.set( Math.sin((2*Math.PI)/nbOrganelles*i)*scaleExplosion, yStartDisplacement, Math.cos((2*Math.PI)/nbOrganelles*i)*scaleExplosion );
 					
-				}
-				//if (selectedModel[0][0]=="Ecoli2.0"){
+				// }
+				// //if (selectedModel[0][0]=="Ecoli2.0"){
 									
-				//}
-				KeggMapPlan.position.y+=1000;
-				nucleus.position.set( 0, yStartDisplacement+1000, 0 );
-				cytoplasm.position.set( 0, yStartDisplacement-1000, 0 );
-				ECM.position.set( 0, yStartDisplacement-3000, 0 );
-				if (nameModel=="Ec_iAF1260_flux2"){
-					nucleus.position.set( 0, yStartDisplacement+0, 1000 );
-					cytoplasm.position.set( 0, yStartDisplacement+0, 0 );
-					ECM.position.set( 0, yStartDisplacement+0, -1000 );
-				}
-				/*if (nameModel=="iTO977_v1.00_cobra"){
-					nucleus.position.set( 0, yStartDisplacement+0, 1000 );
-					cytoplasm.position.set( 0, yStartDisplacement+0, 0 );
-					ECM.position.set( 0, yStartDisplacement+0, -1000 );
-				}*/
+				// //}
+				// KeggMapPlan.position.y+=1000;
+				// nucleus.position.set( 0, yStartDisplacement+1000, 0 );
+				// cytoplasm.position.set( 0, yStartDisplacement-1000, 0 );
+				// ECM.position.set( 0, yStartDisplacement-3000, 0 );
+				// if (nameModel=="Ec_iAF1260_flux2"){
+					// nucleus.position.set( 0, yStartDisplacement+0, 1000 );
+					// cytoplasm.position.set( 0, yStartDisplacement+0, 0 );
+					// ECM.position.set( 0, yStartDisplacement+0, -1000 );
+				// }
+				// /*if (nameModel=="iTO977_v1.00_cobra"){
+					// nucleus.position.set( 0, yStartDisplacement+0, 1000 );
+					// cytoplasm.position.set( 0, yStartDisplacement+0, 0 );
+					// ECM.position.set( 0, yStartDisplacement+0, -1000 );
+				// }*/
 				
-				//console.log("view2");
-				for (var c=0;c<7;c++){
+				// //console.log("view2");
+				// for (var c=0;c<7;c++){
 					
-						for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
-							for (var g=0;g<nbOrganelles;g++){
-								if (scene.children[c].geometry.attributes.compartment.array[h]==g){
-								//console.log(g)
-									scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
-									scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
-								}
+						// for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
+							// for (var g=0;g<nbOrganelles;g++){
+								// if (scene.children[c].geometry.attributes.compartment.array[h]==g){
+								// //console.log(g)
+									// scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
+									// scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
+								// }
 								
-							}
-							if (scene.children[c].geometry.attributes.compartment.array[h]==nbOrganelles){
-								if (nameModel=="Ec_iAF1260_flux2"){
-									scene.children[c].geometry.attributes.position.array[h*3+2]+=1000;
-								}
-								else{
-									scene.children[c].geometry.attributes.position.array[h*3+1]+=(1000);
-								}
+							// }
+							// if (scene.children[c].geometry.attributes.compartment.array[h]==nbOrganelles){
+								// if (nameModel=="Ec_iAF1260_flux2"){
+									// scene.children[c].geometry.attributes.position.array[h*3+2]+=1000;
+								// }
+								// else{
+									// scene.children[c].geometry.attributes.position.array[h*3+1]+=(1000);
+								// }
 									
-									//scene.children[c].geometry.attributes.position.array[h*3+0]=scene.children[c].geometry.attributes.position.array[h*3+0]*2;
-									//scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*2000;
-									//scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*2000;
-							}
-							if (scene.children[c].geometry.attributes.compartment.array[h]==nbOrganelles+1){
-								if (nameModel=="Ec_iAF1260_flux2"){
-									//scene.children[c].geometry.attributes.position.array[h*3+2]-=1000;
-								}
-								else{
-									scene.children[c].geometry.attributes.position.array[h*3+1]-=(1000);
-								}
+									// //scene.children[c].geometry.attributes.position.array[h*3+0]=scene.children[c].geometry.attributes.position.array[h*3+0]*2;
+									// //scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*2000;
+									// //scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*2000;
+							// }
+							// if (scene.children[c].geometry.attributes.compartment.array[h]==nbOrganelles+1){
+								// if (nameModel=="Ec_iAF1260_flux2"){
+									// //scene.children[c].geometry.attributes.position.array[h*3+2]-=1000;
+								// }
+								// else{
+									// scene.children[c].geometry.attributes.position.array[h*3+1]-=(1000);
+								// }
 								
-								//scene.children[c].geometry.attributes.position.array[h*3+0]+=2000;
-								//scene.children[c].geometry.attributes.position.array[h*3+2]*=6;
-									//scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*2000;
-									//scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*2000;
-							}
-							if (scene.children[c].geometry.attributes.compartment.array[h]==nbOrganelles+2){
-								if (nameModel=="Ec_iAF1260_flux2"){
-									scene.children[c].geometry.attributes.position.array[h*3+2]-=1000;
-								}
-								else{
-									scene.children[c].geometry.attributes.position.array[h*3+1]-=(3000);
-								}
+								// //scene.children[c].geometry.attributes.position.array[h*3+0]+=2000;
+								// //scene.children[c].geometry.attributes.position.array[h*3+2]*=6;
+									// //scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*2000;
+									// //scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*2000;
+							// }
+							// if (scene.children[c].geometry.attributes.compartment.array[h]==nbOrganelles+2){
+								// if (nameModel=="Ec_iAF1260_flux2"){
+									// scene.children[c].geometry.attributes.position.array[h*3+2]-=1000;
+								// }
+								// else{
+									// scene.children[c].geometry.attributes.position.array[h*3+1]-=(3000);
+								// }
 								
-								//scene.children[c].geometry.attributes.position.array[h*3+0]-=2000;
-								//scene.children[c].geometry.attributes.position.array[h*3+2]*=9;
-									//scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*2000;
-									//scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*2000;
-							}
+								// //scene.children[c].geometry.attributes.position.array[h*3+0]-=2000;
+								// //scene.children[c].geometry.attributes.position.array[h*3+2]*=9;
+									// //scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*2000;
+									// //scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*2000;
+							// }
 							
-							//b2compartments[ (i * 2)+0 ] = b1values_compartment[ i  ];
-							//b2compartments[ (i * 2)+1 ] = b1values_compartment[ i+1  ];
+							// //b2compartments[ (i * 2)+0 ] = b1values_compartment[ i  ];
+							// //b2compartments[ (i * 2)+1 ] = b1values_compartment[ i+1  ];
 							
-						}
+						// }
 					
 					
-					scene.children[c].geometry.attributes.position.needsUpdate = true;
-				}
+					// scene.children[c].geometry.attributes.position.needsUpdate = true;
+				// }
 				
-				var iv=0;
-				for ( var i = 0; i < segments; i ++ ) {
-					var t1 = jsonObj1[jsonObj2[i][0]][6]
-					var t2 = jsonObj1[jsonObj2[i][1]][6]
-					//console.log(t1)
-					//console.log(t2)
-					//var ivList=[]
-					var doIt=0
-					if (t1==2){
-						//console.log(idMap[jsonObj2[i][0]][1])
-						scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 0 ]+0.0;
-						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 1 ]+0.0;					
-						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 2 ]+0.0;
+				// var iv=0;
+				// for ( var i = 0; i < segments; i ++ ) {
+					// var t1 = jsonObj1[jsonObj2[i][0]][6]
+					// var t2 = jsonObj1[jsonObj2[i][1]][6]
+					// //console.log(t1)
+					// //console.log(t2)
+					// //var ivList=[]
+					// var doIt=0
+					// if (t1==2){
+						// //console.log(idMap[jsonObj2[i][0]][1])
+						// scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 0 ]+0.0;
+						// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 1 ]+0.0;					
+						// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 2 ]+0.0;
 						
-						iv++;
-					}
-					else if (t1==4){
-						//console.log(idMap[jsonObj2[i][0]][1])
-						scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 0 ]+0.0;
-						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 1 ]+0.0;
-						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 2 ]+0.0;
-						iv++;
-					}
-					if (t2 ==2){
-						scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 0 ]+0.0;
-						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 1 ]+0.0;						
-						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 2 ]+0.0;	
-						iv++;
-					}
-					else if (t2 ==4){
-						scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 0 ]+0.0;
-						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 1 ]+0.0;
-						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 2 ]+0.0;				
-						iv++;
-					}
+						// iv++;
+					// }
+					// else if (t1==4){
+						// //console.log(idMap[jsonObj2[i][0]][1])
+						// scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 0 ]+0.0;
+						// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 1 ]+0.0;
+						// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 2 ]+0.0;
+						// iv++;
+					// }
+					// if (t2 ==2){
+						// scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 0 ]+0.0;
+						// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 1 ]+0.0;						
+						// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 2 ]+0.0;	
+						// iv++;
+					// }
+					// else if (t2 ==4){
+						// scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 0 ]+0.0;
+						// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 1 ]+0.0;
+						// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 2 ]+0.0;				
+						// iv++;
+					// }
 					
-				}
-				scene.children[7].geometry.attributes.position.needsUpdate = true;
-				///////////////////////
+				// }
+				// scene.children[7].geometry.attributes.position.needsUpdate = true;
+				// ///////////////////////
 				
-				if (selectedModelNodes){
-					var cnt1=0;
-					var cnt2=0;
-					var cnt=0;
-					var ln1 = scene.children[2].geometry.attributes.size.array.length-5000;
-					var ln2 = scene.children[4].geometry.attributes.size.array.length-5000;
+				// if (selectedModelNodes){
+					// var cnt1=0;
+					// var cnt2=0;
+					// var cnt=0;
+					// var ln1 = scene.children[2].geometry.attributes.size.array.length-5000;
+					// var ln2 = scene.children[4].geometry.attributes.size.array.length-5000;
 					
-					for (var mi= 0; mi<selectedModelNodes.length;mi++){
-						if (selectedModelNodes[mi][5]==2 ){
-							if (selectedModelNodes[mi][2]<nbOrganelles && selectedModelNodes[mi][2]>=0){
+					// for (var mi= 0; mi<selectedModelNodes.length;mi++){
+						// if (selectedModelNodes[mi][5]==2 ){
+							// if (selectedModelNodes[mi][2]<nbOrganelles && selectedModelNodes[mi][2]>=0){
 								
-								scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*selectedModelNodes[mi][2])*scaleExplosion;
-								scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*selectedModelNodes[mi][2])*scaleExplosion;
-								cnt++;
-								cnt1++;
-							}
-							else if (selectedModelNodes[mi][2]==nbOrganelles){
-								scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]+=1000;
-								cnt++;
-								cnt1++;
-							}
-							else if (selectedModelNodes[mi][2]==nbOrganelles+1){
-								scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]-=1000;
-								cnt++;
-								cnt1++;
-							}
-							else if (selectedModelNodes[mi][2]==nbOrganelles+2){
-								scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]-=3000;
-								cnt++;
-								cnt1++;
-							}
-						}
-						else if (selectedModelNodes[mi][5]==4 ){
-							if (selectedModelNodes[mi][2]<nbOrganelles && selectedModelNodes[mi][2]>=0){
+								// scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*selectedModelNodes[mi][2])*scaleExplosion;
+								// scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*selectedModelNodes[mi][2])*scaleExplosion;
+								// cnt++;
+								// cnt1++;
+							// }
+							// else if (selectedModelNodes[mi][2]==nbOrganelles){
+								// scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]+=1000;
+								// cnt++;
+								// cnt1++;
+							// }
+							// else if (selectedModelNodes[mi][2]==nbOrganelles+1){
+								// scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]-=1000;
+								// cnt++;
+								// cnt1++;
+							// }
+							// else if (selectedModelNodes[mi][2]==nbOrganelles+2){
+								// scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]-=3000;
+								// cnt++;
+								// cnt1++;
+							// }
+						// }
+						// else if (selectedModelNodes[mi][5]==4 ){
+							// if (selectedModelNodes[mi][2]<nbOrganelles && selectedModelNodes[mi][2]>=0){
 								
-								scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*selectedModelNodes[mi][2])*scaleExplosion;
-								scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*selectedModelNodes[mi][2])*scaleExplosion;
-								cnt++;
-								cnt2++;
-							}
-							else if (selectedModelNodes[mi][2]==nbOrganelles){
-								scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]+=1000;
-								cnt++;
-								cnt2++;
-							}
-							else if (selectedModelNodes[mi][2]==nbOrganelles+1){
-								scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]-=1000;
-								cnt++;
-								cnt2++;
-							}
-							else if (selectedModelNodes[mi][2]==nbOrganelles+2){
-								scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]-=3000;
-								cnt++;
-								cnt2++;
-							}
-						}
+								// scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*selectedModelNodes[mi][2])*scaleExplosion;
+								// scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*selectedModelNodes[mi][2])*scaleExplosion;
+								// cnt++;
+								// cnt2++;
+							// }
+							// else if (selectedModelNodes[mi][2]==nbOrganelles){
+								// scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]+=1000;
+								// cnt++;
+								// cnt2++;
+							// }
+							// else if (selectedModelNodes[mi][2]==nbOrganelles+1){
+								// scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]-=1000;
+								// cnt++;
+								// cnt2++;
+							// }
+							// else if (selectedModelNodes[mi][2]==nbOrganelles+2){
+								// scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]-=3000;
+								// cnt++;
+								// cnt2++;
+							// }
+						// }
 						
-					}
-					scene.children[2].geometry.attributes.compartment.needsUpdate = true;
-					scene.children[4].geometry.attributes.compartment.needsUpdate = true;
-					scene.children[2].geometry.attributes.position.needsUpdate = true;
-					scene.children[4].geometry.attributes.position.needsUpdate = true;
+					// }
+					// scene.children[2].geometry.attributes.compartment.needsUpdate = true;
+					// scene.children[4].geometry.attributes.compartment.needsUpdate = true;
+					// scene.children[2].geometry.attributes.position.needsUpdate = true;
+					// scene.children[4].geometry.attributes.position.needsUpdate = true;
 					
-					var col2 = new THREE.Color( 0xffa500 );
+					// var col2 = new THREE.Color( 0xffa500 );
 					
 					
 					
-					var count=0;
-					for ( var iv = extraLinesCnt; iv <extraLinesCnt+nbEdgesModel; iv +=1) {
-						var t1;
-						var t2;
-						var pt1;
-						var pt2;
-						var sim1=1;
-						var sim2=1;
-						pt1 = selectedModelEdges[iv-extraLinesCnt][0]+jsonObj1.length;
-						sim1 = idMap[pt1][0]
-						t1 = selectedModelNodes[selectedModelEdges[iv-extraLinesCnt][0]][5];
-						if (selectedModelEdges[iv-extraLinesCnt][3]==2){
-							//console.log("link between model and metabolic nodes")
+					// var count=0;
+					// for ( var iv = extraLinesCnt; iv <extraLinesCnt+nbEdgesModel; iv +=1) {
+						// var t1;
+						// var t2;
+						// var pt1;
+						// var pt2;
+						// var sim1=1;
+						// var sim2=1;
+						// pt1 = selectedModelEdges[iv-extraLinesCnt][0]+jsonObj1.length;
+						// sim1 = idMap[pt1][0]
+						// t1 = selectedModelNodes[selectedModelEdges[iv-extraLinesCnt][0]][5];
+						// if (selectedModelEdges[iv-extraLinesCnt][3]==2){
+							// //console.log("link between model and metabolic nodes")
 							
-							if (typeof selectedModelEdges[iv-extraLinesCnt][1] == "number"){
-								pt2=selectedModelEdges[iv-extraLinesCnt][1];
-							}
-							else{
-								pt2=selectedModelEdges[iv-extraLinesCnt][1][0];
-							}
-							t2 = jsonObj1[pt2][6]
-							sim2=2;
-						}
-						else{
-							//console.log("link between model nodes")
-							if (typeof selectedModelEdges[iv-extraLinesCnt][1] == "number"){
-								pt2=selectedModelEdges[iv-extraLinesCnt][1];
-							}
-							else{
-								pt2=selectedModelEdges[iv-extraLinesCnt][1][0];
-							}
-							t2 = selectedModelNodes[pt2][5];
-						}
-						if (sim2!=2){
-							pt2+=jsonObj1.length;
-							//console.log(idMap[pt2]);
-						}
-						scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 0 ] =scene.children[idMap[pt1][0]].geometry.attributes.position.array[ (idMap[pt1][1] * 3) + 0 ]+0.0;
-						scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 1 ] =scene.children[idMap[pt1][0]].geometry.attributes.position.array[ (idMap[pt1][1] * 3) + 1 ]+0.0;
-						scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 2 ] =scene.children[idMap[pt1][0]].geometry.attributes.position.array[ (idMap[pt1][1] * 3) + 2 ]+0.0;
-						if (sim2==2){
-						scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 ] = col2.r;
-						scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 + 1 ] = col2.g;
-						scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 + 2 ] = col2.b;
-						}
-						count+=1;
-						scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 0 ] =scene.children[idMap[pt2][0]].geometry.attributes.position.array[ (idMap[pt2][1] * 3) + 0 ]+0.0;
-						scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 1 ] =scene.children[idMap[pt2][0]].geometry.attributes.position.array[ (idMap[pt2][1] * 3) + 1 ]+0.0;
-						scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 2 ] =scene.children[idMap[pt2][0]].geometry.attributes.position.array[ (idMap[pt2][1] * 3) + 2 ]+0.0;
-						if (sim2==2){
-						scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 ] = col2.r;
-						scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 + 1 ] = col2.g;
-						scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 + 2 ] = col2.b;
-						}
-						count+=1;
-					}
-					scene.children[7].geometry.attributes.position.needsUpdate = true;
-					scene.children[7].geometry.attributes.ca.needsUpdate = true;
-				}	
+							// if (typeof selectedModelEdges[iv-extraLinesCnt][1] == "number"){
+								// pt2=selectedModelEdges[iv-extraLinesCnt][1];
+							// }
+							// else{
+								// pt2=selectedModelEdges[iv-extraLinesCnt][1][0];
+							// }
+							// t2 = jsonObj1[pt2][6]
+							// sim2=2;
+						// }
+						// else{
+							// //console.log("link between model nodes")
+							// if (typeof selectedModelEdges[iv-extraLinesCnt][1] == "number"){
+								// pt2=selectedModelEdges[iv-extraLinesCnt][1];
+							// }
+							// else{
+								// pt2=selectedModelEdges[iv-extraLinesCnt][1][0];
+							// }
+							// t2 = selectedModelNodes[pt2][5];
+						// }
+						// if (sim2!=2){
+							// pt2+=jsonObj1.length;
+							// //console.log(idMap[pt2]);
+						// }
+						// scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 0 ] =scene.children[idMap[pt1][0]].geometry.attributes.position.array[ (idMap[pt1][1] * 3) + 0 ]+0.0;
+						// scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 1 ] =scene.children[idMap[pt1][0]].geometry.attributes.position.array[ (idMap[pt1][1] * 3) + 1 ]+0.0;
+						// scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 2 ] =scene.children[idMap[pt1][0]].geometry.attributes.position.array[ (idMap[pt1][1] * 3) + 2 ]+0.0;
+						// if (sim2==2){
+						// scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 ] = col2.r;
+						// scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 + 1 ] = col2.g;
+						// scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 + 2 ] = col2.b;
+						// }
+						// count+=1;
+						// scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 0 ] =scene.children[idMap[pt2][0]].geometry.attributes.position.array[ (idMap[pt2][1] * 3) + 0 ]+0.0;
+						// scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 1 ] =scene.children[idMap[pt2][0]].geometry.attributes.position.array[ (idMap[pt2][1] * 3) + 1 ]+0.0;
+						// scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 2 ] =scene.children[idMap[pt2][0]].geometry.attributes.position.array[ (idMap[pt2][1] * 3) + 2 ]+0.0;
+						// if (sim2==2){
+						// scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 ] = col2.r;
+						// scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 + 1 ] = col2.g;
+						// scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 + 2 ] = col2.b;
+						// }
+						// count+=1;
+					// }
+					// scene.children[7].geometry.attributes.position.needsUpdate = true;
+					// scene.children[7].geometry.attributes.ca.needsUpdate = true;
+				// }	
 				
-				if (toggledLines==1){
-					for ( var iv = 0; iv < extraLinesCnt; iv +=2) {
-						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] -=50000;
-						scene.children[7].geometry.attributes.position.array[ ((iv+1) * 3) + 2 ] -=50000;
-					}
+				// if (toggledLines==1){
+					// for ( var iv = 0; iv < extraLinesCnt; iv +=2) {
+						// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] -=50000;
+						// scene.children[7].geometry.attributes.position.array[ ((iv+1) * 3) + 2 ] -=50000;
+					// }
 					
-					scene.children[7].geometry.attributes.position.needsUpdate = true;
+					// scene.children[7].geometry.attributes.position.needsUpdate = true;
 					
 					
 					
-				}
-				
-				
-				selectedLinesPathsIds=[]
-				for (var i=0; i<selectedLinesPaths.length;i++){
-					for (var j=0;j<linesMap[selectedLinesPaths[i]].length;j+=1){
-						selectedLinesPathsIds.push(linesMap[selectedLinesPaths[i]][j])
-					}
-				}
-				selectedLinesPathsIds = unique(selectedLinesPathsIds)
-				for (var i=0;i<selectedLinesPathsIds.length;i+=1){
-					scene.children[7].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] +=50000;
-				}
-				scene.children[7].geometry.attributes.position.needsUpdate = true;
-					
-				var ii=0;
-				for ( var i = 0; i <segmentPts+maxNbTokenModel ; i +=2 ) {
-				
-					scene.children[8].geometry.vertices[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
-					scene.children[8].geometry.vertices[ii].y=scene.children[7].geometry.attributes.position.array[ (i * 3) + 1 ]+0;
-					scene.children[8].geometry.vertices[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
-					ii++;
-				}
-				//console.log(tokenAttributes.endPosition.value[0]);
-				var ii=0;
-				for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
-					tokenAttributes.endPosition.value[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
-					tokenAttributes.endPosition.value[ii].y=scene.children[7].geometry.attributes.position.array[ (i * 3) + 1 ]+0;
-					tokenAttributes.endPosition.value[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
-					ii++;
-				}
-				//console.log(tokenAttributes.endPosition.value[0]);
-				scene.children[8].geometry.verticesNeedUpdate = true;
-				tokenAttributes.endPosition.needsUpdate = true;
-				tokenUniforms.mixAmount.value = 0.0;
-				//var ii=0;
-				//for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
-				//	tokenAttributes.mixAmount.value[ii] = 0.0;
-				//	ii++;
-				//}
-				//tokenAttributes.mixAmount.needsUpdate = true;
-				//scene.children[8].geometry.attributes.endPosition.needsUpdate = true;
-				
-				var createArrow = function ( width, length ) {
-					var c1Geometry = new THREE.CylinderGeometry(width, width, length, 5, 5);
-					var c2Geometry = new THREE.CylinderGeometry( 0, width*2.0, length/3, 5, 1 );		
-					c2Geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, length/2+(length/6), 0 ) );	
-					var c3Geometry = new THREE.CylinderGeometry( 0, width*2.0, length/3, 5, 1 );	
-					//c3Geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, -length/2, 0 ) );
-					c3Geometry.applyMatrix( new THREE.Matrix4().makeRotationZ( -Math.PI ));
-					c3Geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, -(length/2+(length/6)), 0 ) );
-					c1Geometry.merge(c2Geometry);
-					c1Geometry.merge(c3Geometry);
-					c1Geometry.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI/2 ));
-					var cylinder = new THREE.Mesh(c1Geometry, new THREE.MeshNormalMaterial());
-					return cylinder;
-				}
-				// create arrows between compartments
-				// create arrows between organellels
-				var scaleArrowsBase = scaleExplosion/1000;
-				var cntArrows=0;
-				for (var i=0;i<nbOrganelles;i++){
-				
-					arrows[cntArrows] = createArrow(20,400);
-					scene.add( arrows[cntArrows] );
-					// shorten length
-					arrows[cntArrows].scale.z=scaleArrowsBase*0.9;
-					//cylinder.rotateX(Math.PI/2);
-					
-					var p2 = new THREE.Vector3(0,1000,0);
-					arrows[cntArrows].position.set( ((Math.sin((2*Math.PI)/nbOrganelles*i)*scaleExplosion)+p2.x)/2, (0+p2.y)/2, ((Math.cos((2*Math.PI)/nbOrganelles*i)*scaleExplosion)+p2.z)/2); 
-					arrows[cntArrows].lookAt(p2);
-					cntArrows++;
-					
-					for (var ii=0;ii<nbOrganelles;ii++){
-						if (i!=ii){
-							arrows[cntArrows] = createArrow(20,400);
-							scene.add( arrows[cntArrows] );
-							// shorten length
-							//cylinder.scale.y=0.5;
-							//cylinder.rotateX(Math.PI/2);
-							arrows[cntArrows].scale.z=scaleArrowsBase;
-							if (Math.abs(i-ii)>=2 && Math.abs(i-ii)<(nbOrganelles-1)){
-								arrows[cntArrows].scale.z=scaleArrowsBase*1.3;
-							}
-							var p3 = new THREE.Vector3((Math.sin((2*Math.PI)/nbOrganelles*i)*scaleExplosion),0,(Math.cos((2*Math.PI)/nbOrganelles*i)*scaleExplosion));
-							arrows[cntArrows].position.set( ((Math.sin((2*Math.PI)/nbOrganelles*i)*scaleExplosion)+(Math.sin((2*Math.PI)/nbOrganelles*(ii))*scaleExplosion))/2, (0+0)/2, ((Math.cos((2*Math.PI)/nbOrganelles*i)*scaleExplosion)+(Math.cos((2*Math.PI)/nbOrganelles*(ii))*scaleExplosion))/2); 
-							arrows[cntArrows].lookAt(p3);
-							cntArrows++;
-						}
-					}
-					
-					arrows[cntArrows] = createArrow(20,400);
-					scene.add( arrows[cntArrows] );
-					// shorten length
-					arrows[cntArrows].scale.z=scaleArrowsBase*0.9;
-					//cylinder.rotateX(Math.PI/2);
-					
-					var p3 = new THREE.Vector3(0,-1000,0);
-					arrows[cntArrows].position.set( ((Math.sin((2*Math.PI)/nbOrganelles*i)*scaleExplosion)+p3.x)/2, (0+p3.y)/2, ((Math.cos((2*Math.PI)/nbOrganelles*i)*scaleExplosion)+p3.z)/2); 
-					arrows[cntArrows].lookAt(p3);
-					cntArrows++;
-					arrows[cntArrows] = createArrow(20,400);
-					scene.add( arrows[cntArrows] );
-					// shorten length
-					arrows[cntArrows].scale.z=scaleArrowsBase;
-					//cylinder.rotateX(Math.PI/2);
-					
-					var p4 = new THREE.Vector3(0,-3000,0);
-					arrows[cntArrows].position.set( ((Math.sin((2*Math.PI)/nbOrganelles*i)*scaleExplosion)+p4.x)/2, (0+p4.y)/2, ((Math.cos((2*Math.PI)/nbOrganelles*i)*scaleExplosion)+p4.z)/2); 
-					arrows[cntArrows].lookAt(p4);	
-					cntArrows++;
-				}
-				
-				arrows[cntArrows] = createArrow(20,400);
-				scene.add( arrows[cntArrows] );
-				// shorten length
-				//c5.scale.z=scaleArrowsBase*0.65;
-				//cylinder.rotateX(Math.PI/2);
-				var p5 = new THREE.Vector3(0,-1000,0);
-				arrows[cntArrows].position.set( (0+p5.x)/2, (2000+p5.y)/2, (0+p5.z)/2); 
-				arrows[cntArrows].lookAt(p5);
-				cntArrows++;
-				arrows[cntArrows] = createArrow(20,400);
-				scene.add( arrows[cntArrows] );
-				// shorten length
-				//c6.scale.z=scaleArrowsBase*0.65;
-				//cylinder.rotateX(Math.PI/2);
-				var p6 = new THREE.Vector3(0,-3000,0);
-				arrows[cntArrows].position.set( (0+p6.x)/2, (-1000+p6.y)/2.5, (0+p6.z)/2); 
-				arrows[cntArrows].lookAt(p6);
-				
-				for (var i=0; i<arrows.length;i++){
-					arrows[i].position.z-=50000;
-				}
+				// }
 				
 				
-				/*if(typeof(Storage)!=="undefined") {
-					//if(resetSpreadsheet==true){localStorage.selection=="";}
-					if(resetSpreadsheet==true){localStorage.selection=[];}
-					if (localStorage.selection==""){
-						mselectedList=[]
-							//console.log("empty")
-							for (var i =0;i<spritesSelected.length;i++){		
-								spritesSelected[i].position.set(-50000,-10000,10000);
-							}
+				// selectedLinesPathsIds=[]
+				// for (var i=0; i<selectedLinesPaths.length;i++){
+					// for (var j=0;j<linesMap[selectedLinesPaths[i]].length;j+=1){
+						// selectedLinesPathsIds.push(linesMap[selectedLinesPaths[i]][j])
+					// }
+				// }
+				// selectedLinesPathsIds = unique(selectedLinesPathsIds)
+				// for (var i=0;i<selectedLinesPathsIds.length;i+=1){
+					// scene.children[7].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] +=50000;
+				// }
+				// scene.children[7].geometry.attributes.position.needsUpdate = true;
+					
+				// var ii=0;
+				// for ( var i = 0; i <segmentPts+maxNbTokenModel ; i +=2 ) {
+				
+					// scene.children[8].geometry.vertices[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
+					// scene.children[8].geometry.vertices[ii].y=scene.children[7].geometry.attributes.position.array[ (i * 3) + 1 ]+0;
+					// scene.children[8].geometry.vertices[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
+					// ii++;
+				// }
+				// //console.log(tokenAttributes.endPosition.value[0]);
+				// var ii=0;
+				// for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
+					// tokenAttributes.endPosition.value[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
+					// tokenAttributes.endPosition.value[ii].y=scene.children[7].geometry.attributes.position.array[ (i * 3) + 1 ]+0;
+					// tokenAttributes.endPosition.value[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
+					// ii++;
+				// }
+				// //console.log(tokenAttributes.endPosition.value[0]);
+				// scene.children[8].geometry.verticesNeedUpdate = true;
+				// tokenAttributes.endPosition.needsUpdate = true;
+				// tokenUniforms.mixAmount.value = 0.0;
+				// //var ii=0;
+				// //for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
+				// //	tokenAttributes.mixAmount.value[ii] = 0.0;
+				// //	ii++;
+				// //}
+				// //tokenAttributes.mixAmount.needsUpdate = true;
+				// //scene.children[8].geometry.attributes.endPosition.needsUpdate = true;
+				
+				// var createArrow = function ( width, length ) {
+					// var c1Geometry = new THREE.CylinderGeometry(width, width, length, 5, 5);
+					// var c2Geometry = new THREE.CylinderGeometry( 0, width*2.0, length/3, 5, 1 );		
+					// c2Geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, length/2+(length/6), 0 ) );	
+					// var c3Geometry = new THREE.CylinderGeometry( 0, width*2.0, length/3, 5, 1 );	
+					// //c3Geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, -length/2, 0 ) );
+					// c3Geometry.applyMatrix( new THREE.Matrix4().makeRotationZ( -Math.PI ));
+					// c3Geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, -(length/2+(length/6)), 0 ) );
+					// c1Geometry.merge(c2Geometry);
+					// c1Geometry.merge(c3Geometry);
+					// c1Geometry.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI/2 ));
+					// var cylinder = new THREE.Mesh(c1Geometry, new THREE.MeshNormalMaterial());
+					// return cylinder;
+				// }
+				// // create arrows between compartments
+				// // create arrows between organellels
+				// var scaleArrowsBase = scaleExplosion/1000;
+				// var cntArrows=0;
+				// for (var i=0;i<nbOrganelles;i++){
+				
+					// arrows[cntArrows] = createArrow(20,400);
+					// scene.add( arrows[cntArrows] );
+					// // shorten length
+					// arrows[cntArrows].scale.z=scaleArrowsBase*0.9;
+					// //cylinder.rotateX(Math.PI/2);
+					
+					// var p2 = new THREE.Vector3(0,1000,0);
+					// arrows[cntArrows].position.set( ((Math.sin((2*Math.PI)/nbOrganelles*i)*scaleExplosion)+p2.x)/2, (0+p2.y)/2, ((Math.cos((2*Math.PI)/nbOrganelles*i)*scaleExplosion)+p2.z)/2); 
+					// arrows[cntArrows].lookAt(p2);
+					// cntArrows++;
+					
+					// for (var ii=0;ii<nbOrganelles;ii++){
+						// if (i!=ii){
+							// arrows[cntArrows] = createArrow(20,400);
+							// scene.add( arrows[cntArrows] );
+							// // shorten length
+							// //cylinder.scale.y=0.5;
+							// //cylinder.rotateX(Math.PI/2);
+							// arrows[cntArrows].scale.z=scaleArrowsBase;
+							// if (Math.abs(i-ii)>=2 && Math.abs(i-ii)<(nbOrganelles-1)){
+								// arrows[cntArrows].scale.z=scaleArrowsBase*1.3;
+							// }
+							// var p3 = new THREE.Vector3((Math.sin((2*Math.PI)/nbOrganelles*i)*scaleExplosion),0,(Math.cos((2*Math.PI)/nbOrganelles*i)*scaleExplosion));
+							// arrows[cntArrows].position.set( ((Math.sin((2*Math.PI)/nbOrganelles*i)*scaleExplosion)+(Math.sin((2*Math.PI)/nbOrganelles*(ii))*scaleExplosion))/2, (0+0)/2, ((Math.cos((2*Math.PI)/nbOrganelles*i)*scaleExplosion)+(Math.cos((2*Math.PI)/nbOrganelles*(ii))*scaleExplosion))/2); 
+							// arrows[cntArrows].lookAt(p3);
+							// cntArrows++;
+						// }
+					// }
+					
+					// arrows[cntArrows] = createArrow(20,400);
+					// scene.add( arrows[cntArrows] );
+					// // shorten length
+					// arrows[cntArrows].scale.z=scaleArrowsBase*0.9;
+					// //cylinder.rotateX(Math.PI/2);
+					
+					// var p3 = new THREE.Vector3(0,-1000,0);
+					// arrows[cntArrows].position.set( ((Math.sin((2*Math.PI)/nbOrganelles*i)*scaleExplosion)+p3.x)/2, (0+p3.y)/2, ((Math.cos((2*Math.PI)/nbOrganelles*i)*scaleExplosion)+p3.z)/2); 
+					// arrows[cntArrows].lookAt(p3);
+					// cntArrows++;
+					// arrows[cntArrows] = createArrow(20,400);
+					// scene.add( arrows[cntArrows] );
+					// // shorten length
+					// arrows[cntArrows].scale.z=scaleArrowsBase;
+					// //cylinder.rotateX(Math.PI/2);
+					
+					// var p4 = new THREE.Vector3(0,-3000,0);
+					// arrows[cntArrows].position.set( ((Math.sin((2*Math.PI)/nbOrganelles*i)*scaleExplosion)+p4.x)/2, (0+p4.y)/2, ((Math.cos((2*Math.PI)/nbOrganelles*i)*scaleExplosion)+p4.z)/2); 
+					// arrows[cntArrows].lookAt(p4);	
+					// cntArrows++;
+				// }
+				
+				// arrows[cntArrows] = createArrow(20,400);
+				// scene.add( arrows[cntArrows] );
+				// // shorten length
+				// //c5.scale.z=scaleArrowsBase*0.65;
+				// //cylinder.rotateX(Math.PI/2);
+				// var p5 = new THREE.Vector3(0,-1000,0);
+				// arrows[cntArrows].position.set( (0+p5.x)/2, (2000+p5.y)/2, (0+p5.z)/2); 
+				// arrows[cntArrows].lookAt(p5);
+				// cntArrows++;
+				// arrows[cntArrows] = createArrow(20,400);
+				// scene.add( arrows[cntArrows] );
+				// // shorten length
+				// //c6.scale.z=scaleArrowsBase*0.65;
+				// //cylinder.rotateX(Math.PI/2);
+				// var p6 = new THREE.Vector3(0,-3000,0);
+				// arrows[cntArrows].position.set( (0+p6.x)/2, (-1000+p6.y)/2.5, (0+p6.z)/2); 
+				// arrows[cntArrows].lookAt(p6);
+				
+				// for (var i=0; i<arrows.length;i++){
+					// arrows[i].position.z-=50000;
+				// }
+				
+				
+				// /*if(typeof(Storage)!=="undefined") {
+					// //if(resetSpreadsheet==true){localStorage.selection=="";}
+					// if(resetSpreadsheet==true){localStorage.selection=[];}
+					// if (localStorage.selection==""){
+						// mselectedList=[]
+							// //console.log("empty")
+							// for (var i =0;i<spritesSelected.length;i++){		
+								// spritesSelected[i].position.set(-50000,-10000,10000);
+							// }
 						
-					}
-					if (localStorage.selection.length>0){
-						//console.log(mselectedList); 
-						//console.log(localStorage.selection.split(",").map(function(x){return parseInt(x)})); 
-						var tmpS= localStorage.selection.split(",").map(function(x){return parseInt(x)});
+					// }
+					// if (localStorage.selection.length>0){
+						// //console.log(mselectedList); 
+						// //console.log(localStorage.selection.split(",").map(function(x){return parseInt(x)})); 
+						// var tmpS= localStorage.selection.split(",").map(function(x){return parseInt(x)});
 						
 						
-						//	console.log(localStorage.selection); 
-						mselectedList=[];
-						for (var i =0;i<tmpS.length;i++){
-						mselectedList[i] =tmpS[i];
-						}
-						console.log(mselectedList); 
-						// highlight selection
-						for (var i =0;i<spritesSelected.length;i++){		
-							spritesSelected[i].position.set(-50000,-10000,10000);
-						}
-						for (var i =0;i<mselectedList.length;i++){
-							//for (var j =0;j<spritesSelected.length;j++){
-							if (i<spritesSelected.length){
-								//spritesSelected
-								//console.log(idMap[mselectedList[i]])
-								var a1 = scene.children[idMap[mselectedList[i]][0]].geometry.attributes.position.array;
-								spritesSelected[i].position.set(a1[idMap[mselectedList[i]][1]*3],a1[idMap[mselectedList[i]][1]*3+1],a1[idMap[mselectedList[i]][1]*3+2]);	
-							}
+						// //	console.log(localStorage.selection); 
+						// mselectedList=[];
+						// for (var i =0;i<tmpS.length;i++){
+						// mselectedList[i] =tmpS[i];
+						// }
+						// console.log(mselectedList); 
+						// // highlight selection
+						// for (var i =0;i<spritesSelected.length;i++){		
+							// spritesSelected[i].position.set(-50000,-10000,10000);
+						// }
+						// for (var i =0;i<mselectedList.length;i++){
+							// //for (var j =0;j<spritesSelected.length;j++){
+							// if (i<spritesSelected.length){
+								// //spritesSelected
+								// //console.log(idMap[mselectedList[i]])
+								// var a1 = scene.children[idMap[mselectedList[i]][0]].geometry.attributes.position.array;
+								// spritesSelected[i].position.set(a1[idMap[mselectedList[i]][1]*3],a1[idMap[mselectedList[i]][1]*3+1],a1[idMap[mselectedList[i]][1]*3+2]);	
+							// }
 							
-						}
+						// }
 						
-					}			  
-				} */
-				}
-				exploded=true;
-				focus_label=0;
-				}, false );
+					// }			  
+				// } */
+				// }
+				// exploded=true;
+				// focus_label=0;
+				// }, false );
 			
-			var button = document.getElementById( 'view1' );
-			button.addEventListener( 'click', function ( event ) {
-				if (exploded==true){
-					for (var i=0;i<nbOrganelles;i++){
-						organelles[i].position.set( 0, yStartDisplacement, 0 );
-					}
-					KeggMapPlan.position.y-=1000;
-					nucleus.position.set( 0, yStartDisplacement, 0 );
-					cytoplasm.position.set( 0, yStartDisplacement, 0 );
-					ECM.position.set( 0, yStartDisplacement, 0 );
-					//console.log(allDragged)
-					if (nameModel=="Ec_iAF1260_flux2"){
-						for (var c=0;c<7;c++){
+			// var button = document.getElementById( 'view1' );
+			// button.addEventListener( 'click', function ( event ) {
+				// if (exploded==true){
+					// for (var i=0;i<nbOrganelles;i++){
+						// organelles[i].position.set( 0, yStartDisplacement, 0 );
+					// }
+					// KeggMapPlan.position.y-=1000;
+					// nucleus.position.set( 0, yStartDisplacement, 0 );
+					// cytoplasm.position.set( 0, yStartDisplacement, 0 );
+					// ECM.position.set( 0, yStartDisplacement, 0 );
+					// //console.log(allDragged)
+					// if (nameModel=="Ec_iAF1260_flux2"){
+						// for (var c=0;c<7;c++){
 							
-								for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
-									for (var g=0;g<nbOrganelles;g++){
-										if (scene.children[c].geometry.attributes.compartment.array[h]==g){
-											var flg=-1;
-											for (var dr=0;dr<allDragged.length;dr++){
-												if (allDragged[dr].indexOf(g)>-1){
-													flg = dr;
+								// for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
+									// for (var g=0;g<nbOrganelles;g++){
+										// if (scene.children[c].geometry.attributes.compartment.array[h]==g){
+											// var flg=-1;
+											// for (var dr=0;dr<allDragged.length;dr++){
+												// if (allDragged[dr].indexOf(g)>-1){
+													// flg = dr;
 													
-												}
-											}
+												// }
+											// }
 											
-											if (flg==-1){
-												scene.children[c].geometry.attributes.position.array[h*3+0]-=Math.sin((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
-												scene.children[c].geometry.attributes.position.array[h*3+2]-=Math.cos((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
-											}
-											else{
-												if (flg<nbOrganelles){
-													scene.children[c].geometry.attributes.position.array[h*3+0]-=Math.sin((2*Math.PI)/nbOrganelles*flg)*scaleExplosion;
-													scene.children[c].geometry.attributes.position.array[h*3+2]-=Math.cos((2*Math.PI)/nbOrganelles*flg)*scaleExplosion;
-												}
-												if (flg>=nbOrganelles){
-													scene.children[c].geometry.attributes.position.array[h*3+1]-=yStartDisplacement;
-												}
+											// if (flg==-1){
+												// scene.children[c].geometry.attributes.position.array[h*3+0]-=Math.sin((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
+												// scene.children[c].geometry.attributes.position.array[h*3+2]-=Math.cos((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
+											// }
+											// else{
+												// if (flg<nbOrganelles){
+													// scene.children[c].geometry.attributes.position.array[h*3+0]-=Math.sin((2*Math.PI)/nbOrganelles*flg)*scaleExplosion;
+													// scene.children[c].geometry.attributes.position.array[h*3+2]-=Math.cos((2*Math.PI)/nbOrganelles*flg)*scaleExplosion;
+												// }
+												// if (flg>=nbOrganelles){
+													// scene.children[c].geometry.attributes.position.array[h*3+1]-=yStartDisplacement;
+												// }
 												
-											}
+											// }
 											
-										}
-									}
-									if (scene.children[c].geometry.attributes.compartment.array[h]==nbOrganelles){
-											//scene.children[c].geometry.attributes.position.array[h*3+1]0;
-											//scene.children[c].geometry.attributes.position.array[h*3+0]=scene.children[c].geometry.attributes.position.array[h*3+0]*2;
-											//scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*2000;
-											scene.children[c].geometry.attributes.position.array[h*3+2]-=1000;
-									}
-									//if (scene.children[c].geometry.attributes.compartment.array[h]==nbOrganelles+1){
-										//scene.children[c].geometry.attributes.position.array[h*3+1]+=1000;
-										//scene.children[c].geometry.attributes.position.array[h*3+0]+=2000;
-										//scene.children[c].geometry.attributes.position.array[h*3+2]*=6;
-											//scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*2000;
-									//		scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*2000;
-									//}
-									if (scene.children[c].geometry.attributes.compartment.array[h]==nbOrganelles+2){
-										//scene.children[c].geometry.attributes.position.array[h*3+1]+=3000;
-										//scene.children[c].geometry.attributes.position.array[h*3+0]-=2000;
-										//scene.children[c].geometry.attributes.position.array[h*3+2]*=9;
-											//scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*2000;
-											scene.children[c].geometry.attributes.position.array[h*3+2]+=1000;
-									}
+										// }
+									// }
+									// if (scene.children[c].geometry.attributes.compartment.array[h]==nbOrganelles){
+											// //scene.children[c].geometry.attributes.position.array[h*3+1]0;
+											// //scene.children[c].geometry.attributes.position.array[h*3+0]=scene.children[c].geometry.attributes.position.array[h*3+0]*2;
+											// //scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*2000;
+											// scene.children[c].geometry.attributes.position.array[h*3+2]-=1000;
+									// }
+									// //if (scene.children[c].geometry.attributes.compartment.array[h]==nbOrganelles+1){
+										// //scene.children[c].geometry.attributes.position.array[h*3+1]+=1000;
+										// //scene.children[c].geometry.attributes.position.array[h*3+0]+=2000;
+										// //scene.children[c].geometry.attributes.position.array[h*3+2]*=6;
+											// //scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*2000;
+									// //		scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*2000;
+									// //}
+									// if (scene.children[c].geometry.attributes.compartment.array[h]==nbOrganelles+2){
+										// //scene.children[c].geometry.attributes.position.array[h*3+1]+=3000;
+										// //scene.children[c].geometry.attributes.position.array[h*3+0]-=2000;
+										// //scene.children[c].geometry.attributes.position.array[h*3+2]*=9;
+											// //scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*2000;
+											// scene.children[c].geometry.attributes.position.array[h*3+2]+=1000;
+									// }
 									
-									//b2compartments[ (i * 2)+0 ] = b1values_compartment[ i  ];
-									//b2compartments[ (i * 2)+1 ] = b1values_compartment[ i+1  ];
+									// //b2compartments[ (i * 2)+0 ] = b1values_compartment[ i  ];
+									// //b2compartments[ (i * 2)+1 ] = b1values_compartment[ i+1  ];
 									
-								}
+								// }
 								
 							
 							
-							scene.children[c].geometry.attributes.position.needsUpdate = true;
-						}
-					}
-					else{
-						for (var c=0;c<7;c++){
+							// scene.children[c].geometry.attributes.position.needsUpdate = true;
+						// }
+					// }
+					// else{
+						// for (var c=0;c<7;c++){
 							
-								for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
-									for (var g=0;g<nbOrganelles;g++){
-										if (scene.children[c].geometry.attributes.compartment.array[h]==g){
-											var flg=-1;
-											for (var dr=0;dr<allDragged.length;dr++){
-												if (allDragged[dr].indexOf(g)>-1){
-													flg = dr;
+								// for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
+									// for (var g=0;g<nbOrganelles;g++){
+										// if (scene.children[c].geometry.attributes.compartment.array[h]==g){
+											// var flg=-1;
+											// for (var dr=0;dr<allDragged.length;dr++){
+												// if (allDragged[dr].indexOf(g)>-1){
+													// flg = dr;
 													
-												}
-											}
+												// }
+											// }
 											
-											if (flg==-1){
-												scene.children[c].geometry.attributes.position.array[h*3+0]-=Math.sin((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
-												scene.children[c].geometry.attributes.position.array[h*3+2]-=Math.cos((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
-											}
-											else{
-												if (flg<nbOrganelles){
-													scene.children[c].geometry.attributes.position.array[h*3+0]-=Math.sin((2*Math.PI)/nbOrganelles*flg)*scaleExplosion;
-													scene.children[c].geometry.attributes.position.array[h*3+2]-=Math.cos((2*Math.PI)/nbOrganelles*flg)*scaleExplosion;
-												}
-												if (flg>=nbOrganelles){
-													scene.children[c].geometry.attributes.position.array[h*3+1]-=yStartDisplacement;
-												}
+											// if (flg==-1){
+												// scene.children[c].geometry.attributes.position.array[h*3+0]-=Math.sin((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
+												// scene.children[c].geometry.attributes.position.array[h*3+2]-=Math.cos((2*Math.PI)/nbOrganelles*g)*scaleExplosion;
+											// }
+											// else{
+												// if (flg<nbOrganelles){
+													// scene.children[c].geometry.attributes.position.array[h*3+0]-=Math.sin((2*Math.PI)/nbOrganelles*flg)*scaleExplosion;
+													// scene.children[c].geometry.attributes.position.array[h*3+2]-=Math.cos((2*Math.PI)/nbOrganelles*flg)*scaleExplosion;
+												// }
+												// if (flg>=nbOrganelles){
+													// scene.children[c].geometry.attributes.position.array[h*3+1]-=yStartDisplacement;
+												// }
 												
-											}
+											// }
 											
-										}
-									}
-									if (scene.children[c].geometry.attributes.compartment.array[h]==nbOrganelles){
-											scene.children[c].geometry.attributes.position.array[h*3+1]-=1000;
-											//scene.children[c].geometry.attributes.position.array[h*3+0]=scene.children[c].geometry.attributes.position.array[h*3+0]*2;
-											//scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*2000;
-											//scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*2000;
-									}
-									if (scene.children[c].geometry.attributes.compartment.array[h]==nbOrganelles+1){
-										scene.children[c].geometry.attributes.position.array[h*3+1]+=1000;
-										//scene.children[c].geometry.attributes.position.array[h*3+0]+=2000;
-										//scene.children[c].geometry.attributes.position.array[h*3+2]*=6;
-											//scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*2000;
-											//scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*2000;
-									}
-									if (scene.children[c].geometry.attributes.compartment.array[h]==nbOrganelles+2){
-										scene.children[c].geometry.attributes.position.array[h*3+1]+=3000;
-										//scene.children[c].geometry.attributes.position.array[h*3+0]-=2000;
-										//scene.children[c].geometry.attributes.position.array[h*3+2]*=9;
-											//scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*2000;
-											//scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*2000;
-									}
+										// }
+									// }
+									// if (scene.children[c].geometry.attributes.compartment.array[h]==nbOrganelles){
+											// scene.children[c].geometry.attributes.position.array[h*3+1]-=1000;
+											// //scene.children[c].geometry.attributes.position.array[h*3+0]=scene.children[c].geometry.attributes.position.array[h*3+0]*2;
+											// //scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*2000;
+											// //scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*2000;
+									// }
+									// if (scene.children[c].geometry.attributes.compartment.array[h]==nbOrganelles+1){
+										// scene.children[c].geometry.attributes.position.array[h*3+1]+=1000;
+										// //scene.children[c].geometry.attributes.position.array[h*3+0]+=2000;
+										// //scene.children[c].geometry.attributes.position.array[h*3+2]*=6;
+											// //scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*2000;
+											// //scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*2000;
+									// }
+									// if (scene.children[c].geometry.attributes.compartment.array[h]==nbOrganelles+2){
+										// scene.children[c].geometry.attributes.position.array[h*3+1]+=3000;
+										// //scene.children[c].geometry.attributes.position.array[h*3+0]-=2000;
+										// //scene.children[c].geometry.attributes.position.array[h*3+2]*=9;
+											// //scene.children[c].geometry.attributes.position.array[h*3+0]+=Math.sin((2*Math.PI)/nbOrganelles*g)*2000;
+											// //scene.children[c].geometry.attributes.position.array[h*3+2]+=Math.cos((2*Math.PI)/nbOrganelles*g)*2000;
+									// }
 									
-									//b2compartments[ (i * 2)+0 ] = b1values_compartment[ i  ];
-									//b2compartments[ (i * 2)+1 ] = b1values_compartment[ i+1  ];
+									// //b2compartments[ (i * 2)+0 ] = b1values_compartment[ i  ];
+									// //b2compartments[ (i * 2)+1 ] = b1values_compartment[ i+1  ];
 									
-								}
+								// }
 								
 							
 							
-							scene.children[c].geometry.attributes.position.needsUpdate = true;
-						}
-					}
+							// scene.children[c].geometry.attributes.position.needsUpdate = true;
+						// }
+					// }
 					
-					for (var dr=0;dr<allDragged.length;dr++){
-								allDragged[dr]=[];
-					}
-					//else if (allDragged[ni].indexOf(scene.children[c].geometry.attributes.compartment.array[h])>-1 && tmp1.indexOf(scene.children[c].geometry.attributes.compartment.array[h])>-1){
+					// for (var dr=0;dr<allDragged.length;dr++){
+								// allDragged[dr]=[];
+					// }
+					// //else if (allDragged[ni].indexOf(scene.children[c].geometry.attributes.compartment.array[h])>-1 && tmp1.indexOf(scene.children[c].geometry.attributes.compartment.array[h])>-1){
 					
 					
 					
-					var iv=0;
-					for ( var i = 0; i < segments; i ++ ) {
-						var t1 = jsonObj1[jsonObj2[i][0]][6]
-						var t2 = jsonObj1[jsonObj2[i][1]][6]
-						//var ivList=[]
-						if (t1==2){
-							scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 0 ]+0.0;
-							scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 1 ]+0.0;
-							scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 2 ]+0.0;						
-							iv++;
-						}
-						else if (t1==4){
-							scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 0 ]+0.0;
-							scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 1 ]+0.0;
-							scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 2 ]+0.0;
-							iv++;
-						}
-						if (t2 ==2){
-							scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 0 ]+0.0;
-							scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 1 ]+0.0;
-							scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 2 ]+0.0;
-							iv++;
-						}
-						else if (t2 ==4){
-							scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 0 ]+0.0;
-							scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 1 ]+0.0;
-							scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 2 ]+0.0;
-							iv++;
-						}
+					// var iv=0;
+					// for ( var i = 0; i < segments; i ++ ) {
+						// var t1 = jsonObj1[jsonObj2[i][0]][6]
+						// var t2 = jsonObj1[jsonObj2[i][1]][6]
+						// //var ivList=[]
+						// if (t1==2){
+							// scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 0 ]+0.0;
+							// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 1 ]+0.0;
+							// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 2 ]+0.0;						
+							// iv++;
+						// }
+						// else if (t1==4){
+							// scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 0 ]+0.0;
+							// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 1 ]+0.0;
+							// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 2 ]+0.0;
+							// iv++;
+						// }
+						// if (t2 ==2){
+							// scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 0 ]+0.0;
+							// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 1 ]+0.0;
+							// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 2 ]+0.0;
+							// iv++;
+						// }
+						// else if (t2 ==4){
+							// scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 0 ]+0.0;
+							// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 1 ]+0.0;
+							// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 2 ]+0.0;
+							// iv++;
+						// }
 						
 						
 
-					}
-					scene.children[7].geometry.attributes.position.needsUpdate = true;
-					var cnt1=0;
-					var cnt2=0;
-					var cnt=0;
-					var ln1 = scene.children[2].geometry.attributes.size.array.length-5000;
-					var ln2 = scene.children[4].geometry.attributes.size.array.length-5000;
-					if(selectedModelNodes){
-					for (var i= 0; i<selectedModelNodes.length;i++){
-						if (selectedModelNodes[i][5]==2 ){
-							if (selectedModelNodes[i][2]<nbOrganelles && selectedModelNodes[i][2]>=0){
+					// }
+					// scene.children[7].geometry.attributes.position.needsUpdate = true;
+					// var cnt1=0;
+					// var cnt2=0;
+					// var cnt=0;
+					// var ln1 = scene.children[2].geometry.attributes.size.array.length-5000;
+					// var ln2 = scene.children[4].geometry.attributes.size.array.length-5000;
+					// if(selectedModelNodes){
+					// for (var i= 0; i<selectedModelNodes.length;i++){
+						// if (selectedModelNodes[i][5]==2 ){
+							// if (selectedModelNodes[i][2]<nbOrganelles && selectedModelNodes[i][2]>=0){
 								
-								scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+0]-=Math.sin((2*Math.PI)/nbOrganelles*selectedModelNodes[i][2])*scaleExplosion;
-								scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]-=Math.cos((2*Math.PI)/nbOrganelles*selectedModelNodes[i][2])*scaleExplosion;
-								cnt++;
-								cnt1++;
-							}
-							else if (selectedModelNodes[i][2]==nbOrganelles){
-								scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]-=1000;
-								cnt++;
-								cnt1++;
-							}
-							else if (selectedModelNodes[i][2]==nbOrganelles+1){
-								scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]+=1000;
-								cnt++;
-								cnt1++;
-							}
-							else if (selectedModelNodes[i][2]==nbOrganelles+2){
-								scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]+=3000;
-								cnt++;
-								cnt1++;
-							}
-						}
-						else if (selectedModelNodes[i][5]==4 ){
-							if (selectedModelNodes[i][2]<nbOrganelles && selectedModelNodes[i][2]>=0){
+								// scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+0]-=Math.sin((2*Math.PI)/nbOrganelles*selectedModelNodes[i][2])*scaleExplosion;
+								// scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]-=Math.cos((2*Math.PI)/nbOrganelles*selectedModelNodes[i][2])*scaleExplosion;
+								// cnt++;
+								// cnt1++;
+							// }
+							// else if (selectedModelNodes[i][2]==nbOrganelles){
+								// scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]-=1000;
+								// cnt++;
+								// cnt1++;
+							// }
+							// else if (selectedModelNodes[i][2]==nbOrganelles+1){
+								// scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]+=1000;
+								// cnt++;
+								// cnt1++;
+							// }
+							// else if (selectedModelNodes[i][2]==nbOrganelles+2){
+								// scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]+=3000;
+								// cnt++;
+								// cnt1++;
+							// }
+						// }
+						// else if (selectedModelNodes[i][5]==4 ){
+							// if (selectedModelNodes[i][2]<nbOrganelles && selectedModelNodes[i][2]>=0){
 								
-								scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+0]-=Math.sin((2*Math.PI)/nbOrganelles*selectedModelNodes[i][2])*scaleExplosion;
-								scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]-=Math.cos((2*Math.PI)/nbOrganelles*selectedModelNodes[i][2])*scaleExplosion;
-								cnt++;
-								cnt2++;
-							}
-							else if (selectedModelNodes[i][2]==nbOrganelles){
-								scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]-=1000;
-								cnt++;
-								cnt2++;
-							}
-							else if (selectedModelNodes[i][2]==nbOrganelles+1){
-								scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]+=1000;
-								cnt++;
-								cnt2++;
-							}
-							else if (selectedModelNodes[i][2]==nbOrganelles+2){
-								scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]+=3000;
-								cnt++;
-								cnt2++;
-							}
-						}
+								// scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+0]-=Math.sin((2*Math.PI)/nbOrganelles*selectedModelNodes[i][2])*scaleExplosion;
+								// scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]-=Math.cos((2*Math.PI)/nbOrganelles*selectedModelNodes[i][2])*scaleExplosion;
+								// cnt++;
+								// cnt2++;
+							// }
+							// else if (selectedModelNodes[i][2]==nbOrganelles){
+								// scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]-=1000;
+								// cnt++;
+								// cnt2++;
+							// }
+							// else if (selectedModelNodes[i][2]==nbOrganelles+1){
+								// scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]+=1000;
+								// cnt++;
+								// cnt2++;
+							// }
+							// else if (selectedModelNodes[i][2]==nbOrganelles+2){
+								// scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]+=3000;
+								// cnt++;
+								// cnt2++;
+							// }
+						// }
 						
-					}
-					}
-					scene.children[2].geometry.attributes.compartment.needsUpdate = true;
-					scene.children[4].geometry.attributes.compartment.needsUpdate = true;
-					scene.children[2].geometry.attributes.position.needsUpdate = true;
-					scene.children[4].geometry.attributes.position.needsUpdate = true;
+					// }
+					// }
+					// scene.children[2].geometry.attributes.compartment.needsUpdate = true;
+					// scene.children[4].geometry.attributes.compartment.needsUpdate = true;
+					// scene.children[2].geometry.attributes.position.needsUpdate = true;
+					// scene.children[4].geometry.attributes.position.needsUpdate = true;
 					
-					var col2 = new THREE.Color( 0xffa500 );
+					// var col2 = new THREE.Color( 0xffa500 );
 					
 					
 					
-					//console.log(nbEdgesModel)
-					var count=0;
-					for ( var iv = extraLinesCnt; iv <extraLinesCnt+nbEdgesModel; iv +=1) {
-						var t1;
-						var t2;
-						var pt1;
-						var pt2;
-						var sim1=1;
-						var sim2=1;
-						pt1 = selectedModelEdges[iv-extraLinesCnt][0]+jsonObj1.length;
-						sim1 = idMap[pt1][0]
-						t1 = selectedModelNodes[selectedModelEdges[iv-extraLinesCnt][0]][5];
-						if (selectedModelEdges[iv-extraLinesCnt][3]==2){
-							//console.log("link between model and metabolic nodes")
+					// //console.log(nbEdgesModel)
+					// var count=0;
+					// for ( var iv = extraLinesCnt; iv <extraLinesCnt+nbEdgesModel; iv +=1) {
+						// var t1;
+						// var t2;
+						// var pt1;
+						// var pt2;
+						// var sim1=1;
+						// var sim2=1;
+						// pt1 = selectedModelEdges[iv-extraLinesCnt][0]+jsonObj1.length;
+						// sim1 = idMap[pt1][0]
+						// t1 = selectedModelNodes[selectedModelEdges[iv-extraLinesCnt][0]][5];
+						// if (selectedModelEdges[iv-extraLinesCnt][3]==2){
+							// //console.log("link between model and metabolic nodes")
 							
-							if (typeof selectedModelEdges[iv-extraLinesCnt][1] == "number"){
-								pt2=selectedModelEdges[iv-extraLinesCnt][1];
-							}
-							else{
-								pt2=selectedModelEdges[iv-extraLinesCnt][1][0];
-							}
-							t2 = jsonObj1[pt2][6]
-							sim2=2;
-						}
-						else{
-							//console.log("link between model nodes")
-							if (typeof selectedModelEdges[iv-extraLinesCnt][1] == "number"){
-								pt2=selectedModelEdges[iv-extraLinesCnt][1];
-							}
-							else{
-								pt2=selectedModelEdges[iv-extraLinesCnt][1][0];
-							}
-							t2 = selectedModelNodes[pt2][5];
-						}
-						if (sim2!=2){
-							pt2+=jsonObj1.length;
-							//console.log(idMap[pt2]);
-						}
-						scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 0 ] =scene.children[idMap[pt1][0]].geometry.attributes.position.array[ (idMap[pt1][1] * 3) + 0 ]+0.0;
-						scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 1 ] =scene.children[idMap[pt1][0]].geometry.attributes.position.array[ (idMap[pt1][1] * 3) + 1 ]+0.0;
-						scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 2 ] =scene.children[idMap[pt1][0]].geometry.attributes.position.array[ (idMap[pt1][1] * 3) + 2 ]+0.0;
-						if (sim2==2){
-						scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 ] = col2.r;
-						scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 + 1 ] = col2.g;
-						scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 + 2 ] = col2.b;
-						}
-						count+=1;
-						scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 0 ] =scene.children[idMap[pt2][0]].geometry.attributes.position.array[ (idMap[pt2][1] * 3) + 0 ]+0.0;
-						scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 1 ] =scene.children[idMap[pt2][0]].geometry.attributes.position.array[ (idMap[pt2][1] * 3) + 1 ]+0.0;
-						scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 2 ] =scene.children[idMap[pt2][0]].geometry.attributes.position.array[ (idMap[pt2][1] * 3) + 2 ]+0.0;
-						if (sim2==2){
-						scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 ] = col2.r;
-						scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 + 1 ] = col2.g;
-						scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 + 2 ] = col2.b;
-						}
-						count+=1;
-					}
-					scene.children[7].geometry.attributes.position.needsUpdate = true;
-					scene.children[7].geometry.attributes.ca.needsUpdate = true;
+							// if (typeof selectedModelEdges[iv-extraLinesCnt][1] == "number"){
+								// pt2=selectedModelEdges[iv-extraLinesCnt][1];
+							// }
+							// else{
+								// pt2=selectedModelEdges[iv-extraLinesCnt][1][0];
+							// }
+							// t2 = jsonObj1[pt2][6]
+							// sim2=2;
+						// }
+						// else{
+							// //console.log("link between model nodes")
+							// if (typeof selectedModelEdges[iv-extraLinesCnt][1] == "number"){
+								// pt2=selectedModelEdges[iv-extraLinesCnt][1];
+							// }
+							// else{
+								// pt2=selectedModelEdges[iv-extraLinesCnt][1][0];
+							// }
+							// t2 = selectedModelNodes[pt2][5];
+						// }
+						// if (sim2!=2){
+							// pt2+=jsonObj1.length;
+							// //console.log(idMap[pt2]);
+						// }
+						// scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 0 ] =scene.children[idMap[pt1][0]].geometry.attributes.position.array[ (idMap[pt1][1] * 3) + 0 ]+0.0;
+						// scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 1 ] =scene.children[idMap[pt1][0]].geometry.attributes.position.array[ (idMap[pt1][1] * 3) + 1 ]+0.0;
+						// scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 2 ] =scene.children[idMap[pt1][0]].geometry.attributes.position.array[ (idMap[pt1][1] * 3) + 2 ]+0.0;
+						// if (sim2==2){
+						// scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 ] = col2.r;
+						// scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 + 1 ] = col2.g;
+						// scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 + 2 ] = col2.b;
+						// }
+						// count+=1;
+						// scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 0 ] =scene.children[idMap[pt2][0]].geometry.attributes.position.array[ (idMap[pt2][1] * 3) + 0 ]+0.0;
+						// scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 1 ] =scene.children[idMap[pt2][0]].geometry.attributes.position.array[ (idMap[pt2][1] * 3) + 1 ]+0.0;
+						// scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 2 ] =scene.children[idMap[pt2][0]].geometry.attributes.position.array[ (idMap[pt2][1] * 3) + 2 ]+0.0;
+						// if (sim2==2){
+						// scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 ] = col2.r;
+						// scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 + 1 ] = col2.g;
+						// scene.children[7].geometry.attributes.ca.array[ (count+extraLinesCnt) * 3 + 2 ] = col2.b;
+						// }
+						// count+=1;
+					// }
+					// scene.children[7].geometry.attributes.position.needsUpdate = true;
+					// scene.children[7].geometry.attributes.ca.needsUpdate = true;
 					
-					if (toggledLines==1){
-						for ( var iv = 0; iv < extraLinesCnt; iv +=2) {
-							scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] -=50000;
-							scene.children[7].geometry.attributes.position.array[ ((iv+1) * 3) + 2 ] -=50000;
-						}
+					// if (toggledLines==1){
+						// for ( var iv = 0; iv < extraLinesCnt; iv +=2) {
+							// scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] -=50000;
+							// scene.children[7].geometry.attributes.position.array[ ((iv+1) * 3) + 2 ] -=50000;
+						// }
 						
-						scene.children[7].geometry.attributes.position.needsUpdate = true;
+						// scene.children[7].geometry.attributes.position.needsUpdate = true;
 						
 						
 						
-					}
+					// }
 					
 					
-					selectedLinesPathsIds=[]
-					for (var i=0; i<selectedLinesPaths.length;i++){
-						for (var j=0;j<linesMap[selectedLinesPaths[i]].length;j+=1){
-							selectedLinesPathsIds.push(linesMap[selectedLinesPaths[i]][j])
-						}
-					}
-					selectedLinesPathsIds = unique(selectedLinesPathsIds)
-					for (var i=0;i<selectedLinesPathsIds.length;i+=1){
-						scene.children[7].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] +=50000;
-					}
-					scene.children[7].geometry.attributes.position.needsUpdate = true;
+					// selectedLinesPathsIds=[]
+					// for (var i=0; i<selectedLinesPaths.length;i++){
+						// for (var j=0;j<linesMap[selectedLinesPaths[i]].length;j+=1){
+							// selectedLinesPathsIds.push(linesMap[selectedLinesPaths[i]][j])
+						// }
+					// }
+					// selectedLinesPathsIds = unique(selectedLinesPathsIds)
+					// for (var i=0;i<selectedLinesPathsIds.length;i+=1){
+						// scene.children[7].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] +=50000;
+					// }
+					// scene.children[7].geometry.attributes.position.needsUpdate = true;
 						
-					var ii=0;
-					for ( var i = 0; i <segmentPts+maxNbTokenModel ; i +=2 ) {
+					// var ii=0;
+					// for ( var i = 0; i <segmentPts+maxNbTokenModel ; i +=2 ) {
 					
-						scene.children[8].geometry.vertices[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
-						scene.children[8].geometry.vertices[ii].y=scene.children[7].geometry.attributes.position.array[ (i * 3) + 1 ]+0;
-						scene.children[8].geometry.vertices[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
-						ii++;
-					}
-					//console.log(tokenAttributes.endPosition.value[0]);
-					var ii=0;
-					for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
-						tokenAttributes.endPosition.value[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
-						tokenAttributes.endPosition.value[ii].y=scene.children[7].geometry.attributes.position.array[ (i * 3) + 1 ]+0;
-						tokenAttributes.endPosition.value[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
+						// scene.children[8].geometry.vertices[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
+						// scene.children[8].geometry.vertices[ii].y=scene.children[7].geometry.attributes.position.array[ (i * 3) + 1 ]+0;
+						// scene.children[8].geometry.vertices[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
+						// ii++;
+					// }
+					// //console.log(tokenAttributes.endPosition.value[0]);
+					// var ii=0;
+					// for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
+						// tokenAttributes.endPosition.value[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
+						// tokenAttributes.endPosition.value[ii].y=scene.children[7].geometry.attributes.position.array[ (i * 3) + 1 ]+0;
+						// tokenAttributes.endPosition.value[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
 						
-						ii++;
-					}
-					tokenUniforms.mixAmount.value = 0.0;
-					//var ii=0;
-					//for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
-					//	tokenAttributes.mixAmount.value[ii] = 0.0;
-					//	ii++;
-					//}
-					//tokenAttributes.mixAmount.needsUpdate = true;
-					//console.log(tokenAttributes.endPosition.value[0]);
-					scene.children[8].geometry.verticesNeedUpdate = true;
-					tokenAttributes.endPosition.needsUpdate = true;
+						// ii++;
+					// }
+					// tokenUniforms.mixAmount.value = 0.0;
+					// //var ii=0;
+					// //for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
+					// //	tokenAttributes.mixAmount.value[ii] = 0.0;
+					// //	ii++;
+					// //}
+					// //tokenAttributes.mixAmount.needsUpdate = true;
+					// //console.log(tokenAttributes.endPosition.value[0]);
+					// scene.children[8].geometry.verticesNeedUpdate = true;
+					// tokenAttributes.endPosition.needsUpdate = true;
 					
-						//var lookPosition  = new THREE.Vector3(Math.sin((2*Math.PI)/nbOrganelles*0)*scaleExplosion, 1100, Math.cos((2*Math.PI)/nbOrganelles*0)*scaleExplosion);
-						//var lookTarget = new THREE.Vector3(Math.sin((2*Math.PI)/nbOrganelles*0)*scaleExplosion, -10, Math.cos((2*Math.PI)/nbOrganelles*0)*scaleExplosion);
-						//cameraGoTo(lookPosition, lookTarget);
-					for (var i=0; i<arrows.length;i++){
-						arrows[i].position.z-=50000;
-					}
-					/*if(typeof(Storage)!=="undefined") {
-						//if(resetSpreadsheet==true){localStorage.selection=="";}
-						if(resetSpreadsheet==true){localStorage.selection=[];}
-						if (localStorage.selection==""){
-							mselectedList=[]
-								//console.log("empty")
-								for (var i =0;i<spritesSelected.length;i++){		
-									spritesSelected[i].position.set(-50000,-10000,10000);
-								}
+						// //var lookPosition  = new THREE.Vector3(Math.sin((2*Math.PI)/nbOrganelles*0)*scaleExplosion, 1100, Math.cos((2*Math.PI)/nbOrganelles*0)*scaleExplosion);
+						// //var lookTarget = new THREE.Vector3(Math.sin((2*Math.PI)/nbOrganelles*0)*scaleExplosion, -10, Math.cos((2*Math.PI)/nbOrganelles*0)*scaleExplosion);
+						// //cameraGoTo(lookPosition, lookTarget);
+					// for (var i=0; i<arrows.length;i++){
+						// arrows[i].position.z-=50000;
+					// }
+					// /*if(typeof(Storage)!=="undefined") {
+						// //if(resetSpreadsheet==true){localStorage.selection=="";}
+						// if(resetSpreadsheet==true){localStorage.selection=[];}
+						// if (localStorage.selection==""){
+							// mselectedList=[]
+								// //console.log("empty")
+								// for (var i =0;i<spritesSelected.length;i++){		
+									// spritesSelected[i].position.set(-50000,-10000,10000);
+								// }
 							
-						}
-						if (localStorage.selection.length>0){
-							//console.log(mselectedList); 
-							//console.log(localStorage.selection.split(",").map(function(x){return parseInt(x)})); 
-							var tmpS= localStorage.selection.split(",").map(function(x){return parseInt(x)});
+						// }
+						// if (localStorage.selection.length>0){
+							// //console.log(mselectedList); 
+							// //console.log(localStorage.selection.split(",").map(function(x){return parseInt(x)})); 
+							// var tmpS= localStorage.selection.split(",").map(function(x){return parseInt(x)});
 							
 							
-							//	console.log(localStorage.selection); 
-							mselectedList=[];
-							for (var i =0;i<tmpS.length;i++){
-							mselectedList[i] =tmpS[i];
-							}
-							console.log(mselectedList); 
-							// highlight selection
-							for (var i =0;i<spritesSelected.length;i++){		
-								spritesSelected[i].position.set(-50000,-10000,10000);
-							}
-							for (var i =0;i<mselectedList.length;i++){
-								//for (var j =0;j<spritesSelected.length;j++){
-								if (i<spritesSelected.length){
-									//spritesSelected
-									//console.log(idMap[mselectedList[i]])
-									var a1 = scene.children[idMap[mselectedList[i]][0]].geometry.attributes.position.array;
-									spritesSelected[i].position.set(a1[idMap[mselectedList[i]][1]*3],a1[idMap[mselectedList[i]][1]*3+1],a1[idMap[mselectedList[i]][1]*3+2]);	
-								}
+							// //	console.log(localStorage.selection); 
+							// mselectedList=[];
+							// for (var i =0;i<tmpS.length;i++){
+							// mselectedList[i] =tmpS[i];
+							// }
+							// console.log(mselectedList); 
+							// // highlight selection
+							// for (var i =0;i<spritesSelected.length;i++){		
+								// spritesSelected[i].position.set(-50000,-10000,10000);
+							// }
+							// for (var i =0;i<mselectedList.length;i++){
+								// //for (var j =0;j<spritesSelected.length;j++){
+								// if (i<spritesSelected.length){
+									// //spritesSelected
+									// //console.log(idMap[mselectedList[i]])
+									// var a1 = scene.children[idMap[mselectedList[i]][0]].geometry.attributes.position.array;
+									// spritesSelected[i].position.set(a1[idMap[mselectedList[i]][1]*3],a1[idMap[mselectedList[i]][1]*3+1],a1[idMap[mselectedList[i]][1]*3+2]);	
+								// }
 								
-							}
+							// }
 							
-						}			  
-					}*/
-					exploded=false;
-				}
-			}, false );
+						// }			  
+					// }*/
+					// exploded=false;
+				// }
+			// }, false );
 			
 			
-		}
+		// }
 		
 		function onWindowResize() {
 
@@ -8898,6 +8909,14 @@ function selectValue(el){
 			tokenUniforms.mixAmount.value = 0.0;
 		}*/
 }	
+	
+	
+	
+	function selectLayout(el){
+		//console.log(el.value)
+		document.getElementById("mtnl-id").value=el.value;
+	}
+	
 	
 	</script>	
 		

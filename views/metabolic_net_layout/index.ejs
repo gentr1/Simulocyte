@@ -1,0 +1,31 @@
+<div class='container' >
+	<div class="jumbotron">
+	<h1>Layouts for Metabolic networks </h1>
+	
+	
+	<table class='table table-bordered' style="text-align:left">
+		<tr>
+			
+			<th>Name</th>
+			<th>Comment</th>
+			<th>Metabolic Net</th>
+			<th>Action</th>
+		</tr>
+		
+
+		<% _.each(mtnls, function(mtnl) { %>
+		<tr data-id="<%= mtnl.id %>" data-model="mtnl">
+			
+			<td style="font-size:15px;"><b><%= mtnl[1] %></b></td>
+			<td style="font-size:15px;"><%= mtnl[2] %></td>
+			<td style="font-size:15px;"><%= mtnl[3] %></td>
+			<td><a href="/metabolic_net_layout/show/<%= mtnl[0] %>" class="btn btn-sm btn-success">View/Edit Layout</a></td>
+		</tr> 
+
+		<% }) %>
+	</table>
+	
+	
+	
+<div id="container" style="position: absolute;left: 0px;"></div>
+</div>

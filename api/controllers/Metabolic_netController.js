@@ -16,6 +16,7 @@
  */
 var fs = require('fs');
 module.exports = {
+
     'new': function(req,res){
 		res.view();
 	},
@@ -74,36 +75,54 @@ module.exports = {
 				});
 			});
 		}
-  },
+    },
+	
 	// render the profile view (e.g. /views/show.ejs)
 	show: function(req, res, next) {
 		Metabolic_net.findOne(req.param('id'), function foundMtn(err, mtn) {
-		  if (err) return next(err);
-		  if (!mtn) return next();
-		  res.view({
-			mtn: mtn
-		  });
+			if (err) return next(err);
+			if (!mtn) return next();
+			Metabolic_net_layout.find({ metabolic_net: mtn.name}, function foundMtnls(err2, mtnls) {
+				//console.log(Object.keys(mtn))
+				if (err2) return next(err2);
+				if (!mtnls) return next();
+				var mtnlID="";
+				if (req.param('mtnl-id')){	
+					mtnlID=req.param('mtnl-id');
+				}
+				var mtnl={};
+				var listLayouts=[];
+				for (var i=0;i<mtnls.length;i++){
+					listLayouts.push([mtnls[i].id, mtnls[i].name, mtnls[i].comment]);
+					if (mtnlID!="" && mtnlID==mtnls[i].id){
+						mtnl =mtnls[i];
+					}
+				}
+				
+				res.view({
+					mtn: mtn,
+					mtnls: listLayouts,
+					mtnl: mtnl
+				});
+			});
+
+			
 		});
 	},
 	
-	// render the profile view (e.g. /views/show.ejs)
-	layoutEditor: function(req, res, next) {
-		Metabolic_net.findOne(req.param('id'), function foundMtn(err, mtn) {
-		  if (err) return next(err);
-		  if (!mtn) return next();
-		  res.view({
-			mtn: mtn
-		  });
-		});
-	},
+	
 	
 	index: function(req, res, next) {
 		// Get an array of all users in the User collection(e.g. table)
 		Metabolic_net.find(function foundMtns(err, mtns) {
 		  if (err) return next(err);
+		  var listMtns=[];
+		  for (var i=0;i<mtns.length;i++){
+				listMtns.push([mtns[i].id, mtns[i].name, mtns[i].comment, mtns[i].file[0].length, mtns[i].file[1].length, mtns[i].file[2].length]);
+		  }
 		  // pass the array down to the /views/index.ejs page
 		  res.view({
-			mtns: mtns
+			mtns: listMtns
 		  });
 		});
 	},
