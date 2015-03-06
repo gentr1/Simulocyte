@@ -16,7 +16,12 @@
 	<div class="control-group">
 	<input type="text" class="form-control" placeholder="comments" name="comment">
 	</div>
-
+	<div class="control-group">
+	Set users or groups of users (labs)'s privileges ("no access", "read access", or "read-write access") to this metabolic network (labs in orange):
+	<div id="usersTable"></div>
+	</div>
+	<input type="text" name="users" id ="users" style="visibility: hidden;" value="[]">
+	<input type="text" name="owner" id ="owner" style="visibility: hidden;" value="<%=session.User.name%>">
 	<div class="control-group">Select one metabolic network:
 	<select class="form-control" name="metabolic_net">
 		<% _.each(mtbs, function(mtb) {%>
@@ -118,5 +123,114 @@ $container13.handsontable({
   },
   minSpareRows: 1
 });
+
+
+var masterUser=<%-JSON.stringify( session.User.name) %>;
+var sessionAuthenticated=<%-JSON.stringify( session.authenticated)%>;
+if (sessionAuthenticated){
+var listUsers=<%-JSON.stringify( usrs) %>;
+var listLabs=<%-JSON.stringify( labs) %>;
+
+var dataUsers=new Array(listUsers.length+listLabs.length);
+
+for (var i=0, j=listLabs.length; i<j;i++){
+	dataUsers[i]=new Array(3);
+	dataUsers[i][0]=listLabs[i]["name"];
+	dataUsers[i][1]=false;
+	dataUsers[i][2]=true;
+	dataUsers[i][3]=false;
+}
+for (var i=listLabs.length, j=listLabs.length+listUsers.length; i<j;i++){
+	dataUsers[i]=new Array(2);
+	dataUsers[i][0]=listUsers[i-listLabs.length];
+	if (dataUsers[i][0]==masterUser){
+		dataUsers[i][1]=false;
+		dataUsers[i][2]=false;
+		dataUsers[i][3]=true;
+	}
+	else{
+		dataUsers[i][1]=false;
+		dataUsers[i][2]=true;
+		dataUsers[i][3]=false;
+	}
+}
+
+greenRenderer = function(instance, td, row, col, prop, value, cellProperties) {
+	if (row<listLabs.length){
+		Handsontable.renderers.TextRenderer.apply(this, arguments);
+		td.style.backgroundColor = 'orange';
+	}
+	else{Handsontable.renderers.TextRenderer.apply(this, arguments);}
+
+};
+
+var flagCondition=true;
+var $container1 = $("#usersTable");
+$container1.handsontable({
+	data: dataUsers,
+	width: 750,
+	height:400,
+	startRows: 1,
+	startCols: 4,
+	colHeaders: ['User Name', 'No-Access','Read-Only','Read-Write'],
+	columns: [
+		{renderer: greenRenderer},
+		{type: 'checkbox'},
+		{type: 'checkbox'},
+		{type: 'checkbox'}
+	],
+	colWidths: [250, 100,100,100],
+	beforeChange: function(changes, source) {
+		if (changes){
+			for (var i =0; i< changes.length;i++){
+				if (changes[i][3]==false && flagCondition==true){
+					changes[i]=null;
+				}
+			}
+		}
+	},
+	afterChange: function(changes, source) {
+		if (changes){
+			var obj = this;
+			var recordedChanges=[];
+			for (var i =0; i< changes.length;i++){
+				if (changes[i]){
+					var rowChanged=changes[i][0];
+					var colChanged=changes[i][1];
+					for (j=1;j<4;j++){
+						if (colChanged!=j){
+							if (changes[i][3]==true){
+								recordedChanges.push([rowChanged, j, false]);
+							}
+						}
+					}
+				}
+			}
+			flagCondition=false;
+			obj.setDataAtCell (recordedChanges)
+			flagCondition=true;
+			obj.render()
+		}
+		//console.log(dataUsers)
+		document.getElementById("users").value= JSON.stringify(dataUsers);
+	},
+	minSpareRows: 0
+});
+
+
+var ht = $('#usersTable').handsontable('getInstance');
+ht.updateSettings({
+	cells: function (row, col, prop) {
+		var cellProperties = {};
+		if (ht.getData()[row]){
+			if (ht.getData()[row][0]==masterUser){
+				cellProperties.readOnly = true;
+			}
+		}
+		return cellProperties;
+	}
+});
+
+}
 
 </script>

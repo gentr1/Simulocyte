@@ -1,5 +1,5 @@
 /**
-* Metabolic_net_layout.js
+* Qsspn_model_layout.js
 *
 * @description :: TODO: You might write a short summary of how this model works and what it represents here.
 * @docs        :: http://sailsjs.org/#!documentation/models
@@ -22,10 +22,10 @@ module.exports = {
 			
 		},
 		users: {
-			  type: 'json',
-			  defaultsTo: {}
+		  type: 'json',
+		  defaultsTo: {}
 		},
-		metabolic_net: 'string',
+		qsspn_model: 'string',
 		layout: {
 			type: 'json'//,
 			//required: true

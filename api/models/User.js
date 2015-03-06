@@ -39,22 +39,22 @@ module.exports = {
 
     admin: {
       type: 'boolean',
-      defaultsTo: true
+      defaultsTo: false
     },
 	// privileges: 0 is no, 1 is read, 2 is write
 	metabolic_nets: {
 	  type: 'json',
-	  defaultsTo: {'recon2':1,'hepatonet':1,'e-coli':1}
+	  defaultsTo: []
 	},
 	
 	models: {
 	  type: 'json',
-	  defaultsTo: {'macrophage':1,'hepatonet':1,'cortisol':1}
+	  defaultsTo: []
 	},
 	
 	rooms: {
 	  type: 'json',
-	  defaultsTo: {'guestLab':1}
+	  defaultsTo: []
 	},
 
     toJSON: function() {

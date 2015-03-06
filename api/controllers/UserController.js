@@ -13,7 +13,7 @@ module.exports = {
   },
 
   create: function(req, res, next) {
-	//socks.socket.emit('welcome', {message: "Hi i'm Laurent and i write shitty articles on my blog"});
+	
     var userObj = {
       name: req.param('name'),
       title: req.param('title'),
@@ -63,17 +63,79 @@ module.exports = {
     });
   },
 
-  // render the profile view (e.g. /views/show.ejs)
-  show: function(req, res, next) {
-    User.findOne(req.param('id'), function foundUser(err, user) {
-      if (err) return next(err);
-      if (!user) return next();
-      res.view({
-        user: user
-      });
-    });
-  },
+	// render the profile view (e.g. /views/show.ejs)
+	show: function(req, res, next) {
+		if (req.session.authenticated){
+			var username = req.session.User.name;
+			User.findOne(req.param('id'), function foundUser(err, user) {
+				if (err) return next(err);
+				if (!user) return next();
+				Lab.find(function(err2, labs) {
+					// Metabolic_net.find(function foundMtns(errm, mtns) {
+						// if (errm) return next(errm);
+						// Metabolic_net_layout.find(function foundQms(errmtl, mtnls) {
+							// if (errmtl) return next(errmtl);	
+							// Qsspn_model.find(function foundQms(errq, qms) {
+								// if (errq) return next(errq);
+								// Qsspn_model_layout.find(function foundQms(errql, qmls) {
+									// if (errql) return next(errql);
+									
+									var ownLabs=[];
+									for (var j=0;j<labs.length;j++){
+										if (labs[j]["owner"]==username){
+											ownLabs.push([labs[j].name,labs[j].id])
+										}
+									}
+									var inLabs=[];
+									for (var j=0;j<labs.length;j++){
+										if (labs[j]["users"].indexOf(username)!=-1 ){
+											var isin=false;
+											for (var j1=0;j1<ownLabs.length;j1++){
+												if (ownLabs[j1][0]==labs[j].name){
+													isin=true;
+												}
+											}
+											if (isin==false){
+												inLabs.push([labs[j].name,labs[j].id])
+											}
+										}
+									}
+									
+									res.view({
+										user: user,
+										ownlabs: ownLabs,
+										inlabs: inLabs
+									});
+								// });
+							// });
+						// });
+					// });
+				});
+			});
+		}
+	},
 
+	seeusers: function(req, res, next) {
+
+    // Get an array of all users in the User collection(e.g. table)
+    User.find(function foundUsers(err, users) {
+		if (err) return next(err);
+			Lab.find(function foundLabs(err2, labs) {
+				if (err2) return next(err2);
+		
+				// pass the array down to the /views/index.ejs page
+				res.view({
+					users: users,
+					labs: labs,
+				});
+			});
+      // pass the array down to the /views/index.ejs page
+      
+      
+    });
+  },	
+	
+	
   index: function(req, res, next) {
 
     // Get an array of all users in the User collection(e.g. table)

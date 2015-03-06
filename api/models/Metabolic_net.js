@@ -14,9 +14,17 @@ module.exports = {
 			required: true,
 			unique: true
 		},
+		owner: {
+			type: 'string',
+			required: true
+		},
 		comment: {
 			type: 'string'
 			
+		},
+		users: {
+			  type: 'json',
+			  defaultsTo: {}
 		},
 		file: {
 			type: 'json'//,

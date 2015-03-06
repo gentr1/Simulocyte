@@ -11,309 +11,43 @@
 	<a class="btn btn-medium btn-primary" href="/user/edit/<%= user.id %>">Edit</a>
 	</div>
 	<hr>
-	<h2>metabolic networks: </h2>
+	
+	<h2>Created Labs: </h2>
 	<div class="center-block" style="background-color:#F8F8F8;">
 	<table class='table table-bordered table-condensed'>
 		<tr>
 			<th>Name</th>
 			<th>Comment</th>
-			<th>User status</th>
+			<th><a class="btn btn-sm btn-success" href="/lab/new">Create new Lab</a></th>
 		</tr>
 	
-	<% _.each(_.pairs(user.metabolic_nets), function(elem) { %>
-		<tr><td><%= elem[0] %></td><td></td>
-		<% if (elem[1]>1) { %>
-		<td><img src="/images/admin.png">admin</td></tr>
-	<% } else { %>
-			<td><img src="/images/pawn.png">guest</td></tr>
-	<% } %>	
+	<% _.each(ownlabs, function(elem) { %>
+		<tr><td><%= elem[0] %></td><td></td><td><a href="/lab/edit/<%=elem[1]%>" class="btn btn-sm btn-primary">Show/Edit Lab</a></td>
 	<% }) %>
 	</table>
 	</div>
 	<hr>
-	<h2>models: </h2>
-	<div class="center-block" style="background-color:#F8F8F8;">
-	<table class='table table-bordered table-condensed' >
-		<tr>
-			<th>Name</th>
-			<th>Comment</th>
-			<th>User status</th>
-		</tr>
-	
-	<% _.each(_.pairs(user.models), function(elem) { %>
-		<tr><td><%= elem[0] %></td><td></td>
-		<% if (elem[1]>1) { %>
-		<td><img src="/images/admin.png">admin</td></tr>
-	<% } else { %>
-			<td><img src="/images/pawn.png">guest</td></tr>
-	<% } %>	
-	<% }) %>
-	</table>
-	</div>
-	<hr>
-	<h2>rooms: </h2>
+	<h2>Member of Labs: </h2>
 	<div class="center-block" style="background-color:#F8F8F8;">
 	<table class='table table-bordered table-condensed'>
 		<tr>
 			<th>Name</th>
 			<th>Comment</th>
-			<th>User status</th>
+			<th>Action</th>
 		</tr>
 	
-	<% _.each(_.pairs(user.rooms), function(elem) { %>
-		<tr><td><%= elem[0] %></td><td></td>
-		<% if (elem[1]>1) { %>
-		<td><img src="/images/admin.png">admin</td></tr>
-	<% } else { %>
-			<td><img src="/images/pawn.png">guest</td></tr>
-	<% } %>	
+	<% _.each(inlabs, function(elem) { %>
+		<tr><td><%= elem[0] %></td><td></td><td><a href="/lab/show/<%=elem[1]%>" class="btn btn-sm btn-primary">Show Lab</a></td>
 	<% }) %>
 	</table>
 	</div>
 	<hr>
-	
 	
 	<div id="container" style="position: absolute;left: 0px;"></div>
-		<div id="info"><a href="http://threejs.org" target="_blank">three.js</a> webgl - buffergeometry - lines</div>
+		
 	<script>
 
-			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+			
 
-			var container, stats;
-
-			var camera, scene, renderer;
-
-			var mesh;
-
-			init();
-			animate();
-
-			function init() {
-
-				container = document.getElementById( 'container' );
-
-				//
-
-				camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 1, 3500 );
-				camera.position.z = 2750;
-
-				scene = new THREE.Scene();
-				scene.fog = new THREE.Fog( 0x050505, 2000, 3500 );
-
-				//
-
-				scene.add( new THREE.AmbientLight( 0x444444 ) );
-
-				var light1 = new THREE.DirectionalLight( 0xffffff, 0.5 );
-				light1.position.set( 1, 1, 1 );
-				scene.add( light1 );
-
-				var light2 = new THREE.DirectionalLight( 0xffffff, 1.5 );
-				light2.position.set( 0, -1, 0 );
-				scene.add( light2 );
-
-				//
-
-				var triangles = 160000;
-
-				var geometry = new THREE.BufferGeometry();
-
-				geometry.addAttribute( 'index', new Uint16Array( triangles * 3 ), 1 );
-				geometry.addAttribute( 'position', new Float32Array( triangles * 3 * 3 ), 3 );
-				geometry.addAttribute( 'normal', new Float32Array( triangles * 3 * 3 ), 3 );
-				geometry.addAttribute( 'color', new Float32Array( triangles * 3 * 3 ), 3 );
-
-				// break geometry into
-				// chunks of 21,845 triangles (3 unique vertices per triangle)
-				// for indices to fit into 16 bit integer number
-				// floor(2^16 / 3) = 21845
-
-				var chunkSize = 21845;
-
-				var indices = geometry.getAttribute( 'index' ).array;
-
-				for ( var i = 0; i < indices.length; i ++ ) {
-
-					indices[ i ] = i % ( 3 * chunkSize );
-
-				}
-
-				var positions = geometry.getAttribute( 'position' ).array;
-				var normals = geometry.getAttribute( 'normal' ).array;
-				var colors = geometry.getAttribute( 'color' ).array;
-
-				var color = new THREE.Color();
-
-				var n = 800, n2 = n/2;	// triangles spread in the cube
-				var d = 12, d2 = d/2;	// individual triangle size
-
-				var pA = new THREE.Vector3();
-				var pB = new THREE.Vector3();
-				var pC = new THREE.Vector3();
-
-				var cb = new THREE.Vector3();
-				var ab = new THREE.Vector3();
-
-				for ( var i = 0; i < positions.length; i += 9 ) {
-
-					// positions
-
-					var x = Math.random() * n - n2;
-					var y = Math.random() * n - n2;
-					var z = Math.random() * n - n2;
-
-					var ax = x + Math.random() * d - d2;
-					var ay = y + Math.random() * d - d2;
-					var az = z + Math.random() * d - d2;
-
-					var bx = x + Math.random() * d - d2;
-					var by = y + Math.random() * d - d2;
-					var bz = z + Math.random() * d - d2;
-
-					var cx = x + Math.random() * d - d2;
-					var cy = y + Math.random() * d - d2;
-					var cz = z + Math.random() * d - d2;
-
-					positions[ i ]     = ax;
-					positions[ i + 1 ] = ay;
-					positions[ i + 2 ] = az;
-
-					positions[ i + 3 ] = bx;
-					positions[ i + 4 ] = by;
-					positions[ i + 5 ] = bz;
-
-					positions[ i + 6 ] = cx;
-					positions[ i + 7 ] = cy;
-					positions[ i + 8 ] = cz;
-
-					// flat face normals
-
-					pA.set( ax, ay, az );
-					pB.set( bx, by, bz );
-					pC.set( cx, cy, cz );
-
-					cb.subVectors( pC, pB );
-					ab.subVectors( pA, pB );
-					cb.cross( ab );
-
-					cb.normalize();
-
-					var nx = cb.x;
-					var ny = cb.y;
-					var nz = cb.z;
-
-					normals[ i ]     = nx;
-					normals[ i + 1 ] = ny;
-					normals[ i + 2 ] = nz;
-
-					normals[ i + 3 ] = nx;
-					normals[ i + 4 ] = ny;
-					normals[ i + 5 ] = nz;
-
-					normals[ i + 6 ] = nx;
-					normals[ i + 7 ] = ny;
-					normals[ i + 8 ] = nz;
-
-					// colors
-
-					var vx = ( x / n ) + 0.5;
-					var vy = ( y / n ) + 0.5;
-					var vz = ( z / n ) + 0.5;
-
-					color.setRGB( vx, vy, vz );
-
-					colors[ i ]     = color.r;
-					colors[ i + 1 ] = color.g;
-					colors[ i + 2 ] = color.b;
-
-					colors[ i + 3 ] = color.r;
-					colors[ i + 4 ] = color.g;
-					colors[ i + 5 ] = color.b;
-
-					colors[ i + 6 ] = color.r;
-					colors[ i + 7 ] = color.g;
-					colors[ i + 8 ] = color.b;
-
-				}
-
-				var offsets = triangles / chunkSize;
-
-				for ( var i = 0; i < offsets; i ++ ) {
-
-					var offset = {
-						start: i * chunkSize * 3,
-						index: i * chunkSize * 3,
-						count: Math.min( triangles - ( i * chunkSize ), chunkSize ) * 3
-					};
-
-					geometry.offsets.push( offset );
-
-				}
-
-				geometry.computeBoundingSphere();
-
-				var material = new THREE.MeshPhongMaterial( {
-						color: 0xaaaaaa, ambient: 0xaaaaaa, specular: 0xffffff, shininess: 250,
-						side: THREE.DoubleSide, vertexColors: THREE.VertexColors
-				} );
-
-				mesh = new THREE.Mesh( geometry, material );
-				scene.add( mesh );
-
-				//
-
-				renderer = new THREE.WebGLRenderer( { antialias: false } );
-				renderer.setClearColor( scene.fog.color, 1 );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-
-				renderer.gammaInput = true;
-				renderer.gammaOutput = true;
-
-				container.appendChild( renderer.domElement );
-
-				//
-
-				stats = new Stats();
-				stats.domElement.style.position = 'absolute';
-				stats.domElement.style.top = '0px';
-				container.appendChild( stats.domElement );
-
-				//
-
-				window.addEventListener( 'resize', onWindowResize, false );
-
-			}
-
-			function onWindowResize() {
-
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
-
-				renderer.setSize( window.innerWidth, window.innerHeight );
-
-			}
-
-			//
-
-			function animate() {
-
-				requestAnimationFrame( animate );
-
-				render();
-				stats.update();
-
-			}
-
-			function render() {
-
-				var time = Date.now() * 0.001;
-
-				mesh.rotation.x = time * 0.25;
-				mesh.rotation.y = time * 0.5;
-
-				renderer.render( scene, camera );
-
-			}
-
-		</script>
+	</script>
 </div>

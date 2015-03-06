@@ -1,0 +1,42 @@
+
+
+<form action="/lab/update/<%= lb.id %>" method="POST" id="lab-edit-form" class="form-signin">
+<h1>Users, groups, communities: edit list of users in lab</h1>
+
+	<% if(flash && flash.err) { %>
+		<ul class="alert alert-success">
+	<% Object.keys(flash.err).forEach(function(error) { %>
+		<li><%- JSON.stringify(flash.err[error]) %></li>
+	<% }) %>
+	</ul>
+	<% } %>
+
+	<h1>Lab Name: <%= lb.name %> </h1>
+	<hr>
+	<h1>creator:<%=lb.owner%></h1>
+	<hr>
+	
+	
+	<div class="control-group">Change Comment:
+	<input type="text" class="form-control" placeholder="comment" name="comment" value="<%= lb.comment %>">
+	</div>
+	
+	<div class="control-group">
+	<select multiple class="form-control" name="users">
+	
+	<% _.each(usrs, function(user) {%>
+       <option <% if(lb.users.indexOf(user.name)!=-1)  {%> selected= "true" <% } %> ><%=user.name%></option>
+    <% }) %>
+	
+	
+	  
+	</select>
+	</div>
+	<input type="submit" class="btn btn-lg btn-primary btn-block" value="Update Lab"/>
+	
+	
+	
+	
+	<input type="hidden" name="_csrf" value="<%= _csrf %>" />
+</form>
+

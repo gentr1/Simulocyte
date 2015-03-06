@@ -13,11 +13,11 @@
 		
 
 		<% _.each(experims, function(exp) { %>
-		<tr data-id="<%= exp.id %>" data-model="exp">
+		<tr data-id="<%= exp[0] %>" data-model="exp">
 			
-			<td style="font-size:15px;"><b><%= exp.name %></b></td>
-			<td style="font-size:15px;"><%= exp.comment %></td>
-			<td><a href="/experiment/show/<%= exp.id %>" class="btn btn-sm btn-success">Show</a></td>
+			<td style="font-size:15px;"><b><%= exp[1] %></b></td>
+			<td style="font-size:15px;"><%= exp[2] %></td>
+			<td><a href="/experiment/show/<%= exp[0] %>" class="btn btn-sm btn-success">Show</a></td>
 		</tr> 
 
 		<% }) %>

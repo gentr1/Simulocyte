@@ -1,6 +1,6 @@
 <h1>Metabolic networks</h1>
-<form action="/metabolic_net/create" method="POST" id="metabolic-net-sign-up-form" enctype="multipart/form-data" class="form-signin">
-	<h2 class="form-signin-heading">Create a metabolic network</h2>
+<form action="/metabolic_net/updateusers/<%= mtnid %>" method="POST" id="metabolic-net-users-edit" enctype="multipart/form-data" class="form-signin">
+	<h1>Update user privileges for this metabolic network</h2>
 
 	<% if(flash && flash.err) { %>
 		<ul class="alert alert-success">
@@ -9,25 +9,17 @@
 	<% }) %>
 	</ul>
 	<% } %>
-
+	<h1>Name: <%=mtnname%></h2>
 	
-	<div class="control-group">
-	<input type="text" class="form-control" placeholder="metabolic network sbml name" name="name" style="width:250px">
-	</div>
-	<div class="control-group">
-	<input type="text" class="form-control" placeholder="comment" name="comment">
-	</div>
-	<div class="control-group">
-	<input type="file" placeholder="file" name="myfile">
-	</div>
+	<h2 class="form-signin-heading">Update user privileges for this metabolic network</h2>
 	<br>
 	<div class="control-group">
 	Set users or groups of users (labs)'s privileges ("no access", "read access", or "read-write access") to this metabolic network (labs in orange):
 	<div id="usersTable"></div>
 	</div>
 	<input type="text" name="users" id ="users" style="visibility: hidden;" value="[]">
-	<input type="text" name="owner" id ="owner" style="visibility: hidden;" value="<%=session.User.name%>">
-	<input type="submit" class="btn btn-lg btn-primary btn-block" value="Create Metabolic Network"/>
+	
+	<input type="submit" class="btn btn-lg btn-primary btn-block" value="Update list of users"/>
 
 	<input type="hidden" name="_csrf" value="<%= _csrf %>" />
 </form>
@@ -40,6 +32,7 @@ if (sessionAuthenticated){
 var listUsers=<%-JSON.stringify( usrs) %>;
 var listLabs=<%-JSON.stringify( labs) %>;
 
+var mtnUsers=<%-JSON.stringify( mtnusers) %>
 var dataUsers=new Array(listUsers.length+listLabs.length);
 
 for (var i=0, j=listLabs.length; i<j;i++){
@@ -63,6 +56,17 @@ for (var i=listLabs.length, j=listLabs.length+listUsers.length; i<j;i++){
 		dataUsers[i][3]=false;
 	}
 }
+
+for (var i=0; i<dataUsers.length;i++){
+	for (var i1=0; i1<mtnUsers.length; i1++){
+		if (dataUsers[i][0]==mtnUsers[i1][0]){
+			dataUsers[i][1]=mtnUsers[i1][1];
+			dataUsers[i][2]=mtnUsers[i1][2];
+			dataUsers[i][3]=mtnUsers[i1][3];
+		}
+	}
+}
+
 
 greenRenderer = function(instance, td, row, col, prop, value, cellProperties) {
 	if (row<listLabs.length){

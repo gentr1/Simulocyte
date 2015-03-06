@@ -77,13 +77,15 @@
           <ul class="nav navbar-nav">
             <% if (session.authenticated) { %>
               <li class="active"><a href="/user/show/<%= session.User.id %>"><%= session.User.name %> </a> </li>
+			  <li><a href="/user/seeusers">Members</a></li>
+			  <li><a href="/metabolic_net/index">Metabolic nets</a></li>
+			  <li><a href="/qsspn_model/index">QSSPN models</a></li>
+			  <li><a href="/experiment/index">QSSPN Experiments</a></li>
+			  <li><a href="/fbaexperiment/index">FBA experiments</a></li>
             <% } %>
             <% if (session.authenticated && session.User.admin) { %>
             <li><a href="/user">User Administration</a></li>
-            <li><a href="/metabolic_net/index">Metabolic nets</a></li>
-			<li><a href="/qsspn_model/index">QSSPN models</a></li>
-			<li><a href="/experiment/index">QSSPN Experiments</a></li>
-			<li><a href="/fbaexperiment/index">FBA experiments</a></li>
+            
             <% } %>
           </ul>
           <div class="navbar-right">

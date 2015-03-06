@@ -1,6 +1,6 @@
-<h1>Metabolic networks</h1>
-<form action="/metabolic_net/create" method="POST" id="metabolic-net-sign-up-form" enctype="multipart/form-data" class="form-signin">
-	<h2 class="form-signin-heading">Create a metabolic network</h2>
+<h1>Metabolic network Layout</h1>
+<form action="/qsspn_model_layout/create" method="POST" id="qsspn-model-layout-sign-up-form" enctype="multipart/form-data" class="form-signin">
+	<h2 class="form-signin-heading">Create a new QSSPN model layout</h2>
 
 	<% if(flash && flash.err) { %>
 		<ul class="alert alert-success">
@@ -12,27 +12,32 @@
 
 	
 	<div class="control-group">
-	<input type="text" class="form-control" placeholder="metabolic network sbml name" name="name" style="width:250px">
+	<input type="text" class="form-control" placeholder="QSSPN model layout name" name="name">
 	</div>
 	<div class="control-group">
 	<input type="text" class="form-control" placeholder="comment" name="comment">
 	</div>
-	<div class="control-group">
-	<input type="file" placeholder="file" name="myfile">
+	<div class="control-group">Select one QSSPN model:
+	<select class="form-control" name="qsspn_model">
+		<% _.each(qms, function(qm) {%>
+		   <option><%=qm%></option>
+		<% }) %>
+		</select>
 	</div>
 	<br>
 	<div class="control-group">
-	Set users or groups of users (labs)'s privileges ("no access", "read access", or "read-write access") to this metabolic network (labs in orange):
+	Set users or groups of users (labs)'s privileges ("no access", "read access", or "read-write access") to this model layout (labs in orange):
 	<div id="usersTable"></div>
 	</div>
 	<input type="text" name="users" id ="users" style="visibility: hidden;" value="[]">
 	<input type="text" name="owner" id ="owner" style="visibility: hidden;" value="<%=session.User.name%>">
-	<input type="submit" class="btn btn-lg btn-primary btn-block" value="Create Metabolic Network"/>
-
+	<input type="submit" class="btn btn-lg btn-primary btn-block" value="Create QSSPN Model Layout"/>
+	
+	
+	
+	
 	<input type="hidden" name="_csrf" value="<%= _csrf %>" />
 </form>
-
-
 <script>
 var masterUser=<%-JSON.stringify( session.User.name) %>;
 var sessionAuthenticated=<%-JSON.stringify( session.authenticated)%>;
@@ -141,6 +146,4 @@ ht.updateSettings({
 });
 
 }
-
-
 </script>

@@ -6,7 +6,11 @@
 	<h3>Comment: </h3>
 	<%= exp.comment %>
 	<hr>
-
+	<% if (session.User.name==exp.owner) {%>
+	
+	<a href="/fbaexperiment/editusers/<%=exp.id%>" class="btn btn-sm btn-success">Edit/View list of users privileges</a>
+	<hr>
+	<%}%>
 	<br><b>Simulation results:</b>
 	<%var resultsMessage=" - No results yet."%>
 	<form action="/fbaexperiment/showresult/<%= exp.id %>" id="experiment-edit-form" method="POST" class="form-signin form-inline">

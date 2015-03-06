@@ -1,14 +1,12 @@
-<form action="/session/create" method="POST" class="form-signin">
+<form action="/session/emailuser" method="POST" class="form-signin">
 <br><br>
-	<h2 class="form-signin-heading">Please sign in...</h2>
+	<h2 class="form-signin-heading">Please enter email to be sent password reset link...</h2>
 
 	
 
 	<input type="text" class="form-control" placeholder="Email address" name="email">
-	<input type="password" class="form-control" placeholder="Password" name="password">
 	<input type="submit" class="btn btn-lg btn-primary btn-block" value="Sign-in"/>
 	<br>
-	<a href="/session/forgot">Forgot password ?</a>
 	<input type="hidden" name="_csrf" value="<%= _csrf %>" />
 	
 	<% if(flash && flash.err) { %>

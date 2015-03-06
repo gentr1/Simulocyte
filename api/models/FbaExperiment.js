@@ -14,7 +14,15 @@ module.exports = {
   		required: true,
   		unique: true
   	},
+	owner: {
+		type: 'string',
+		required: true
+	},
   	comment: 'string',
+	users: {
+	  type: 'json',
+	  defaultsTo: {}
+	},
   	objective: 'string',
     externality_tag: {
       type: 'string',

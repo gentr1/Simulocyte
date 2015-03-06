@@ -11,6 +11,10 @@
 	<%
 	var allLayout=JSON.stringify({});
 	%>
+	<% if (session.User.name==mtnl.owner) {%>
+	<hr>
+	<a href="/metabolic_net_layout/editusers/<%=mtnl.id%>" class="btn btn-sm btn-success">Edit/View list of users privileges</a>
+	<%}%>
 	<hr>
 	<h3 id="titleComp" style="position: absolute;left: 20px;">Edit/Add New Compartments:</h3>
 	<div id="compTable" style="position: absolute;left: 20px;"></div>

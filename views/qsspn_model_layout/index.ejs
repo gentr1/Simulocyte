@@ -1,0 +1,31 @@
+<div class='container' >
+	<div class="jumbotron">
+	<h1>Layouts for QSSPN Models </h1>
+	
+	
+	<table class='table table-bordered' style="text-align:left">
+		<tr>
+			
+			<th>Name</th>
+			<th>Comment</th>
+			<th>QSSPN Model</th>
+			<th>Action</th>
+		</tr>
+		
+
+		<% _.each(qmls, function(qml) { %>
+		<tr data-id="<%= qml.id %>" data-model="qml">
+			
+			<td style="font-size:15px;"><b><%= qml[1] %></b></td>
+			<td style="font-size:15px;"><%= qml[2] %></td>
+			<td style="font-size:15px;"><%= qml[3] %></td>
+			<td><a href="/qsspn_model_layout/show/<%= qml[0] %>" class="btn btn-sm btn-success">View/Edit Layout</a></td>
+		</tr> 
+
+		<% }) %>
+	</table>
+	
+	
+	
+<div id="container" style="position: absolute;left: 0px;"></div>
+</div>

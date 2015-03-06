@@ -25,6 +25,7 @@ module.exports.policies = {
 		show: "userCanSeeProfile",
 		edit: "userCanSeeProfile",
 		update: "userCanSeeProfile",
+		seeusers: ["flash", "authenticated"],
 		'*': "admin"
 	}
 

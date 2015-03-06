@@ -16,7 +16,15 @@ module.exports = {
 			required: true,
 			unique: true
 		},
+		owner: {
+			type: 'string',
+			required: true
+		},
 		comment: 'string',
+		users: {
+		  type: 'json',
+		  defaultsTo: {}
+		},
 		parameters: {
 		  type: 'json',
 		  defaultsTo: {}

@@ -6,11 +6,83 @@
  */
 
 var bcrypt = require('bcryptjs');
+var nodemailer = require("nodemailer");
+var generatePassword = require('password-generator');
 
 module.exports = {
 
 	'new': function(req, res) {
 		res.view('session/new');
+	},
+	
+	'forgot': function(req, res) {
+		res.view('session/forgot');
+	},
+	
+	emailuser: function(req, res, next) {
+		if (!req.param('email')){
+			var emailRequiredError = [{
+				name: 'emailRequired',
+				message: 'You must enter an email.'
+			}]
+			req.session.flash = {
+				err: emailRequiredError
+			}
+			res.redirect('/session/forgot');
+			return;
+		}
+		User.findOneByEmail(req.param('email'), function foundUser(err, user) {
+			if (err) return next(err);
+			// If no user is found...
+			if (!user) {
+				var noAccountError = [{
+					name: 'noAccount',
+					message: 'The email address ' + req.param('email') + ' is not found. Please enter your user email address.'
+				}]
+				req.session.flash = {
+					err: noAccountError
+				}
+				res.redirect('/session/forgot');
+				return;
+			}
+			
+
+			var nodemailer = require('nodemailer');
+			var transporter = nodemailer.createTransport({
+				service: 'gmail',
+				auth: {
+					user: 'mehdi.khoury@gmail.com',
+					pass: '5elf-a55embly1977'
+				}
+			});
+			var newPassword = generatePassword();
+			require('bcryptjs').hash(newPassword, 10, function passwordEncrypted(err, encryptedPassword) {
+				if (err) return next(err);
+				transporter.sendMail({
+					from: 'mehdi.khoury@gmail.com',
+					to: req.param('email'),
+					subject: 'Simulocyte : password reset',
+					text: 'Your simulocyte password has been reset. It is now: '+newPassword+' Please delete this email and note that password somewhere secure...'
+				});
+				var userObj = {
+				  name: user.name,
+				  title: user.title,
+				  email: user.email,
+				  encryptedPassword: encryptedPassword,
+				  online: user.online,
+				  admin: user.admin,
+				  metabolic_nets: user.metabolic_nets,
+				  models: user.models,
+				  rooms: user.rooms
+				}
+				User.update(user.id, userObj, function uUpdated(erru) {
+					res.redirect('/session/new');
+				});
+			  
+			});
+			
+			
+		});
 	},
 
 	create: function(req, res, next) {
@@ -45,7 +117,7 @@ module.exports = {
 			if (!user) {
 				var noAccountError = [{
 					name: 'noAccount',
-					message: 'The email address ' + req.param('email') + ' not found.'
+					message: 'The email address ' + req.param('email') + ' is not found.'
 				}]
 				req.session.flash = {
 					err: noAccountError

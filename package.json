@@ -18,7 +18,9 @@
 	"express": "*",
 	"line-input-stream": "*",
 	"qfgets": "*",
-	"rfc-csv": "*"
+	"rfc-csv": "*",
+	"nodemailer": "*",
+	"password-generator": "*"
   },
   "scripts": {
     "start": "node app.js",

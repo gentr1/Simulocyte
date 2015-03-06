@@ -17,11 +17,7 @@ module.exports = {
 			comment: 'string',
 			owner: 'string',
 			metabolic_net: 'string',
-			users_edit: {
-			  type: 'json',
-			  defaultsTo: {}
-			},
-			users_read: {
+			users: {
 			  type: 'json',
 			  defaultsTo: {}
 			},
