@@ -23,6 +23,10 @@ module.exports = {
 	  type: 'json',
 	  defaultsTo: {}
 	},
+	openpolicy: {
+		type: 'boolean',
+		defaultsTo: false
+	},
   	objective: 'string',
     externality_tag: {
       type: 'string',

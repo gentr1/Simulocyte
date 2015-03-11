@@ -303,13 +303,17 @@ module.exports = {
 							
 							//var data0=data2;
 						
-						
+							var openp= true;
+							if (!req.param('defaultread')){
+								openp= false;
+							}
 							var qsspn_modelObj = {
 							  name: req.param('name'),
 							  comment: req.param('comment'),
 							  owner: req.param('owner'),
 							  metabolic_net: req.param('metabolic_net'),
 							  users: JSON.parse(req.param('users')),
+							  openpolicy: openp,
 							  file: data2,
 							  sfba: data3,
 							  layouts: {}
@@ -447,7 +451,12 @@ module.exports = {
 								for (var i=0;i<qmls.length;i++){
 									var users = qmls[i].users;
 									var userIndex = users.indexOf(username);
-									
+									var isNotIn=true;
+									for (var j=0;j<users.length;j++){
+										if (users[j][0]==username){
+											isNotIn=false;
+										}
+									}
 									for (var j=0;j<users.length;j++){
 										if ((users[j][0]==username || inLabs.indexOf(users[j][0])!=-1) && users[j][1]!=true){
 											var isin=false;
@@ -465,6 +474,12 @@ module.exports = {
 										}
 										
 									}
+									if (isNotIn && qmls[i].openpolicy && qmls[i].openpolicy==true){
+										listQmLayouts.push([qmls[i].id, qmls[i].name, qmls[i].comment]);
+										if (qmlID!="" && qmlID==qmls[i].id){
+											myqml =qmls[i];
+										}
+									}
 								}
 								
 								
@@ -475,7 +490,12 @@ module.exports = {
 								for (var i=0;i<mtnls.length;i++){
 									var users = mtnls[i].users;
 									var userIndex = users.indexOf(username);
-									
+									var isNotIn=true;
+									for (var j=0;j<users.length;j++){
+										if (users[j][0]==username){
+											isNotIn=false;
+										}
+									}
 									for (var j=0;j<users.length;j++){
 										if ((users[j][0]==username || inLabs.indexOf(users[j][0])!=-1) && users[j][1]!=true){
 											var isin=false;
@@ -493,6 +513,12 @@ module.exports = {
 										}
 										
 									}
+									if (isNotIn && mtnls[i].openpolicy && mtnls[i].openpolicy==true){
+										listLayouts.push([mtnls[i].id, mtnls[i].name, mtnls[i].comment, mtnls[i].metabolic_net]);
+										if (mtnlID!="" && mtnlID==mtnls[i].id){
+											mtnl =mtnls[i];
+										}
+									}
 								}
 								var goNext =false;
 								var users = qm.users;
@@ -501,7 +527,23 @@ module.exports = {
 										goNext=true;
 									}
 								}
+								var isNotIn=true;
+								for (var j=0;j<users.length;j++){
+									if (users[j][0]==username){
+										isNotIn=false;
+									}
+								}
 								if (goNext==true ){
+									res.view({
+										qm: qm,
+										mtb: mtb,
+										mtnls: listLayouts,
+										mtnl: mtnl,
+										qmls: listQmLayouts,
+										mqml: myqml
+									});
+								}
+								else if (isNotIn && qm.openpolicy==true){
 									res.view({
 										qm: qm,
 										mtb: mtb,
@@ -544,7 +586,12 @@ module.exports = {
 						for (var i=0;i<qms.length;i++){
 							var users = qms[i].users;
 							var userIndex = users.indexOf(username);
-							
+							var isNotIn=true;
+							for (var j=0;j<users.length;j++){
+								if (users[j][0]==username){
+									isNotIn=false;
+								}
+							}
 							for (var j=0;j<users.length;j++){
 								if ((users[j][0]==username || inLabs.indexOf(users[j][0])!=-1) && users[j][1]!=true){
 									var isin=false;
@@ -558,6 +605,9 @@ module.exports = {
 									}
 								}
 								
+							}
+							if (isNotIn && qms[i].openpolicy && qms[i].openpolicy==true){
+								listQms.push(qms[i]);
 							}
 						}
 						
@@ -586,6 +636,7 @@ module.exports = {
 							res.view({
 								labs: labs,
 								usrs: listUsers,
+								openpolicy: qm.openpolicy,
 								qmid: qm.id,
 								qmname: qm.name,
 								qmusers: qm.users
@@ -604,12 +655,17 @@ module.exports = {
 			Qsspn_model.findOne(req.param('id'), function foundQm(err, qm) {
 				if (err) return next(err);
 				if (!qm) return next();
+				var openp= true;
+				if (!req.param('defaultread')){
+					openp= false;
+				}
 				var qsspn_modelObj = {
 					name: qm.name,
 					comment: qm.comment,
 					owner: qm.owner,
 					metabolic_net: qm.metabolic_net,
 					users: JSON.parse(req.param('users')),
+					openpolicy: openp,
 					file: qm.file,
 					sfba: qm.sfba,
 					layouts: qm.layouts//JSON.parse(req.param('layouts')) // should rather concatenate data...
@@ -871,6 +927,7 @@ module.exports = {
 						owner: qm.owner,
 						metabolic_net: qm.metabolic_net,
 						users: qm.users,
+						openpolicy: qm.openpolicy,
 						file: qm.file,
 						sfba: qm.sfba,
 						layouts: result//JSON.parse(req.param('layouts')) // should rather concatenate data...

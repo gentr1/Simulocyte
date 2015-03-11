@@ -40,11 +40,16 @@ module.exports = {
 			if (req.method === 'POST') {           
 				// read temporary file
 				fs.readFile(req.files.myfile.path, function (err, data) {
+					var openp= true;
+					if (!req.param('defaultread')){
+						openp= false;
+					}
 					var metabolic_netObj = {
 					  name: req.param('name'),
 					  owner: req.param('owner'),
 					  comment: req.param('comment'),
 					  users: JSON.parse(req.param('users')),
+					  openpolicy: openp,
 					  file: JSON.parse(data)
 					  //file: req.param('file')
 					  //var file = req.files.file,
@@ -142,14 +147,21 @@ module.exports = {
 						var mtnlID="";
 						if (req.param('mtnl-id')){	
 							mtnlID=req.param('mtnl-id');
+							//console.log(mtnlID)
 						}
+						
 						var mtnl={};
 						var listLayouts=[];
 						
 						for (var i=0;i<mtnls.length;i++){
 							var users = mtnls[i].users;
 							var userIndex = users.indexOf(username);
-							
+							var isNotIn=true;
+							for (var j=0;j<users.length;j++){
+								if (users[j][0]==username){
+									isNotIn=false;
+								}
+							}
 							for (var j=0;j<users.length;j++){
 								if ((users[j][0]==username || inLabs.indexOf(users[j][0])!=-1) && users[j][1]!=true){
 									var isin=false;
@@ -167,6 +179,12 @@ module.exports = {
 								}
 								
 							}
+							if (isNotIn && mtnls[i].openpolicy && mtnls[i].openpolicy==true){
+								listLayouts.push([mtnls[i].id, mtnls[i].name, mtnls[i].comment, mtnls[i].metabolic_net]);
+								if (mtnlID!="" && mtnlID==mtnls[i].id){
+									mtnl =mtnls[i];
+								}
+							}
 						}
 						
 						
@@ -183,7 +201,21 @@ module.exports = {
 								goNext=true;
 							}
 						}
-						if (goNext==true ){
+						var isNotIn=true;
+						for (var j=0;j<users.length;j++){
+							if (users[j][0]==username){
+								isNotIn=false;
+							}
+						}
+						
+						if (goNext==true){
+							res.view({
+								mtn: mtn,
+								mtnls: listLayouts,
+								mtnl: mtnl
+							});
+						}
+						else if (isNotIn && mtn.openpolicy==true){
 							res.view({
 								mtn: mtn,
 								mtnls: listLayouts,
@@ -216,6 +248,7 @@ module.exports = {
 							res.view({
 								labs: labs,
 								usrs: listUsers,
+								openpolicy: mtn.openpolicy,
 								mtnid: mtn.id,
 								mtnname: mtn.name,
 								mtnusers: mtn.users
@@ -231,6 +264,11 @@ module.exports = {
 	updateusers: function(req, res, next) {
 		if (req.session.authenticated){
 			var username = req.session.User.name;
+			//console.log(req.param('defaultread'))
+			var openp= true;
+			if (!req.param('defaultread')){
+				openp= false;
+			}
 			Metabolic_net.findOne(req.param('id'), function foundLb(err, mtn) {
 				if (err) return next(err);
 				if (!mtn) return next();
@@ -238,6 +276,7 @@ module.exports = {
 				  name: mtn.name,
 				  owner: mtn.owner,
 				  comment: mtn.comment,
+				  openpolicy: openp,
 				  users: JSON.parse(req.param('users')),
 				  file: mtn.file
 				}
@@ -289,7 +328,12 @@ module.exports = {
 					for (var i=0;i<mtns.length;i++){
 						var users = mtns[i].users;
 						var userIndex = users.indexOf(username);
-						
+						var isNotIn=true;
+						for (var j=0;j<users.length;j++){
+							if (users[j][0]==username){
+								isNotIn=false;
+							}
+						}
 						for (var j=0;j<users.length;j++){
 							if ((users[j][0]==username || inLabs.indexOf(users[j][0])!=-1) && users[j][1]!=true){
 								var isin=false;
@@ -304,6 +348,10 @@ module.exports = {
 							}
 							
 						}
+						if (isNotIn && mtns[i].openpolicy && mtns[i].openpolicy==true){
+							listMtns.push([mtns[i].id, mtns[i].name, mtns[i].comment, mtns[i].file[0].length, mtns[i].file[1].length, mtns[i].file[2].length]);
+						}
+						
 					}
 					
 					

@@ -53,7 +53,12 @@ module.exports = {
 						for (var i=0;i<qms.length;i++){
 							var users = qms[i].users;
 							var userIndex = users.indexOf(username);
-							
+							var isNotIn=true;
+							for (var j=0;j<users.length;j++){
+								if (users[j][0]==username){
+									isNotIn=false;
+								}
+							}
 							for (var j=0;j<users.length;j++){
 								if ((users[j][0]==username || inLabs.indexOf(users[j][0])!=-1) && users[j][1]!=true){
 									var isin=false;
@@ -67,6 +72,9 @@ module.exports = {
 									}
 								}
 								
+							}
+							if (isNotIn && qms[i].openpolicy && qms[i].openpolicy==true){
+								listQms.push(qms[i]);
 							}
 						}					
 						res.view({usrs: listUsers, labs: labs, qms: listQms});						
@@ -208,12 +216,16 @@ module.exports = {
 		catch(errorwrite){
 			console.log("error writing sfba model spreadsheet");
 		}
-		
+		var openp= true;
+		if (!req.param('defaultread')){
+			openp= false;
+		}
 		var ExpObj = {
 		  name: req.param('name'),
 		  owner: req.param('owner'),
 		  comment: req.param('comment'),
 		  users: JSON.parse(req.param('users')),
+		  openpolicy: openp,
 		  parameters: parameters_data,
 		  qsspn_model_name: req.param('qsspn_model_name'),
 		  metabolic_net_name: req.param('metabolic_net_name'),
@@ -285,7 +297,18 @@ module.exports = {
 							goNext=true;
 						}
 					}
+					var isNotIn=true;
+					for (var j=0;j<users.length;j++){
+						if (users[j][0]==username){
+							isNotIn=false;
+						}
+					}
 					if (goNext==true ){
+						res.view({
+							exp: exp
+						});
+					}
+					else if (isNotIn && exp.openpolicy==true){
 						res.view({
 							exp: exp
 						});
@@ -313,6 +336,7 @@ module.exports = {
 							res.view({
 								labs: labs,
 								usrs: listUsers,
+								openpolicy: exp.openpolicy,
 								expid: exp.id,
 								expname: exp.name,
 								expusers: exp.users
@@ -327,14 +351,20 @@ module.exports = {
 	
 	updateusers: function(req, res, next) {
 		if (req.session.authenticated){
+			
 			Experiment.findOne(req.param('id'), function foundLb(err, exp) {
 				if (err) return next(err);
 				if (!exp) return next();
+				var openp= true;
+				if (!req.param('defaultread')){
+					openp= false;
+				}
 				var ExpObj = {
 				  name: exp.name,
 				  owner: exp.owner,
 				  comment: exp.comment,
 				  users: JSON.parse(req.param('users')),
+				  openpolicy: openp,
 				  parameters: exp.parameters,
 				  qsspn_model_name: exp.qsspn_model_name,
 				  metabolic_net_name: exp.metabolic_net_name,
@@ -370,7 +400,12 @@ module.exports = {
 					for (var i=0;i<experims.length;i++){
 						var users = experims[i].users;
 						var userIndex = users.indexOf(username);
-						
+						var isNotIn=true;
+						for (var j=0;j<users.length;j++){
+							if (users[j][0]==username){
+								isNotIn=false;
+							}
+						}
 						for (var j=0;j<users.length;j++){
 							if ((users[j][0]==username || inLabs.indexOf(users[j][0])!=-1) && users[j][1]!=true){
 								var isin=false;
@@ -384,6 +419,9 @@ module.exports = {
 								}
 							}
 							
+						}
+						if (isNotIn && experims[i].openpolicy && experims[i].openpolicy==true){
+							listExps.push([experims[i].id, experims[i].name, experims[i].comment]);
 						}
 					}
 					// // pass the array down to the /views/index.ejs page
@@ -471,7 +509,12 @@ module.exports = {
 									for (var i=0;i<qmls.length;i++){
 										var users = qmls[i].users;
 										var userIndex = users.indexOf(username);
-										
+										var isNotIn=true;
+										for (var j=0;j<users.length;j++){
+											if (users[j][0]==username){
+												isNotIn=false;
+											}
+										}
 										for (var j=0;j<users.length;j++){
 											if ((users[j][0]==username || inLabs.indexOf(users[j][0])!=-1) && users[j][1]!=true){
 												var isin=false;
@@ -489,6 +532,12 @@ module.exports = {
 											}
 											
 										}
+										if (isNotIn && qmls[i].openpolicy && qmls[i].openpolicy==true){
+											listQmLayouts.push([qmls[i].id, qmls[i].name, qmls[i].comment]);
+											if (qmlID!="" && qmlID==qmls[i].id){
+												myqml =qmls[i];
+											}
+										}
 									}
 									
 									
@@ -499,7 +548,12 @@ module.exports = {
 									for (var i=0;i<mtnls.length;i++){
 										var users = mtnls[i].users;
 										var userIndex = users.indexOf(username);
-										
+										var isNotIn=true;
+										for (var j=0;j<users.length;j++){
+											if (users[j][0]==username){
+												isNotIn=false;
+											}
+										}
 										for (var j=0;j<users.length;j++){
 											if ((users[j][0]==username || inLabs.indexOf(users[j][0])!=-1) && users[j][1]!=true){
 												var isin=false;
@@ -517,6 +571,12 @@ module.exports = {
 											}
 											
 										}
+										if (isNotIn && mtnls[i].openpolicy && mtnls[i].openpolicy==true){
+											listLayouts.push([mtnls[i].id, mtnls[i].name, mtnls[i].comment, mtnls[i].metabolic_net]);
+											if (mtnlID!="" && mtnlID==mtnls[i].id){
+												mtnl =mtnls[i];
+											}
+										}
 									}
 									var goNext =false;
 									var users = qmm.users;
@@ -525,11 +585,148 @@ module.exports = {
 											goNext=true;
 										}
 									}
+									var isNotIn=true;
+									for (var j=0;j<users.length;j++){
+										if (users[j][0]==username){
+											isNotIn=false;
+										}
+									}
 									if (goNext==true ){
 								
 								
 								
 								
+										var parRes=-1;
+										for (var i=0;i<200;i++){
+											if (req.param('r'+i)){
+												
+												if (req.param('r'+i)!=-1){
+												//console.log(req.param('r'+i))
+													parRes=req.param('r'+i);
+												}
+												
+											}
+										}
+										var tRes=-1;
+										for (var i=0;i<200;i++){
+											if (req.param('t'+i)){
+												if (req.param('t'+i)!=-1){
+												//console.log(req.param('t'+i))
+													tRes=req.param('t'+i);
+												}
+												
+											}
+										}
+										var lRes=-1;
+										for (var i=0;i<200;i++){
+											if (req.param('l'+i)){
+												if (req.param('l'+i)!=-1){
+												//console.log(req.param('l'+i))
+													lRes=parseInt(req.param('l'+i));
+												}
+												
+											}
+										}
+										//console.log(tRes)
+										//console.log(parRes)
+										//console.log(lRes)
+										if (err) return next(err);
+										if (!exp) return next();
+										var file = 'assets/output-model-files/'+exp.qsspn_model_name+'__'+exp.name+'__'+parRes+'.output.xls';
+										
+										try{
+											// read file content in an asynchronous way
+											//var textm = fs.readFile(path,'utf8')
+											myres=[];
+											var mcountToken={};
+											var headtitles;
+											var countline=0;
+											var totalNbTrajectories=lRes;
+											//console.log(lRes)
+											var cntTrajectories=-1;
+											var simTrajectory=0;
+											if (tRes!=-1)
+												simTrajectory=tRes;
+											var mdataSim="";
+											var cntStartSim=-1;
+											var cntLine=0;
+											var inSim=false;
+											
+											var fp = new Fgets(file);        // use buit-in FileReader
+											var contents = "";
+											var line="";
+											(function readfile() {
+												line= fp.fgets();
+												
+												
+												
+												
+												if (line.substring(0, 4)=="Traj"){
+													
+													cntTrajectories++;
+													if (cntTrajectories==0){
+														headtitles = line.split('\t');
+														headtitles[headtitles.length-1]=headtitles[headtitles.length-1].replace('\r','');
+														
+													}
+													console.log("processing trajectory : "+cntTrajectories);
+													if (cntTrajectories==simTrajectory	){
+														inSim=true;
+													}
+													if (cntTrajectories>simTrajectory	){
+														inSim=false;
+													}
+												}
+												else{
+													var melement = line.split('\t');
+													if (melement[2] && melement[2]!='none'){
+														if (!mcountToken.hasOwnProperty(melement[2])){
+															mcountToken[melement[2]]=[];
+														}
+														else if (mcountToken[melement[2]].length==0){
+															for (var i1=0;i1<totalNbTrajectories;i1++){
+																mcountToken[melement[2]].push(0);
+															}	
+															mcountToken[melement[2]][cntTrajectories]+=1;
+														}
+														else{
+															if(mcountToken[melement[2]].length>cntTrajectories){
+																mcountToken[melement[2]][cntTrajectories]+=1;
+															}
+														}
+													}
+													if (line!="" && inSim==true){
+														mdataSim+=line;
+													}
+													
+												}
+												countline++;
+												if (!fp.feof()) {setImmediate(readfile);}
+												else{
+													//console.log(headtitles.length)
+													//console.log(mdataSim[0].length)
+													res.view({
+														exp: exp,
+														mtb:mtb,
+														mtnls: listLayouts,
+														mtnl: mtnl,
+														qmls: listQmLayouts,
+														mqml: myqml,
+														nbRes: parRes,
+														tRes: tRes,
+														lRes: lRes,
+														dataR: mdataSim,
+														headtitles: headtitles,
+														stats: mcountToken
+													});
+												}							
+											})();
+											
+											
+										}
+										catch(erf){}
+									}
+									else if (isNotIn && exp.openpolicy==true){
 										var parRes=-1;
 										for (var i=0;i<200;i++){
 											if (req.param('r'+i)){
@@ -856,6 +1053,7 @@ module.exports = {
 									comment: exp.comment,
 									parameters: myParams,
 									users: exp.users,
+									openpolicy: exp.openpolicy,
 									qsspn_model_name: exp.qsspn_model_name,
 									metabolic_net_name: exp.metabolic_net_name,
 									qsspn_model_instance: exp.qsspn_model_instance,

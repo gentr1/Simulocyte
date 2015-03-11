@@ -25,6 +25,10 @@ module.exports = {
 		  type: 'json',
 		  defaultsTo: {}
 		},
+		openpolicy: {
+			type: 'boolean',
+			defaultsTo: false
+		},
 		qsspn_model: 'string',
 		layout: {
 			type: 'json'//,

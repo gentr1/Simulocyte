@@ -37,7 +37,12 @@ module.exports = {
 						for (var i=0;i<mtbs.length;i++){
 							var users = mtbs[i].users;
 							var userIndex = users.indexOf(username);
-							
+							var isNotIn=true;
+							for (var j=0;j<users.length;j++){
+								if (users[j][0]==username){
+									isNotIn=false;
+								}
+							}
 							for (var j=0;j<users.length;j++){
 								if ((users[j][0]==username || inLabs.indexOf(users[j][0])!=-1) && users[j][1]!=true){
 									var isin=false;
@@ -52,7 +57,11 @@ module.exports = {
 								}
 								
 							}
+							if (isNotIn && mtbs[i].openpolicy && mtbs[i].openpolicy==true){
+								listMtns.push(mtbs[i].name);
+							}
 						}
+						//console.log(listMtns)
 						res.view({usrs: listUsers, labs: labs, mtbs: listMtns});	
 						//return res.view({usrs: usrs, mtbs: _.pluck( mtbs, "name" )});
 					});
@@ -84,11 +93,16 @@ module.exports = {
             stringOutput2=req.param('mySfbaSpreadsheet0')+req.param('mySfbaSpreadsheet1')+req.param('mySfbaSpreadsheet2')+req.param('mySfbaSpreadsheet3')+req.param('mySfbaSpreadsheet4')+req.param('mySfbaSpreadsheet5')+req.param('mySfbaSpreadsheet6')+req.param('mySfbaSpreadsheet7')+req.param('mySfbaSpreadsheet8')+req.param('mySfbaSpreadsheet9');
             data3=JSON.parse(stringOutput2);
           }
+		  var openp= true;
+			if (!req.param('defaultread')){
+				openp= false;
+		  }
           var expObj = {
             name: req.param('name'),
 			owner: req.param('owner'),
             comment: req.param('comment'),
 			users: JSON.parse(req.param('users')),
+			openpolicy: openp,
             metabolic_net_name: req.param('metabolic_net'),
             objective: req.param('objective'),
             externality_tag: req.param('xt'),
@@ -133,7 +147,12 @@ module.exports = {
 					for (var i=0;i<experims.length;i++){
 						var users = experims[i].users;
 						var userIndex = users.indexOf(username);
-						
+						var isNotIn=true;
+						for (var j=0;j<users.length;j++){
+							if (users[j][0]==username){
+								isNotIn=false;
+							}
+						}
 						for (var j=0;j<users.length;j++){
 							if ((users[j][0]==username || inLabs.indexOf(users[j][0])!=-1) && users[j][1]!=true){
 								var isin=false;
@@ -147,6 +166,9 @@ module.exports = {
 								}
 							}
 							
+						}
+						if (isNotIn && experims[i].openpolicy && experims[i].openpolicy==true){
+							listExps.push([experims[i].id, experims[i].name, experims[i].comment]);
 						}
 					}
 				  
@@ -229,8 +251,19 @@ module.exports = {
 							goNext=true;
 						}
 					}
+					var isNotIn=true;
+					for (var j=0;j<users.length;j++){
+						if (users[j][0]==username){
+							isNotIn=false;
+						}
+					}
 					if (goNext==true ){
 						res.view({ exp: exp });
+					}
+					else if (isNotIn && exp.openpolicy==true){
+						res.view({
+							exp: exp
+						});
 					}
 					else return next();
 				});
@@ -254,6 +287,7 @@ module.exports = {
 							res.view({
 								labs: labs,
 								usrs: listUsers,
+								openpolicy: exp.openpolicy,
 								expid: exp.id,
 								expname: exp.name,
 								expusers: exp.users
@@ -271,11 +305,16 @@ module.exports = {
 			FbaExperiment.findOne(req.param('id'), function foundLb(err, exp) {
 				if (err) return next(err);
 				if (!exp) return next();
+				var openp= true;
+				if (!req.param('defaultread')){
+					openp= false;
+				}
 				var ExpObj = {
 					name: exp.name,
 					owner: exp.owner,
 					comment: exp.comment,
 					users: JSON.parse(req.param('users')),
+					openpolicy: openp,
 					metabolic_net_name: exp.metabolic_net_name,
 					objective: exp.objective,
 					externality_tag: exp.externality_tag,
@@ -403,6 +442,7 @@ module.exports = {
 					comment: exp.comment,
 					metabolic_net_name: exp.metabolic_net_name,
 					users: exp.users,
+					openpolicy: exp.openpolicy,
 					objective: exp.objective,
 					sfba_model_instance: exp.sfba_model_instance,
 					results: myres,

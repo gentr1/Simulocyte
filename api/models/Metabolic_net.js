@@ -26,6 +26,10 @@ module.exports = {
 			  type: 'json',
 			  defaultsTo: {}
 		},
+		openpolicy: {
+			type: 'boolean',
+			defaultsTo: false
+		},
 		file: {
 			type: 'json'//,
 			//required: true

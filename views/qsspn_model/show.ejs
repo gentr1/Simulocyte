@@ -3386,11 +3386,11 @@
 								text0.style.left = 20 + 'px';
 								var identifier=typesMap[closestType][closestid]
 								var txtListLinks = '<ul style="margin-left:0em;padding-left:1.3em;height:150px;">';
-								if (selectedModelNodesPaths.indexOf(tpId)!=-1){
-									selectedModelNodesPaths.splice(selectedModelNodesPaths.indexOf(tpId),1)
-								}
-								else{
-									selectedModelNodesPaths.push(tpId)
+								//if (selectedModelNodesPaths.indexOf(tpId)!=-1){
+								//	selectedModelNodesPaths.splice(selectedModelNodesPaths.indexOf(tpId),1)
+								//}
+								//else{
+								//	selectedModelNodesPaths.push(tpId)
 									for (var i=0; i<selectedModelEdges.length;i++){
 										if (selectedModelEdges[i][0]==tpId){
 												
@@ -3435,7 +3435,7 @@
 									txtListLinks += '</ul>';
 									//console.log(txtListLinks);
 									listLinksContent.innerHTML =txtListLinks;
-								}
+								//}
 								
 							}
 							
@@ -3473,46 +3473,46 @@
 					
 							}*/
 							
-							if (selectedNodesPaths.indexOf(identifier)!=-1){
-								selectedNodesPaths.splice(selectedNodesPaths.indexOf(identifier),1)
+							//if (selectedNodesPaths.indexOf(identifier)!=-1){
+							//	selectedNodesPaths.splice(selectedNodesPaths.indexOf(identifier),1)
+							//	for (var i=0; i<jsonObj2.length;i++){
+							//		if (jsonObj2[i][0]==identifier){
+							//			selectedLinesPaths.splice(selectedLinesPaths.indexOf(i),1)
+							//		}
+							//		if (jsonObj2[i][1]==identifier){
+							//			selectedLinesPaths.splice(selectedLinesPaths.indexOf(i),1)
+							//		}
+							//	}
+							//} else{
+							//	selectedNodesPaths.push(identifier)
 								for (var i=0; i<jsonObj2.length;i++){
 									if (jsonObj2[i][0]==identifier){
-										selectedLinesPaths.splice(selectedLinesPaths.indexOf(i),1)
-									}
-									if (jsonObj2[i][1]==identifier){
-										selectedLinesPaths.splice(selectedLinesPaths.indexOf(i),1)
-									}
-								}
-							} else{
-								selectedNodesPaths.push(identifier)
-								for (var i=0; i<jsonObj2.length;i++){
-									if (jsonObj2[i][0]==identifier){
-										selectedLinesPaths.push(i)
+										//selectedLinesPaths.push(i)
 										txtListLinks2 += '<li >'+jsonObj1[jsonObj2[i][1]][2]+'</li>';
 										nbS+=1;
 									}
 									if (jsonObj2[i][1]==identifier){
-										selectedLinesPaths.push(i)
+										//selectedLinesPaths.push(i)
 										txtListLinks2 += '<li >'+jsonObj1[jsonObj2[i][0]][2]+'</li>';
 										nbS+=1;
 									}
 								}
 					
-							}
-							for (var i=0; i<selectedLinesPathsIds.length;i++){
-								scene.children[7].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] -=150000;
-							}
-							selectedLinesPathsIds=[]
-							for (var i=0; i<selectedLinesPaths.length;i++){
-								for (var j=0;j<linesMap[selectedLinesPaths[i]].length;j+=1){
-									selectedLinesPathsIds.push(linesMap[selectedLinesPaths[i]][j])
-								}
-							}
-							selectedLinesPathsIds = unique(selectedLinesPathsIds)
-							for (var i=0;i<selectedLinesPathsIds.length;i+=1){
-								scene.children[7].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] +=150000;
-							}
-							scene.children[7].geometry.attributes.position.needsUpdate = true;
+							//}
+							//for (var i=0; i<selectedLinesPathsIds.length;i++){
+							//	scene.children[7].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] -=150000;
+							//}
+							//selectedLinesPathsIds=[]
+							//for (var i=0; i<selectedLinesPaths.length;i++){
+							//	for (var j=0;j<linesMap[selectedLinesPaths[i]].length;j+=1){
+							//		selectedLinesPathsIds.push(linesMap[selectedLinesPaths[i]][j])
+							//	}
+							//}
+							//selectedLinesPathsIds = unique(selectedLinesPathsIds)
+							//for (var i=0;i<selectedLinesPathsIds.length;i+=1){
+							//	scene.children[7].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] +=150000;
+							//}
+							//scene.children[7].geometry.attributes.position.needsUpdate = true;
 							txtListLinks2 += '</ul>';
 							//
 							if (nbS==0 && nbS2==0){
@@ -3548,7 +3548,16 @@
 							
 						}
 						else{
-							
+							var onDraggableNb = 0;
+							listLinksContent.innerHTML="";
+							text0.innerHTML ="";
+							listGenesContent.innerHTML="";
+							if (nbS==0){
+								listLinks.style.top = 6000 + 'px';
+								listLinks.style.left = 6000 + 'px';
+								listGenes.style.top = 6000 + 'px';
+								listGenes.style.left = 6000 + 'px';
+							}
 						}
 							//parameters.name="";
 						break;
@@ -4400,14 +4409,14 @@ jQuery("#list0").jqGrid({
 	datatype: "local",
 	data: mydata0,
 	height: 250,
-	width: ($("#container").width()*0.8),
+	width: ($("#container").width()*0.9),
    	colNames:["id", "name","type","sub-system"],
    	colModel:[
 		
-   		{name:'id',index:'id', width:60, sorttype:"int",searchoptions:{sopt:['eq','bw','bn','cn','nc','ew','en']}},
-   		{name:'name',index:'name', width:100,sorttype:'string', searchoptions:{sopt:['eq','bw','bn','cn','nc','ew','en']},editable:true},
-   		{name:'type',index:'type', width:100,sorttype:'string', searchoptions:{sopt:['eq','bw','bn','cn','nc','ew','en']},editable:true},
-   		{name:'sub-system',index:'sub-system', width:100,sorttype:'string', searchoptions:{sopt:['eq','bw','bn','cn','nc','ew','en']},editable:true},
+   		{name:'id',index:'id', width:30, sorttype:"int",searchoptions:{sopt:['eq','cn']}},
+   		{name:'name',index:'name', width:100,sorttype:'string', searchoptions:{sopt:['eq','cn','bw']},editable:true},
+   		{name:'type',index:'type', width:25,sorttype:'string', searchoptions:{sopt:['eq','cn']},editable:true},
+   		{name:'sub-system',index:'sub-system', width:100,sorttype:'string', searchoptions:{sopt:['cn']},editable:true},
    	],
    	recordpos: 'left',
 	scroll: 1,
@@ -4452,17 +4461,18 @@ jQuery("#list4").jqGrid({
 	datatype: "local",
 	data: mydata,
 	height: 250,
-	width: ($("#container").width()*0.8),
-   	colNames:["id", "name","description","comp","type","sub-system"],
+	width: ($("#container").width()*0.9),
+   	colNames:["id", "name","description","comp","type","sub-system","mute"],
    	colModel:[
 		
-   		{name:'id',index:'id', width:60, sorttype:"int",searchoptions:{sopt:['eq','bw','bn','cn','nc','ew','en']}},
-   		{name:'name',index:'name', width:100,sorttype:'string', searchoptions:{sopt:['eq','bw','bn','cn','nc','ew','en']},editable:true},
-		{name:'description',index:'description', width:100,sorttype:'string', searchoptions:{sopt:['eq','bw','bn','cn','nc','ew','en']},editable:true},
-   		{name:'comp',index:'comp', width:100,sorttype:'string', searchoptions:{sopt:['eq','bw','bn','cn','nc','ew','en']},editable:true},
-   		{name:'type',index:'type', width:100,sorttype:'string', searchoptions:{sopt:['eq','bw','bn','cn','nc','ew','en']},editable:true},
-   		{name:'sub-system',index:'sub-system', width:100,sorttype:'string', searchoptions:{sopt:['eq','bw','bn','cn','nc','ew','en']},editable:true},
-   	],
+   		{name:'id',index:'id', width:30, sorttype:"int",searchoptions:{sopt:['eq','cn']}},
+   		{name:'name',index:'name', width:100,sorttype:'string', searchoptions:{sopt:['eq','cn','bw']},editable:true},
+		{name:'description',index:'description', width:100,sorttype:'string', searchoptions:{sopt:['cn','nc','bw']},editable:true},
+   		{name:'comp',index:'comp', width:20,sorttype:'string', searchoptions:{sopt:['eq']},editable:true},
+   		{name:'type',index:'type', width:25,sorttype:'string', searchoptions:{sopt:['eq','cn']},editable:true},
+   		{name:'sub-system',index:'sub-system', width:100,sorttype:'string', searchoptions:{sopt:['cn']},editable:true},
+		{name:'mute',index:'mute', width:15,sorttype:'boolean',editable:true, searchoptions:{sopt:['eq']},edittype:'checkbox', editoptions: { value:"True:False"}, formatter: "checkbox", formatoptions: {disabled : false}},
+	],
    	recordpos: 'left',
 	scroll: 1,
   //enable npage request parameter
@@ -4492,6 +4502,10 @@ jQuery("#list4").jqGrid({
                             $this.jqGrid('setSelection', rowid, false);
                         }
                     }
+					for (i = 0, selCount = selectedNodesPaths.length; i < selCount; i++) {
+						rowid = parseInt(selectedNodesPaths[i]);
+						$this.jqGrid('setCell', index[rowid],7, "True");
+					}
                 },
 	ignoreCase: true,
 	gridview: true,
@@ -4501,7 +4515,63 @@ jQuery("#list4").jqGrid({
 });
 jQuery("#list4").jqGrid('filterToolbar',{searchOperators : true});
 
+var checkboxFix = [];
+jQuery(document).delegate('#list4 .jqgrow td input', 'click', function () { 
+	//console.log("a")
+	var iCol = $(this).parent('td').parent('tr').find('td').index($(this).parent('td'));
+	if (iCol==7){
+		//console.log(iCol)
+		var iRow = $(this).parent('td').parent('tr').attr('id');
+		
+		
+		var identifier=iRow;
+		if (selectedNodesPaths.indexOf(identifier)!=-1){
+			selectedNodesPaths.splice(selectedNodesPaths.indexOf(identifier),1)
+			for (var i=0; i<jsonObj2.length;i++){
+				if (jsonObj2[i][0]==identifier){
+					selectedLinesPaths.splice(selectedLinesPaths.indexOf(i),1)
+				}
+				if (jsonObj2[i][1]==identifier){
+					selectedLinesPaths.splice(selectedLinesPaths.indexOf(i),1)
+				}
+			}
+		} else{
+			selectedNodesPaths.push(identifier)
+			for (var i=0; i<jsonObj2.length;i++){
+				if (jsonObj2[i][0]==identifier){
+					selectedLinesPaths.push(i)
+					//txtListLinks += '<li >'+jsonObj1[jsonObj2[i][1]][2]+'</li>';
+					//nbS+=1;
+				}
+				if (jsonObj2[i][1]==identifier){
+					selectedLinesPaths.push(i)
+					//txtListLinks += '<li >'+jsonObj1[jsonObj2[i][0]][2]+'</li>';
+					//nbS+=1;
+				}
+			}
 
+		}
+		for (var i=0; i<selectedLinesPathsIds.length;i++){
+			scene.children[7].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] -=5000000;
+		}
+		selectedLinesPathsIds=[]
+		for (var i=0; i<selectedLinesPaths.length;i++){
+			for (var j=0;j<linesMap[selectedLinesPaths[i]].length;j+=1){
+				selectedLinesPathsIds.push(linesMap[selectedLinesPaths[i]][j])
+			}
+		}
+		selectedLinesPathsIds = unique(selectedLinesPathsIds)
+		for (var i=0;i<selectedLinesPathsIds.length;i+=1){
+			scene.children[7].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] +=5000000;
+		}
+		scene.children[7].geometry.attributes.position.needsUpdate = true;
+		
+		
+		//console.log(iRow)
+		//console.log($(this)[0].checked)
+	}
+	//console.log(iCol)
+});
 
 
 //for(var i=0;i<=mydata.length;i++)

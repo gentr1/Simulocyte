@@ -54,12 +54,16 @@ module.exports = {
 	create: function(req, res, next) {
 		//Metabolic_net.findOne({ name: req.param('metabolic_net')}, function foundMtb(merr, mytb) {
 		//	if (merr) return next(merr);
-			
+			var openp= true;
+			if (!req.param('defaultread')){
+				openp= false;
+			}
 			var metabolic_net_layoutObj = {
 				name: req.param('name'),
 				owner: req.param('owner'),
 				comment: req.param('comment'),
 				users: JSON.parse(req.param('users')),
+				openpolicy: openp,
 				metabolic_net: req.param('metabolic_net'),
 				layout: JSON.parse('{"list_compartments":[],"compartments_layout":{}, "nodes_layout":{},"nodes_compartments":{}}')
 			}
@@ -112,7 +116,19 @@ module.exports = {
 								goNext=true;
 							}
 						}
+						var isNotIn=true;
+						for (var j=0;j<users.length;j++){
+							if (users[j][0]==username){
+								isNotIn=false;
+							}
+						}
 						if (goNext==true ){
+							res.view({
+								mtnl: mtnl,
+								mtb: mtb
+							});
+						}
+						else if (isNotIn && mtnl.openpolicy==true){
 							res.view({
 								mtnl: mtnl,
 								mtb: mtb
@@ -144,6 +160,7 @@ module.exports = {
 							res.view({
 								labs: labs,
 								usrs: listUsers,
+								openpolicy: mtnl.openpolicy,
 								mtnlid: mtnl.id,
 								mtnlname: mtnl.name,
 								mtnlusers: mtnl.users
@@ -161,11 +178,16 @@ module.exports = {
 			Metabolic_net_layout.findOne(req.param('id'), function foundQm(err, mtnl) {
 				if (err) return next(err);
 				if (!mtnl) return next();
+				var openp= true;
+				if (!req.param('defaultread')){
+					openp= false;
+				}
 				var metabolic_net_layoutObj = {
 					name: mtnl.name,
 					owner: mtnl.owner,
 					comment: mtnl.comment,
 					users: JSON.parse(req.param('users')),
+					openpolicy: openp,
 					metabolic_net: mtnl.metabolic_net,
 					layout: mtnl.layout
 				}
@@ -199,7 +221,12 @@ module.exports = {
 					for (var i=0;i<mtnls.length;i++){
 						var users = mtnls[i].users;
 						var userIndex = users.indexOf(username);
-						
+						var isNotIn=true;
+						for (var j=0;j<users.length;j++){
+							if (users[j][0]==username){
+								isNotIn=false;
+							}
+						}
 						for (var j=0;j<users.length;j++){
 							if ((users[j][0]==username || inLabs.indexOf(users[j][0])!=-1) && users[j][1]!=true){
 								var isin=false;
@@ -213,6 +240,9 @@ module.exports = {
 								}
 							}
 							
+						}
+						if (isNotIn && mtnls[i].openpolicy && mtnls[i].openpolicy==true){
+							listLayouts.push([mtnls[i].id, mtnls[i].name, mtnls[i].comment, mtnls[i].metabolic_net]);
 						}
 					}
 					//var listLayouts=[];
@@ -246,6 +276,7 @@ module.exports = {
 					owner: mtnl.owner,
 					comment: mtnl.comment,
 					users: mtnl.users,
+					openpolicy: mtnl.openpolicy,
 					metabolic_net: mtnl.metabolic_net,
 					layout: tmp
 				}

@@ -25,6 +25,10 @@ module.exports = {
 			  type: 'json',
 			  defaultsTo: {}
 		},
+		openpolicy: {
+			type: 'boolean',
+			defaultsTo: false
+		},
 		metabolic_net: 'string',
 		layout: {
 			type: 'json'//,

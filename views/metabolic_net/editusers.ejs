@@ -14,7 +14,8 @@
 	<h2 class="form-signin-heading">Update user privileges for this metabolic network</h2>
 	<br>
 	<div class="control-group">
-	Set users or groups of users (labs)'s privileges ("no access", "read access", or "read-write access") to this metabolic network (labs in orange):
+	Set users or groups of users (labs)'s privileges ("no access", "read access", or "read-write access") to this metabolic network (labs in orange):<br>
+	<input type="checkbox" name="defaultread" id ="defaultread" value="true"> Tick here if you want an open policy - future users not defined yet have read access by default<br>
 	<div id="usersTable"></div>
 	</div>
 	<input type="text" name="users" id ="users" style="visibility: hidden;" value="[]">
@@ -31,6 +32,8 @@ var sessionAuthenticated=<%-JSON.stringify( session.authenticated)%>;
 if (sessionAuthenticated){
 var listUsers=<%-JSON.stringify( usrs) %>;
 var listLabs=<%-JSON.stringify( labs) %>;
+var isop= <%-JSON.stringify( openpolicy) %>
+document.getElementById("defaultread").checked=isop;
 
 var mtnUsers=<%-JSON.stringify( mtnusers) %>
 var dataUsers=new Array(listUsers.length+listLabs.length);
