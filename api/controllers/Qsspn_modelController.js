@@ -38,7 +38,12 @@ module.exports = {
 						for (var i=0;i<mtbs.length;i++){
 							var users = mtbs[i].users;
 							var userIndex = users.indexOf(username);
-							
+							var isNotIn=true;
+							for (var j=0;j<users.length;j++){
+								if (users[j][0]==username){
+									isNotIn=false;
+								}
+							}
 							for (var j=0;j<users.length;j++){
 								if ((users[j][0]==username || inLabs.indexOf(users[j][0])!=-1) && users[j][1]!=true){
 									var isin=false;
@@ -52,6 +57,9 @@ module.exports = {
 									}
 								}
 								
+							}
+							if (isNotIn && mtbs[i].openpolicy && mtbs[i].openpolicy==true){
+								listMtns.push([mtbs[i].id, mtbs[i].name, mtbs[i].comment, mtbs[i].file[0].length, mtbs[i].file[1].length, mtbs[i].file[2].length]);
 							}
 						}
 						

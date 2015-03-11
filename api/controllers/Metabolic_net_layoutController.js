@@ -28,7 +28,12 @@ module.exports = {
 					for (var i=0;i<mtbs.length;i++){
 						var users = mtbs[i].users;
 						var userIndex = users.indexOf(username);
-						
+						var isNotIn=true;
+						for (var j=0;j<users.length;j++){
+							if (users[j][0]==username){
+								isNotIn=false;
+							}
+						}
 						for (var j=0;j<users.length;j++){
 							if ((users[j][0]==username || inLabs.indexOf(users[j][0])!=-1) && users[j][1]!=true){
 								var isin=false;
@@ -43,8 +48,12 @@ module.exports = {
 							}
 							
 						}
+						if (isNotIn && mtbs[i].openpolicy && mtbs[i].openpolicy==true){
+							listMtns.push(mtbs[i].name);
+						}
 					}
 					
+					//console.log(listMtns)
 					
 					res.view({usrs: listUsers, labs: labs, mtbs: listMtns});
 				});
