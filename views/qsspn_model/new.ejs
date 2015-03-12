@@ -25,7 +25,7 @@
 	</div>
 	
 	<div class="control-group">Owned by:
-	<input type="text" class="form-control" placeholder="QSSPN Model owned by this user" name="owner" value=<%=req.session.User.name%> readonly>
+	<input type="text" class="form-control" placeholder="QSSPN Model owned by this user" name="ownerid" value=<%=req.session.User.name%> readonly>
 	</div>
 	<div class="control-group">Select one metabolic network:
 	<select class="form-control" name="metabolic_net">
@@ -114,7 +114,7 @@ var dataSfba=[];
 // create someting with <%-InputdataSfba%>
 //var dataJson=<%-InputdataJson%>;
 //console.log(dataJson)
-
+//console.log(<%-JSON.stringify(session.User.name)%>)
 var presentTransitionNb=-1;
 var presentPrePlaceNb=-1;
 var presentConstraintNb=-1;
