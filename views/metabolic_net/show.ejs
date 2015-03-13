@@ -2691,15 +2691,15 @@
 						}
 						else{
 							var onDraggableNb = 0;
-							listLinksContent.innerHTML="";
-							text0.innerHTML ="";
-							listGenesContent.innerHTML="";
-							if (nbS==0){
-								listLinks.style.top = 6000 + 'px';
-								listLinks.style.left = 6000 + 'px';
-								listGenes.style.top = 6000 + 'px';
-								listGenes.style.left = 6000 + 'px';
-							}
+							//listLinksContent.innerHTML="";
+							//text0.innerHTML ="";
+							//listGenesContent.innerHTML="";
+							//if (nbS==0){
+							//	listLinks.style.top = 6000 + 'px';
+							//	listLinks.style.left = 6000 + 'px';
+							//	listGenes.style.top = 6000 + 'px';
+							//	listGenes.style.left = 6000 + 'px';
+							//}
 						}
 							//parameters.name="";
 						break;
@@ -2781,53 +2781,53 @@
 				//controls.pan(-5* controls.zoomScale(),0);
 				controls.dollyOut();
 			} 
-			if ( keyboard.down("1") ){
-				if (linesShaderMaterial.depthTest){
-					linesShaderMaterial.depthTest = false;
-				}
-				else{
-					linesShaderMaterial.depthTest = true;
-				}
-			} 
-			if ( keyboard.down("2") ){
-				if (linesShaderMaterial.blending){
-					linesShaderMaterial.blending = false;
-				}
-				else{
-					linesShaderMaterial.blending = THREE.AdditiveBlending;
-				}
-			} 
-			if ( keyboard.down("3") ){
-				if (linesShaderMaterial.transparent){
-					linesShaderMaterial.transparent = false;
-				}
-				else{
-					linesShaderMaterial.transparent = true;
-				}
-			} 
-			if ( keyboard.down("]") ){
-				for (var i=0;i<segmentPts;i++){
-				//for (var i=0;i<b2lopacity.length;i++){
-					if (b2lopacity[i]<1.0){
-					b2lopacity[i]+=0.05;
-					}
-				}
-				scene.children[7].geometry.attributes.op.needsUpdate = true;
+			// if ( keyboard.down("1") ){
+				// if (linesShaderMaterial.depthTest){
+					// linesShaderMaterial.depthTest = false;
+				// }
+				// else{
+					// linesShaderMaterial.depthTest = true;
+				// }
+			// } 
+			// if ( keyboard.down("2") ){
+				// if (linesShaderMaterial.blending){
+					// linesShaderMaterial.blending = false;
+				// }
+				// else{
+					// linesShaderMaterial.blending = THREE.AdditiveBlending;
+				// }
+			// } 
+			// if ( keyboard.down("3") ){
+				// if (linesShaderMaterial.transparent){
+					// linesShaderMaterial.transparent = false;
+				// }
+				// else{
+					// linesShaderMaterial.transparent = true;
+				// }
+			// } 
+			// if ( keyboard.down("]") ){
+				// for (var i=0;i<segmentPts;i++){
+				// //for (var i=0;i<b2lopacity.length;i++){
+					// if (b2lopacity[i]<1.0){
+					// b2lopacity[i]+=0.05;
+					// }
+				// }
+				// scene.children[7].geometry.attributes.op.needsUpdate = true;
 				
-			} 
-			if ( keyboard.down("[")){//linesShaderMaterial.opacity-=0.1;
-				//if (linesUniforms.opacity.value>0.0){
-				//	linesUniforms.opacity.value-=0.05;
-				//}
-				for (var i=0;i<segmentPts;i++){
-				//for (var i=0;i<b2lopacity.length;i++){
-					if (b2lopacity[i]>0.0){
-					b2lopacity[i]-=0.05;
-					}
-				}
-				scene.children[7].geometry.attributes.op.needsUpdate = true;
+			// } 
+			// if ( keyboard.down("[")){//linesShaderMaterial.opacity-=0.1;
+				// //if (linesUniforms.opacity.value>0.0){
+				// //	linesUniforms.opacity.value-=0.05;
+				// //}
+				// for (var i=0;i<segmentPts;i++){
+				// //for (var i=0;i<b2lopacity.length;i++){
+					// if (b2lopacity[i]>0.0){
+					// b2lopacity[i]-=0.05;
+					// }
+				// }
+				// scene.children[7].geometry.attributes.op.needsUpdate = true;
 				
-			} 
+			// } 
 				
 			
 				

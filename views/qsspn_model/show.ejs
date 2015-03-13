@@ -101,7 +101,36 @@
 	</div>
 	
 	<div id="mytooltip"></div>
+	<form action="/qsspn_model/update/<%= qm.id %>" id="qsspn-model-edit-form0" method="POST" style="width: 200px;height: 40px;position: relative;">	
+	<%
+		//var InputdataJson=JSON.stringify({"places" : [], "qssf" : { "constraints" : [], "externality_tag" :null,"objectives" : []}, "transitions" : []});
+		var InputdataSfba=JSON.stringify([]);
+	%>
+	<input type="text" name="mySpreadsheet0" id ="mySpreadsheet0" style="visibility: hidden;" value="">
+	<input type="text"  name="mySpreadsheet1" id ="mySpreadsheet1" style="visibility: hidden;" value="">
+	<input type="text"  name="mySpreadsheet2" id ="mySpreadsheet2" style="visibility: hidden;" value="">
+	<input type="text"  name="mySpreadsheet3" id ="mySpreadsheet3" style="visibility: hidden;" value="">
+	<input type="text"  name="mySpreadsheet4" id ="mySpreadsheet4" style="visibility: hidden;" value="">
+	<input type="text"  name="mySpreadsheet5" id ="mySpreadsheet5" style="visibility: hidden;" value="">
+	<input type="text"  name="mySpreadsheet6" id ="mySpreadsheet6" style="visibility: hidden;" value="">
+	<input type="text"  name="mySpreadsheet7" id ="mySpreadsheet7" style="visibility: hidden;" value="">
+	<input type="text"  name="mySpreadsheet8" id ="mySpreadsheet8" style="visibility: hidden;" value="">
+	<input type="text"  name="mySpreadsheet9" id ="mySpreadsheet9" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet0" id ="mySfbaSpreadsheet0" style="visibility: hidden;" value=<%=InputdataSfba%>>
+	<input type="text"  name="mySfbaSpreadsheet1" id ="mySfbaSpreadsheet1" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet2" id ="mySfbaSpreadsheet2" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet3" id ="mySfbaSpreadsheet3" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet4" id ="mySfbaSpreadsheet4" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet5" id ="mySfbaSpreadsheet5" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet6" id ="mySfbaSpreadsheet6" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet7" id ="mySfbaSpreadsheet7" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet8" id ="mySfbaSpreadsheet8" style="visibility: hidden;" value="">
+	<input type="text"  name="mySfbaSpreadsheet9" id ="mySfbaSpreadsheet9" style="visibility: hidden;" value="">
+	<input type="hidden" name="_csrf" value="<%= _csrf %>" />
 	
+	<input type="submit" value="Update Edited Data" class="btn btn-primary" id ="confirm" style="position: absolute;width:200px;left:60px" />
+	
+</form><br><br>
 	<div id="modelSpreadSheet" style="position: absolute;left:15%;height:5000px" ><h2>Model data</h2>
 	<br><b>Places List:</b><div id="placesTable"></div>
 	<br>
@@ -128,34 +157,7 @@
 	<div id="mytooltip4"></div>
 	<button type="button" id="hiveplotColor" style="position: absolute;left: 0px; overflow: inherit" onclick="hiveplotAction()">White/Black Background</button>
 	</div>
-	<form action="/qsspn_model/update/<%= qm.id %>" id="qsspn-model-edit-form0" method="POST" class="form-inline" style="height: 80px;width: 200px;position: relative;">	
-	<%
-		//var InputdataJson=JSON.stringify({"places" : [], "qssf" : { "constraints" : [], "externality_tag" :null,"objectives" : []}, "transitions" : []});
-		var InputdataSfba=JSON.stringify([]);
-	%>
-	<input type="text" name="mySpreadsheet0" id ="mySpreadsheet0" style="visibility: hidden;" value="">
-	<input type="text"  name="mySpreadsheet1" id ="mySpreadsheet1" style="visibility: hidden;" value="">
-	<input type="text"  name="mySpreadsheet2" id ="mySpreadsheet2" style="visibility: hidden;" value="">
-	<input type="text"  name="mySpreadsheet3" id ="mySpreadsheet3" style="visibility: hidden;" value="">
-	<input type="text"  name="mySpreadsheet4" id ="mySpreadsheet4" style="visibility: hidden;" value="">
-	<input type="text"  name="mySpreadsheet5" id ="mySpreadsheet5" style="visibility: hidden;" value="">
-	<input type="text"  name="mySpreadsheet6" id ="mySpreadsheet6" style="visibility: hidden;" value="">
-	<input type="text"  name="mySpreadsheet7" id ="mySpreadsheet7" style="visibility: hidden;" value="">
-	<input type="text"  name="mySpreadsheet8" id ="mySpreadsheet8" style="visibility: hidden;" value="">
-	<input type="text"  name="mySpreadsheet9" id ="mySpreadsheet9" style="visibility: hidden;" value="">
-	<input type="text"  name="mySfbaSpreadsheet0" id ="mySfbaSpreadsheet0" style="visibility: hidden;" value=<%=InputdataSfba%>>
-	<input type="text"  name="mySfbaSpreadsheet1" id ="mySfbaSpreadsheet1" style="visibility: hidden;" value="">
-	<input type="text"  name="mySfbaSpreadsheet2" id ="mySfbaSpreadsheet2" style="visibility: hidden;" value="">
-	<input type="text"  name="mySfbaSpreadsheet3" id ="mySfbaSpreadsheet3" style="visibility: hidden;" value="">
-	<input type="text"  name="mySfbaSpreadsheet4" id ="mySfbaSpreadsheet4" style="visibility: hidden;" value="">
-	<input type="text"  name="mySfbaSpreadsheet5" id ="mySfbaSpreadsheet5" style="visibility: hidden;" value="">
-	<input type="text"  name="mySfbaSpreadsheet6" id ="mySfbaSpreadsheet6" style="visibility: hidden;" value="">
-	<input type="text"  name="mySfbaSpreadsheet7" id ="mySfbaSpreadsheet7" style="visibility: hidden;" value="">
-	<input type="text"  name="mySfbaSpreadsheet8" id ="mySfbaSpreadsheet8" style="visibility: hidden;" value="">
-	<input type="text"  name="mySfbaSpreadsheet9" id ="mySfbaSpreadsheet9" style="visibility: hidden;" value="">
-	<input type="hidden" name="_csrf" value="<%= _csrf %>" />
-	<input type="submit" value="Update Edited Data" class="btn btn-primary btn-block" id ="confirm" />
-</form>		
+			
 </div>	
 
 	<script type="x-shader/x-vertex" id="vertexshaderP1">
@@ -3549,15 +3551,15 @@
 						}
 						else{
 							var onDraggableNb = 0;
-							listLinksContent.innerHTML="";
-							text0.innerHTML ="";
-							listGenesContent.innerHTML="";
-							if (nbS==0){
-								listLinks.style.top = 6000 + 'px';
-								listLinks.style.left = 6000 + 'px';
-								listGenes.style.top = 6000 + 'px';
-								listGenes.style.left = 6000 + 'px';
-							}
+							//listLinksContent.innerHTML="";
+							//text0.innerHTML ="";
+							//listGenesContent.innerHTML="";
+							//if (nbS==0){
+							//	listLinks.style.top = 6000 + 'px';
+							//	listLinks.style.left = 6000 + 'px';
+							//	listGenes.style.top = 6000 + 'px';
+							//	listGenes.style.left = 6000 + 'px';
+							//}
 						}
 							//parameters.name="";
 						break;
@@ -3645,66 +3647,66 @@
 				//controls.pan(-5* controls.zoomScale(),0);
 				controls.dollyOut();
 			} 
-			if ( keyboard.down("1") ){
-				if (linesShaderMaterial.depthTest){
-					linesShaderMaterial.depthTest = false;
-				}
-				else{
-					linesShaderMaterial.depthTest = true;
-				}
-			} 
-			if ( keyboard.down("2") ){
-				if (linesShaderMaterial.blending){
-					linesShaderMaterial.blending = false;
-				}
-				else{
-					linesShaderMaterial.blending = THREE.AdditiveBlending;
-				}
-			} 
-			if ( keyboard.down("3") ){
-				if (linesShaderMaterial.transparent){
-					linesShaderMaterial.transparent = false;
-				}
-				else{
-					linesShaderMaterial.transparent = true;
-				}
-			} 
-			if ( keyboard.down("]") ){
-				for (var i=0;i<segmentPts;i++){
-				//for (var i=0;i<b2lopacity.length;i++){
-					if (b2lopacity[i]<1.0){
-					b2lopacity[i]+=0.05;
-					}
-				}
-				scene.children[7].geometry.attributes.op.needsUpdate = true;
-				//if (linesUniforms.opacity.value<1.0){
-				//	linesUniforms.opacity.value+=0.05;
-				//}
-				//console.log("opacity: "+linesUniforms.opacity.value);
-				//consol.log("+")
-					//linesShaderMaterial.transparent = false;
-					//linesShaderMaterial.linesUniforms.attributes.opacity+=0.1;
-				//linesUniforms.opacity.value=1.0;
-				//linesUniforms.opacity.value+=0.05;
-				//linesUniforms.color.value.offsetHSL( 0.0005, 0, 0 );
-				//linesUniforms.amplitude.value+=0.1;
-			} 
-			if ( keyboard.down("[")){//linesShaderMaterial.opacity-=0.1;
-				//if (linesUniforms.opacity.value>0.0){
-				//	linesUniforms.opacity.value-=0.05;
-				//}
-				for (var i=0;i<segmentPts;i++){
-				//for (var i=0;i<b2lopacity.length;i++){
-					if (b2lopacity[i]>0.0){
-					b2lopacity[i]-=0.05;
-					}
-				}
-				scene.children[7].geometry.attributes.op.needsUpdate = true;
-				//console.log("opacity: "+linesUniforms.opacity.value);
-					//linesUniforms.opacity.value-=0.05;
-					//linesUniforms.color.value.offsetHSL( -0.0005, 0, 0 );
-					//linesUniforms.amplitude.value-=0.1;
-			} 
+			// if ( keyboard.down("1") ){
+				// if (linesShaderMaterial.depthTest){
+					// linesShaderMaterial.depthTest = false;
+				// }
+				// else{
+					// linesShaderMaterial.depthTest = true;
+				// }
+			// } 
+			// if ( keyboard.down("2") ){
+				// if (linesShaderMaterial.blending){
+					// linesShaderMaterial.blending = false;
+				// }
+				// else{
+					// linesShaderMaterial.blending = THREE.AdditiveBlending;
+				// }
+			// } 
+			// if ( keyboard.down("3") ){
+				// if (linesShaderMaterial.transparent){
+					// linesShaderMaterial.transparent = false;
+				// }
+				// else{
+					// linesShaderMaterial.transparent = true;
+				// }
+			// } 
+			// if ( keyboard.down("]") ){
+				// for (var i=0;i<segmentPts;i++){
+				// //for (var i=0;i<b2lopacity.length;i++){
+					// if (b2lopacity[i]<1.0){
+					// b2lopacity[i]+=0.05;
+					// }
+				// }
+				// scene.children[7].geometry.attributes.op.needsUpdate = true;
+				// //if (linesUniforms.opacity.value<1.0){
+				// //	linesUniforms.opacity.value+=0.05;
+				// //}
+				// //console.log("opacity: "+linesUniforms.opacity.value);
+				// //consol.log("+")
+					// //linesShaderMaterial.transparent = false;
+					// //linesShaderMaterial.linesUniforms.attributes.opacity+=0.1;
+				// //linesUniforms.opacity.value=1.0;
+				// //linesUniforms.opacity.value+=0.05;
+				// //linesUniforms.color.value.offsetHSL( 0.0005, 0, 0 );
+				// //linesUniforms.amplitude.value+=0.1;
+			// } 
+			// if ( keyboard.down("[")){//linesShaderMaterial.opacity-=0.1;
+				// //if (linesUniforms.opacity.value>0.0){
+				// //	linesUniforms.opacity.value-=0.05;
+				// //}
+				// for (var i=0;i<segmentPts;i++){
+				// //for (var i=0;i<b2lopacity.length;i++){
+					// if (b2lopacity[i]>0.0){
+					// b2lopacity[i]-=0.05;
+					// }
+				// }
+				// scene.children[7].geometry.attributes.op.needsUpdate = true;
+				// //console.log("opacity: "+linesUniforms.opacity.value);
+					// //linesUniforms.opacity.value-=0.05;
+					// //linesUniforms.color.value.offsetHSL( -0.0005, 0, 0 );
+					// //linesUniforms.amplitude.value-=0.1;
+			// } 
 				
 			//if (mtween)
 				//camTween.update();
@@ -4654,7 +4656,10 @@ arcs.append("svg:path")
     });
 
 */
-$("#modelSpreadSheet").css({top:  $("#dataTable").position().top + $("#list4").height()+170, width:$("#container").width()});
+
+$("#modelSpreadSheet").css({top:  $("#dataTable").position().top + $("#list4").height()+270, width:$("#container").width()});
+
+//$("#qsspn-model-edit-form0").css({top:  $("#dataTable").position().top+350});
 //var dataJson={"places" : [], "qssf" : { "constraints" : [], "externality_tag" :null,"objectives" : []}, "transitions" : []};
 var dataJson=<%-JSON.stringify(qm.file)%>;
 var dataJsonSfba=<%-JSON.stringify(qm.sfba)%>;
@@ -7555,7 +7560,7 @@ jsPlumb.ready(function() {
 			}	
 		}
 
-	$("#qsspn-model-edit-form0").css({top:  $("#modelSpreadSheet").position().top -750, width:$("#container").width()/2});	
+	$("#qsspn-model-edit-form0").css({top:  $("#modelSpreadSheet").position().top -800, width:$("#container").width()/2});	
 	
 	var qm = <%- JSON.stringify(qm)%>;
 	var detailMTN={};
