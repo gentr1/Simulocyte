@@ -4904,15 +4904,21 @@ $container2.handsontable({
     //console.log(this.getData());
 	var dt = this.getData();
 	for (var i=0, j= dt.length;i<j-1;i++){
-		if (dataJson["transitions"].length <i+1){
-			dataJson["transitions"].push({"transition":{ "name" : dt[i].name,"delay" : dt[i].delay,"type" : dt[i].type,"c" : dt[i].c,"subsystem" : dt[i].subsystem}});
+		if(dataJson["transitions"] ){
+			if (dataJson["transitions"].length <i+1){
+				dataJson["transitions"].push({"transition":{ "name" : dt[i].name,"delay" : dt[i].delay,"type" : dt[i].type,"c" : dt[i].c,"subsystem" : dt[i].subsystem}});
+			}
+			else {
+				dataJson["transitions"][i]["transition"]["name"]=dt[i].name;
+				dataJson["transitions"][i]["transition"]["delay"]=dt[i].delay;
+				dataJson["transitions"][i]["transition"]["type"]=dt[i].type;
+				dataJson["transitions"][i]["transition"]["c"]=dt[i].c;
+				dataJson["transitions"][i]["transition"]["subsystem"]=dt[i].subsystem;
+			}
 		}
-		else {
-			dataJson["transitions"][i]["transition"]["name"]=dt[i].name;
-			dataJson["transitions"][i]["transition"]["delay"]=dt[i].delay;
-			dataJson["transitions"][i]["transition"]["type"]=dt[i].type;
-			dataJson["transitions"][i]["transition"]["c"]=dt[i].c;
-			dataJson["transitions"][i]["transition"]["subsystem"]=dt[i].subsystem;
+		else{
+			dataJson["transitions"]=[];
+			dataJson["transitions"].push({"transition":{ "name" : dt[i].name,"delay" : dt[i].delay,"type" : dt[i].type,"c" : dt[i].c,"subsystem" : dt[i].subsystem}});
 		}
 	}
 	//document.getElementById("mySpreadsheet").value=JSON.stringify(dataJson);
