@@ -4771,7 +4771,7 @@ $container2.handsontable({
 	document.getElementById("t1").innerHTML = 'Pre-places List for transition nb:'+rowNb+ ', name:'+this.getDataAtCell(rowNb,0);
 	document.getElementById("t2").innerHTML = 'Consumed List for transition nb:'+rowNb+ ', name:'+this.getDataAtCell(rowNb,0);
 	document.getElementById("t3").innerHTML = 'Post-places List for transition nb:'+rowNb+ ', name:'+this.getDataAtCell(rowNb,0);
-	if(dataJson["transitions"][presentTransitionNb]){
+	if(dataJson["transitions"] && dataJson["transitions"][presentTransitionNb]){
 		//dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"]=[{	"preplace" : {	"activity" : [{ "a" : 0.0, "t" : 1.0}],"name" : "dNTPs","stoichiometry" : 1.0}}];
 		/*if(dataJson["transitions"][presentTransitionNb]["transition"] && dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"]){
 			var dt=dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"];
@@ -4788,7 +4788,7 @@ $container2.handsontable({
 				ht.populateFromArray (0, 0, tmpT,tmpT.length-1, 1)
 			}
 		}*/
-		if(dataJson["transitions"][presentTransitionNb]["transition"]){ 
+		if(dataJson["transitions"] && dataJson["transitions"][presentTransitionNb]["transition"]){ 
 			if (dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"]){
 				var dt=dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"];
 				var ht = $('#prePlacesTable').handsontable('getInstance');
@@ -4841,7 +4841,7 @@ $container2.handsontable({
 				//ht.clear();
 			}
 			
-			if (dataJson["transitions"][presentTransitionNb]["transition"]["consumed"]){
+			if (dataJson["transitions"] && dataJson["transitions"][presentTransitionNb]["transition"]["consumed"]){
 				var dt=dataJson["transitions"][presentTransitionNb]["transition"]["consumed"];
 				var ht = $('#consumedTable').handsontable('getInstance');
 				ht.clear();
@@ -4861,7 +4861,7 @@ $container2.handsontable({
 				ht.clear();
 			}
 			
-			if (dataJson["transitions"][presentTransitionNb]["transition"]["postplaces"]){
+			if (dataJson["transitions"] && dataJson["transitions"][presentTransitionNb]["transition"]["postplaces"]){
 				var dt=dataJson["transitions"][presentTransitionNb]["transition"]["postplaces"];
 				var ht = $('#postPlacesTable').handsontable('getInstance');
 				ht.clear();
@@ -4945,14 +4945,21 @@ $container2.handsontable({
   minSpareRows: 1
 });
 
-var tempdata2=new Array(dataJson["transitions"].length);
-for (var i=0, j=dataJson["transitions"].length; i<j;i++){
-	tempdata2[i]=new Array(4);
-	tempdata2[i][0]=dataJson["transitions"][i]["transition"]["name"];
-	tempdata2[i][1]=dataJson["transitions"][i]["transition"]["delay"];
-	tempdata2[i][2]=dataJson["transitions"][i]["transition"]["type"];
-	tempdata2[i][3]=dataJson["transitions"][i]["transition"]["c"];
+var tempdata2;
+if (dataJson["transitions"]){
+	tempdata2 =new Array(dataJson["transitions"].length);
+	for (var i=0, j=dataJson["transitions"].length; i<j;i++){
+		tempdata2[i]=new Array(4);
+		tempdata2[i][0]=dataJson["transitions"][i]["transition"]["name"];
+		tempdata2[i][1]=dataJson["transitions"][i]["transition"]["delay"];
+		tempdata2[i][2]=dataJson["transitions"][i]["transition"]["type"];
+		tempdata2[i][3]=dataJson["transitions"][i]["transition"]["c"];
+	}
 }
+else{
+	tempdata2 =[];
+}
+
 //console.log(tempdata1)
 var ht = $('#transitionsTable').handsontable('getInstance');
 if ($.isArray(tempdata2) && tempdata2[0] && $.isArray(tempdata2[0])){
@@ -4982,7 +4989,7 @@ $container3.handsontable({
     {data: "stoichiometry"},
   ],
   afterChange: function(changes, source) {
-	if(dataJson["transitions"][presentTransitionNb] && dataJson["transitions"][presentTransitionNb]["transition"]){
+	if(dataJson["transitions"] && dataJson["transitions"][presentTransitionNb] && dataJson["transitions"][presentTransitionNb]["transition"]){
 		var dt = this.getData();
 		
 		if (dataJson["transitions"][presentTransitionNb]["transition"]["postplaces"]){
@@ -5048,7 +5055,7 @@ $container4.handsontable({
 	presentPrePlaceNb=rowNb;
 	document.getElementById("t1.1").innerHTML = 'Activity table for pre-place nb:'+rowNb+ ', name:'+this.getDataAtCell(rowNb,0);
 	
-	if(dataJson["transitions"][presentTransitionNb]){
+	if(dataJson["transitions"] && dataJson["transitions"][presentTransitionNb]){
 	//console.log(dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"][presentPrePlaceNb])
 		//dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"]=[{	"preplace" : {	"activity" : [{ "a" : 0.0, "t" : 1.0}],"name" : "dNTPs","stoichiometry" : 1.0}}];
 		if(dataJson["transitions"][presentTransitionNb]["transition"] 
@@ -5101,7 +5108,7 @@ $container4.handsontable({
   },
   
   afterChange: function(changes, source) {
-	if(dataJson["transitions"][presentTransitionNb]){
+	if(dataJson["transitions"] && dataJson["transitions"][presentTransitionNb]){
 		var dt = this.getData();
 		if (dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"]){
 			
@@ -5159,6 +5166,18 @@ $container4.handsontable({
   minSpareRows: 1
 });
 
+// var tempdataprep=[];
+// for (var i=0, j=dataJson["places"].length; i<j;i++){
+	// tempdataprep[0]=new Array(2);
+	// tempdataprep[i][0]="";
+	// tempdataprep[i][1]="";
+// }
+// //console.log(tempdata1)
+// var ht = $('#placesTable').handsontable('getInstance');
+// if ($.isArray(tempdataprep) && tempdataprep[0] && $.isArray(tempdataprep[0])){
+	// ht.populateFromArray (0, 0, tempdataprep,tempdataprep.length-1, 1);
+// }
+
 var $container5 = $("#activityTable");
 $container5.handsontable({
   data: [],
@@ -5173,7 +5192,7 @@ $container5.handsontable({
 	{data: "t"},
   ],
   afterChange: function(changes, source) {
-	if(presentTransitionNb!=-1 && presentPrePlaceNb!=-1 && dataJson["transitions"][presentTransitionNb]){
+	if(presentTransitionNb!=-1 && presentPrePlaceNb!=-1 && dataJson["transitions"] && dataJson["transitions"][presentTransitionNb]){
 		
 		if (dataJson["transitions"][presentTransitionNb]["transition"]
 		&& dataJson["transitions"][presentTransitionNb]["transition"]["preplaces"]
@@ -5256,7 +5275,7 @@ $container6.handsontable({
     {data: "name"}
   ],
   afterChange: function(changes, source) {
-	if(dataJson["transitions"][presentTransitionNb] && dataJson["transitions"][presentTransitionNb]["transition"]){
+	if(dataJson["transitions"] && dataJson["transitions"][presentTransitionNb] && dataJson["transitions"][presentTransitionNb]["transition"]){
 		var dt = this.getData();
 		
 		if (dataJson["transitions"][presentTransitionNb]["transition"]["consumed"]){
@@ -5376,7 +5395,7 @@ $container8.handsontable({
 	document.getElementById("qssf1.1").innerHTML = 'Activity Table for constraint nb:'+rowNb+ ', name:'+this.getDataAtCell(rowNb,0);
 	document.getElementById("qssf1.2").innerHTML = 'Flux List for constraint nb:'+rowNb+ ', name:'+this.getDataAtCell(rowNb,0);
 	
-	if(dataJson["qssf"]["constraints"][presentConstraintNb]){
+	if(dataJson["qssf"]["constraints"] && dataJson["qssf"]["constraints"][presentConstraintNb]){
 		if(dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]){ 
 			if (dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["activity"]){
 				var dt=dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["activity"];
@@ -5481,11 +5500,18 @@ $container8.handsontable({
   minSpareRows: 1
 });
 
-var tempdata4=new Array(dataJson["qssf"]["constraints"].length);
-for (var i=0, j=dataJson["qssf"]["constraints"].length; i<j;i++){
-	tempdata4[i]=new Array(1);
-	tempdata4[i][0]=dataJson["qssf"]["constraints"][i]["constraint"]["name"];
+var tempdata4;
+if (dataJson["transitions"]){
+	tempdata4=new Array(dataJson["qssf"]["constraints"].length);
+	for (var i=0, j=dataJson["qssf"]["constraints"].length; i<j;i++){
+		tempdata4[i]=new Array(1);
+		tempdata4[i][0]=dataJson["qssf"]["constraints"][i]["constraint"]["name"];
+	}
 }
+else{
+	tempdata4=[];
+}
+
 //for(var i=0, j=tempdata4.length; i<j;i++){
 //console.log(tempdata4[i][0])
 //}
@@ -5509,7 +5535,7 @@ $container9.handsontable({
 	{data: "t"},
   ],
   afterChange: function(changes, source) {
-	if(dataJson["qssf"]["constraints"][presentConstraintNb]){
+	if(dataJson["qssf"]["constraints"] && dataJson["qssf"]["constraints"][presentConstraintNb]){
 		var dt = this.getData();
 		if (dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["activity"]){
 			
@@ -5568,7 +5594,7 @@ $container10.handsontable({
     {data: "name"}
   ],
   afterChange: function(changes, source) {
-	if(dataJson["qssf"]["constraints"][presentConstraintNb]){
+	if(dataJson["qssf"]["constraints"] && dataJson["qssf"]["constraints"][presentConstraintNb]){
 		var dt = this.getData();
 		if (dataJson["qssf"]["constraints"][presentConstraintNb]["constraint"]["flux_list"]){
 			
@@ -5633,7 +5659,7 @@ $container11.handsontable({
 	presentObjectiveNb=rowNb;
 	document.getElementById("qssf2.1").innerHTML = 'Activity Table for objective nb:'+rowNb+ ', name:'+this.getDataAtCell(rowNb,0);
 	
-	if(dataJson["qssf"]["objectives"][presentObjectiveNb]){
+	if(dataJson["qssf"]["objectives"] && dataJson["qssf"]["objectives"][presentObjectiveNb]){
 		if(dataJson["qssf"]["objectives"][presentObjectiveNb]["objective"]){ 
 			if (dataJson["qssf"]["objectives"][presentObjectiveNb]["objective"]["activity"]){
 				var dt=dataJson["qssf"]["objectives"][presentObjectiveNb]["objective"]["activity"];
@@ -5717,11 +5743,17 @@ $container11.handsontable({
   minSpareRows: 1
 });
 
-var tempdata5=new Array(dataJson["qssf"]["objectives"].length);
-for (var i=0, j=dataJson["qssf"]["objectives"].length; i<j;i++){
-	tempdata5[i]=new Array(2);
-	tempdata5[i][0]=dataJson["qssf"]["objectives"][i]["objective"]["name"];
-	tempdata5[i][1]=dataJson["qssf"]["objectives"][i]["objective"]["objective"];
+var tempdata5;
+if (dataJson["qssf"]["objectives"]){
+	tempdata5=new Array(dataJson["qssf"]["objectives"].length);
+	for (var i=0, j=dataJson["qssf"]["objectives"].length; i<j;i++){
+		tempdata5[i]=new Array(2);
+		tempdata5[i][0]=dataJson["qssf"]["objectives"][i]["objective"]["name"];
+		tempdata5[i][1]=dataJson["qssf"]["objectives"][i]["objective"]["objective"];
+	}
+}
+else{
+	tempdata5=[];
 }
 var ht = $('#objectiveTable').handsontable('getInstance');
 if ($.isArray(tempdata5) && tempdata5[0] && $.isArray(tempdata5[0])){
@@ -5743,7 +5775,7 @@ $container12.handsontable({
 	{data: "t"},
   ],
   afterChange: function(changes, source) {
-	if(dataJson["qssf"]["objectives"][presentObjectiveNb]){
+	if(dataJson["qssf"]["objectives"] && dataJson["qssf"]["objectives"][presentObjectiveNb]){
 		var dt = this.getData();
 		if (dataJson["qssf"]["objectives"][presentObjectiveNb]["objective"]["activity"]){
 			
@@ -7616,36 +7648,42 @@ jsPlumb.ready(function() {
 	for (el0 in listMTN ){
 		if (listMTN.hasOwnProperty(el0)) {
 			data = [];
-			for (var j = 0, jl =detailMTN[listMTN[el0][0]].length; j < jl; j += 1) {
-				var tmpdata = [];
-				for (var k = 0, kl = Object.keys(listMTN[el0][1]).length; k < kl; k += 1) {
-					if (listMTN[el0][1][Object.keys(listMTN[el0][1])[k]].indexOf(detailMTN[listMTN[el0][0]][j])>-1){
-					tmpdata.push(1);
+			if(detailMTN[listMTN[el0][0]]){
+				for (var j = 0, jl =detailMTN[listMTN[el0][0]].length; j < jl; j += 1) {
+					var tmpdata = [];
+					for (var k = 0, kl = Object.keys(listMTN[el0][1]).length; k < kl; k += 1) {
+						if (listMTN[el0][1][Object.keys(listMTN[el0][1])[k]].indexOf(detailMTN[listMTN[el0][0]][j])>-1){
+						tmpdata.push(1);
+						}
+						else{
+						tmpdata.push(0);
+						}
 					}
-					else{
-					tmpdata.push(0);
-					}
+					data.push(tmpdata);
 				}
-				data.push(tmpdata);
 			}
+			
 			results[el0]=data;
 		}
 	}
 	
 	var nbModel=0;
 	var data = [];
-	for (var j = 0, jl =detailMTN[listMTN[myListModels[nbModel]][0]].length; j < jl; j += 1) {
-		var tmpdata = [];
-		for (var k = 0, kl = Object.keys(listMTN[myListModels[nbModel]][1]).length; k < kl; k += 1) {
-			if (listMTN[myListModels[nbModel]][1][Object.keys(listMTN[myListModels[nbModel]][1])[k]].indexOf(detailMTN[listMTN[myListModels[nbModel]][0]][j])>-1){
-			tmpdata.push(1);
+	if(detailMTN[listMTN[myListModels[nbModel]][0]]){
+		for (var j = 0, jl =detailMTN[listMTN[myListModels[nbModel]][0]].length; j < jl; j += 1) {
+			var tmpdata = [];
+			for (var k = 0, kl = Object.keys(listMTN[myListModels[nbModel]][1]).length; k < kl; k += 1) {
+				if (listMTN[myListModels[nbModel]][1][Object.keys(listMTN[myListModels[nbModel]][1])[k]].indexOf(detailMTN[listMTN[myListModels[nbModel]][0]][j])>-1){
+				tmpdata.push(1);
+				}
+				else{
+				tmpdata.push(0);
+				}
 			}
-			else{
-			tmpdata.push(0);
-			}
+			data.push(tmpdata);
 		}
-		data.push(tmpdata);
 	}
+	
 	//console.log(listMTN);
 	//console.log(detailMTN);
     // Make the changes
@@ -7655,9 +7693,18 @@ jsPlumb.ready(function() {
     mdiv = d3.select('#democ0'),
     msvg = mdiv.append('svg')
         .attr('width', width)
-        .attr('height', height),
-	rw = width/results[myListModels[nbModel]][0].length,
-    rh = height/results[myListModels[nbModel]].length;
+        .attr('height', height);
+	var rw;
+    var rh;
+	if(results[myListModels[nbModel]][0]){
+	
+		rw = width/results[myListModels[nbModel]][0].length,
+		rh = height/results[myListModels[nbModel]].length;
+	}
+	else{
+		rw =0;
+		rh = 0;
+	}
 	//var msvg = d3.select("#democ0").transition();
 	var grp = msvg.selectAll('g')
 		.data(data)

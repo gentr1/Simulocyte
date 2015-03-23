@@ -99,7 +99,7 @@ module.exports = {
 									data2=JSON.parse(stringOutput);
 								}
 								else{
-									data2={'places': [], 'qssf' : {}, 'transitions:': [], 'extra': []};
+									data2={'places': [], 'qssf' : {'constraints' : [],'externality_tag':"",'objectives' : [],'sfba_file': ""}, 'transitions:': [], 'extra': []};
 								}
 								//console.log(data2);
 								
@@ -199,6 +199,7 @@ module.exports = {
 									//console.log(data2['places'][i])
 								}
 							}
+							
 							if (data2['transitions']){
 								for (var i=0, ii=data2['transitions'].length; i<ii;i++){
 									var subsys=[];
