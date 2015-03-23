@@ -1572,20 +1572,66 @@ jQuery("#mtbl").jqGrid('filterToolbar',{searchOperators : true});
   
 })( cytoscape );
 
-
-
+var listSelected={};
+var flagCondition=true;
 var $container8 = $("#tab8id");
 $container8.handsontable({
   data: [],
-  width: 1020,
+  width: 1080,
   height:250,
-  dataSchema: {name: null, rule: null},
-  colWidths: [200, 800],
+  dataSchema: {name: null, rule: null, select: null},
+  colWidths: [200, 800,40],
   startRows: 1,
-  startCols: 2,
+  startCols: 3,
   columnSorting: false,
-  colHeaders: ['Transition name','Rule'],
+  colHeaders: ['Transition name','Rule','y'],
+ 
   currentRowClassName: 'currentRow',
+  beforeChange: function(changes, source) {
+	if (changes){
+		//console.log(changes)
+		for (var i =0; i< changes.length;i++){
+			if ((changes[i][1]=="name" || changes[i][1]=="rule") && flagCondition!=true){
+				changes[i]=null;
+			}
+		}
+	}
+  },
+	afterChange: function(changes, source) {
+	//console.log(changes)
+		if (changes){
+			var obj = this;
+			//var recordedChanges=[];
+			for (var i =0; i< changes.length;i++){
+				if (changes[i]){
+					var rowChanged=changes[i][0];
+					var colChanged=changes[i][1];
+					//console.log(changes[i][1])
+					if (colChanged=='select'){
+					
+						if (changes[i][3]==true){
+							var dt = this.getData();
+							//console.log(dt[rowChanged])
+							listSelected[dt[rowChanged]['name']]=true;
+						}
+						if (changes[i][3]==false){
+							var dt = this.getData();
+							delete listSelected[dt[rowChanged]['name']];
+						}
+					}
+					
+				}
+			}
+			//flagCondition=false;
+			//console.log(listSelected);
+			//obj.setDataAtCell (recordedChanges)
+			//flagCondition=true;
+			obj.render()
+			changeDataElements();
+		}
+		//console.log(dataUsers)
+		//document.getElementById("users").value= JSON.stringify(dataUsers);
+	},
   afterSelection : function(rowNb, colNb, rowNb2, colNb2) {
 	/*if(typeof $("#tab8id").handsontable('getInstance').sortIndex[rowNb]!=='undefined'){
 		var sortToPhysicalIndex = $("#tab8id").handsontable('getInstance').sortIndex[rowNb][0];
@@ -1603,218 +1649,420 @@ $container8.handsontable({
 	//}
 	//console.log(rowNb +" "+colNb)
 	//console.log(placesTypesListPerTransition[dt[rowNb]['name']])
-	document.getElementById("selectLayout").value="0";
-	var dt = this.getData();
-	//console.log(rowNb + ""+ rowNb2);
-	//console.log(placesTypesListPerTransition[dt[rowNb]['name']]);
-	//cy.removeData();
-	var allElements = cy.elements();
-	//var allEdges  = allElements.filter('edge');                
-	//var allNodes = allElements.filter('node');
-    cy.remove(allElements);
-    var myelems=[];
-	var idEdge=0;
-	for (var nb=rowNb;nb<=rowNb2;nb++){
-		myelems.push({ group: "nodes", data: { id: dt[nb]['name'], name: dt[nb]['name'] ,faveColor: '#ffffff', faveShape: 'rectangle'} });
-		
-		if (placesTypesListPerTransition[dt[nb]['name']].hasOwnProperty('activators')){
-			for(var i=0, j=placesTypesListPerTransition[dt[nb]['name']]['activators'].length; i<j;i++){
-				myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[dt[nb]['name']]['activators'][i], name: placesTypesListPerTransition[dt[nb]['name']]['activators'][i] ,faveColor: '#ffffff', faveShape: 'circle'} });
-				myelems.push({ group: "edges", data: { id: "e"+idEdge, source: placesTypesListPerTransition[dt[nb]['name']]['activators'][i], target: dt[nb]['name'] ,faveColor: '#000000', faveShape: 'circle', faveWidth: 2} });
-				idEdge++;
-			}
-		}
-		if (placesTypesListPerTransition[dt[nb]['name']].hasOwnProperty('suppressors')){
-			for(var i=0, j=placesTypesListPerTransition[dt[nb]['name']]['suppressors'].length; i<j;i++){
-				myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[dt[nb]['name']]['suppressors'][i], name: placesTypesListPerTransition[dt[nb]['name']]['suppressors'][i] ,faveColor: '#ffffff', faveShape: 'circle'} });
-				myelems.push({ group: "edges", data: { id: "e"+idEdge, source: placesTypesListPerTransition[dt[nb]['name']]['suppressors'][i], target: dt[nb]['name'] ,faveColor: '#000000', faveShape: 'tee', faveWidth: 2} });
-				idEdge++;
-			}
-		}
-		if (placesTypesListPerTransition[dt[nb]['name']].hasOwnProperty('consumed')){
-			for(var i=0, j=placesTypesListPerTransition[dt[nb]['name']]['consumed'].length; i<j;i++){
-				myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[dt[nb]['name']]['consumed'][i], name: placesTypesListPerTransition[dt[nb]['name']]['consumed'][i],faveColor: '#ffffff', faveShape: 'circle' } });
-				myelems.push({ group: "edges", data: { id: "e"+idEdge, source: placesTypesListPerTransition[dt[nb]['name']]['consumed'][i], target: dt[nb]['name'],faveColor: '#000000' , faveShape: 'triangle', faveWidth: 2} });
-				idEdge++;
-			}
-		}
-		if (placesTypesListPerTransition[dt[nb]['name']].hasOwnProperty('postplaces')){
-			for(var i=0, j=placesTypesListPerTransition[dt[nb]['name']]['postplaces'].length; i<j;i++){
-				myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[dt[nb]['name']]['postplaces'][i], name: placesTypesListPerTransition[dt[nb]['name']]['postplaces'][i],faveColor: '#ffffff', faveShape: 'circle' } });
-				myelems.push({ group: "edges", data: { id: "e"+idEdge, source: dt[nb]['name'], target: placesTypesListPerTransition[dt[nb]['name']]['postplaces'][i] ,faveColor: '#000000', faveShape: 'triangle', faveWidth: 2} });
-				idEdge++;
-			}
-		}
-	}
-	cy.add( myelems);
+	//document.getElementById("selectLayout").value="0";
+	// var dt = this.getData();
 	
-	/*options = {
-    name: 'grid',
+	
+	// var allElements = cy.elements();
+	// //var allEdges  = allElements.filter('edge');                
+	// //var allNodes = allElements.filter('node');
+    // cy.remove(allElements);
+    // var myelems=[];
+	// var idEdge=0;
+	// for (var nb=rowNb;nb<=rowNb2;nb++){
+		// myelems.push({ group: "nodes", data: { id: dt[nb]['name'], name: dt[nb]['name'] ,faveColor: '#ffffff', faveShape: 'rectangle'} });
+		
+		// if (placesTypesListPerTransition[dt[nb]['name']].hasOwnProperty('activators')){
+			// for(var i=0, j=placesTypesListPerTransition[dt[nb]['name']]['activators'].length; i<j;i++){
+				// myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[dt[nb]['name']]['activators'][i], name: placesTypesListPerTransition[dt[nb]['name']]['activators'][i] ,faveColor: '#ffffff', faveShape: 'circle'} });
+				// myelems.push({ group: "edges", data: { id: "e"+idEdge, source: placesTypesListPerTransition[dt[nb]['name']]['activators'][i], target: dt[nb]['name'] ,faveColor: '#000000', faveShape: 'circle', faveWidth: 2} });
+				// idEdge++;
+			// }
+		// }
+		// if (placesTypesListPerTransition[dt[nb]['name']].hasOwnProperty('suppressors')){
+			// for(var i=0, j=placesTypesListPerTransition[dt[nb]['name']]['suppressors'].length; i<j;i++){
+				// myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[dt[nb]['name']]['suppressors'][i], name: placesTypesListPerTransition[dt[nb]['name']]['suppressors'][i] ,faveColor: '#ffffff', faveShape: 'circle'} });
+				// myelems.push({ group: "edges", data: { id: "e"+idEdge, source: placesTypesListPerTransition[dt[nb]['name']]['suppressors'][i], target: dt[nb]['name'] ,faveColor: '#000000', faveShape: 'tee', faveWidth: 2} });
+				// idEdge++;
+			// }
+		// }
+		// if (placesTypesListPerTransition[dt[nb]['name']].hasOwnProperty('consumed')){
+			// for(var i=0, j=placesTypesListPerTransition[dt[nb]['name']]['consumed'].length; i<j;i++){
+				// myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[dt[nb]['name']]['consumed'][i], name: placesTypesListPerTransition[dt[nb]['name']]['consumed'][i],faveColor: '#ffffff', faveShape: 'circle' } });
+				// myelems.push({ group: "edges", data: { id: "e"+idEdge, source: placesTypesListPerTransition[dt[nb]['name']]['consumed'][i], target: dt[nb]['name'],faveColor: '#000000' , faveShape: 'triangle', faveWidth: 2} });
+				// idEdge++;
+			// }
+		// }
+		// if (placesTypesListPerTransition[dt[nb]['name']].hasOwnProperty('postplaces')){
+			// for(var i=0, j=placesTypesListPerTransition[dt[nb]['name']]['postplaces'].length; i<j;i++){
+				// myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[dt[nb]['name']]['postplaces'][i], name: placesTypesListPerTransition[dt[nb]['name']]['postplaces'][i],faveColor: '#ffffff', faveShape: 'circle' } });
+				// myelems.push({ group: "edges", data: { id: "e"+idEdge, source: dt[nb]['name'], target: placesTypesListPerTransition[dt[nb]['name']]['postplaces'][i] ,faveColor: '#000000', faveShape: 'triangle', faveWidth: 2} });
+				// idEdge++;
+			// }
+		// }
+	// }
+	// cy.add( myelems);
+	
+	// /*options = {
+    // name: 'grid',
 
-    fit: true, // whether to fit the viewport to the graph
-    padding: 30, // padding used on fit
-    rows: undefined, // force num of rows in the grid
-    columns: undefined, // force num of cols in the grid
-    position: function( node ){}, // returns { row, col } for element
-    ready: undefined, // callback on layoutready
-    stop: undefined // callback on layoutstop
-};*/
-/*
-options = {
-    name: 'circle',
+    // fit: true, // whether to fit the viewport to the graph
+    // padding: 30, // padding used on fit
+    // rows: undefined, // force num of rows in the grid
+    // columns: undefined, // force num of cols in the grid
+    // position: function( node ){}, // returns { row, col } for element
+    // ready: undefined, // callback on layoutready
+    // stop: undefined // callback on layoutstop
+// };*/
+// /*
+// options = {
+    // name: 'circle',
 
-    fit: true, // whether to fit the viewport to the graph
-    ready: undefined, // callback on layoutready
-    stop: undefined, // callback on layoutstop
-    rStepSize: 10, // the step size for increasing the radius if the nodes don't fit on screen
-    padding: 30, // the padding on fit
-    startAngle: 3/2 * Math.PI, // the position of the first node
-    counterclockwise: false // whether the layout should go counterclockwise (true) or clockwise (false)
-};*/
-/*options = {
-    name: 'concentric',
+    // fit: true, // whether to fit the viewport to the graph
+    // ready: undefined, // callback on layoutready
+    // stop: undefined, // callback on layoutstop
+    // rStepSize: 10, // the step size for increasing the radius if the nodes don't fit on screen
+    // padding: 30, // the padding on fit
+    // startAngle: 3/2 * Math.PI, // the position of the first node
+    // counterclockwise: false // whether the layout should go counterclockwise (true) or clockwise (false)
+// };*/
+// /*options = {
+    // name: 'concentric',
 
-    fit: true, // whether to fit the viewport to the graph
-    ready: undefined, // callback on layoutready
-    stop: undefined, // callback on layoutstop
-    padding: 30, // the padding on fit
-    startAngle: 3/2 * Math.PI, // the position of the first node
-    counterclockwise: false, // whether the layout should go counterclockwise (true) or clockwise (false)
-    minNodeSpacing: 60, // min spacing between outside of nodes (used for radius adjustment)
-    height: undefined, // height of layout area (overrides container height)
-    width: undefined, // width of layout area (overrides container width)
-    concentric: function(){ // returns numeric value for each node, placing higher nodes in levels towards the centre
-		//console.log(this._private.data['faveShape'])
-		var val =0;
-		if (this._private.data['faveShape']=="rectangle"){
-			val =10;
-		}
-      return val;
-    },
-    levelWidth: function(nodes){ // the variation of concentric values in each level
-      return 0.5//nodes.maxDegree() / 4;
-    }
-};*/
-	options = {
-    name: 'breadthfirst2',
+    // fit: true, // whether to fit the viewport to the graph
+    // ready: undefined, // callback on layoutready
+    // stop: undefined, // callback on layoutstop
+    // padding: 30, // the padding on fit
+    // startAngle: 3/2 * Math.PI, // the position of the first node
+    // counterclockwise: false, // whether the layout should go counterclockwise (true) or clockwise (false)
+    // minNodeSpacing: 60, // min spacing between outside of nodes (used for radius adjustment)
+    // height: undefined, // height of layout area (overrides container height)
+    // width: undefined, // width of layout area (overrides container width)
+    // concentric: function(){ // returns numeric value for each node, placing higher nodes in levels towards the centre
+		// //console.log(this._private.data['faveShape'])
+		// var val =0;
+		// if (this._private.data['faveShape']=="rectangle"){
+			// val =10;
+		// }
+      // return val;
+    // },
+    // levelWidth: function(nodes){ // the variation of concentric values in each level
+      // return 0.5//nodes.maxDegree() / 4;
+    // }
+// };*/
+	// // options = {
+    // // name: 'breadthfirst2',
 
-    fit: true, // whether to fit the viewport to the graph
-    ready: undefined, // callback on layoutready
-    stop: undefined, // callback on layoutstop
-    directed: true, // whether the tree is directed downwards (or edges can point in any direction if false)
-	pan: true, 
-	textureOnViewport: false,
-    padding: 30, // padding on fit
-    circle: false, // put depths in concentric circles if true, put depths top down if false
-    roots: undefined, // the roots of the trees
-    maximalAdjustments: 5 // how many times to try to position the nodes in a maximal way (i.e. no backtracking)
-};
-/*options = {
-    name: 'cose',
+    // // fit: true, // whether to fit the viewport to the graph
+    // // ready: undefined, // callback on layoutready
+    // // stop: undefined, // callback on layoutstop
+    // // directed: true, // whether the tree is directed downwards (or edges can point in any direction if false)
+	// // pan: true, 
+	// // textureOnViewport: false,
+    // // padding: 30, // padding on fit
+    // // circle: false, // put depths in concentric circles if true, put depths top down if false
+    // // roots: undefined, // the roots of the trees
+    // // maximalAdjustments: 5 // how many times to try to position the nodes in a maximal way (i.e. no backtracking)
+// // };
+// var el =document.getElementById("selectLayout");
+// if (parseInt(el.value)==0){
+		// var options = {
+			// name: 'breadthfirst2',
 
-    // Called on `layoutready`
-    ready               : function() {},
+			// fit: true, // whether to fit the viewport to the graph
+			// ready: undefined, // callback on layoutready
+			// stop: undefined, // callback on layoutstop
+			// directed: true, // whether the tree is directed downwards (or edges can point in any direction if false)
+			// pan: true, 
+			// textureOnViewport: false,
+			// padding: 30, // padding on fit
+			// circle: false, // put depths in concentric circles if true, put depths top down if false
+			// roots: undefined, // the roots of the trees
+			// maximalAdjustments: 5 // how many times to try to position the nodes in a maximal way (i.e. no backtracking)
+		// };
+		
+	// }
+	// else if (parseInt(el.value)==1){
+		// var options = {
+			// name: 'circle',
 
-    // Called on `layoutstop`
-    stop                : function() {},
+			// fit: true, // whether to fit the viewport to the graph
+			// ready: undefined, // callback on layoutready
+			// stop: undefined, // callback on layoutstop
+			// rStepSize: 10, // the step size for increasing the radius if the nodes don't fit on screen
+			// padding: 30, // the padding on fit
+			// startAngle: 3/2 * Math.PI, // the position of the first node
+			// counterclockwise: false // whether the layout should go counterclockwise (true) or clockwise (false)
+		// };
+		
+	// }
+	// else if (parseInt(el.value)==2){
+		// var options = {
+			// name: 'concentric',
 
-    // Number of iterations between consecutive screen positions update (0 -> only updated on the end)
-    refresh             : 0,
+			// fit: true, // whether to fit the viewport to the graph
+			// ready: undefined, // callback on layoutready
+			// stop: undefined, // callback on layoutstop
+			// padding: 30, // the padding on fit
+			// startAngle: 3/2 * Math.PI, // the position of the first node
+			// counterclockwise: false, // whether the layout should go counterclockwise (true) or clockwise (false)
+			// minNodeSpacing: 60, // min spacing between outside of nodes (used for radius adjustment)
+			// height: undefined, // height of layout area (overrides container height)
+			// width: undefined, // width of layout area (overrides container width)
+			// concentric: function(){ // returns numeric value for each node, placing higher nodes in levels towards the centre
+				// //console.log(this._private.data['faveShape'])
+				// var val =0;
+				// if (this._private.data['faveShape']=="rectangle"){
+					// val =10;
+				// }
+			  // return val;
+			// },
+			// levelWidth: function(nodes){ // the variation of concentric values in each level
+			  // return 0.5//nodes.maxDegree() / 4;
+			// }
+		// }
+		
+	// }
+	// else if (parseInt(el.value)==3){
+		// var options = {
+			// name: 'grid2',
 
-    // Whether to fit the network view after when done
-    fit                 : true, 
+			// fit: true, // whether to fit the viewport to the graph
+			// padding: 30, // padding used on fit
+			// rows: undefined, // force num of rows in the grid
+			// columns: undefined, // force num of cols in the grid
+			// position: function( node ){}, // returns { row, col } for element
+			// ready: undefined, // callback on layoutready
+			// stop: undefined // callback on layoutstop
+		// };
+		
+	// }
+	
 
-    // Padding on fit
-    padding             : 30, 
+
+// /*options = {
+    // name: 'cose',
+
+    // // Called on `layoutready`
+    // ready               : function() {},
+
+    // // Called on `layoutstop`
+    // stop                : function() {},
+
+    // // Number of iterations between consecutive screen positions update (0 -> only updated on the end)
+    // refresh             : 0,
+
+    // // Whether to fit the network view after when done
+    // fit                 : true, 
+
+    // // Padding on fit
+    // padding             : 30, 
 
 
-    // Whether to randomize node positions on the beginning
-    randomize           : true,
+    // // Whether to randomize node positions on the beginning
+    // randomize           : true,
 
-    // Whether to use the JS console to print debug messages
-    debug               : false,
+    // // Whether to use the JS console to print debug messages
+    // debug               : false,
 
-    // Node repulsion (non overlapping) multiplier
-    nodeRepulsion       : 10000,
+    // // Node repulsion (non overlapping) multiplier
+    // nodeRepulsion       : 10000,
 
-    // Node repulsion (overlapping) multiplier
-    nodeOverlap         : 10000,
+    // // Node repulsion (overlapping) multiplier
+    // nodeOverlap         : 10000,
 
-    // Ideal edge (non nested) length
-    idealEdgeLength     : 50,
+    // // Ideal edge (non nested) length
+    // idealEdgeLength     : 50,
 
-    // Divisor to compute edge forces
-    edgeElasticity      : 100,
+    // // Divisor to compute edge forces
+    // edgeElasticity      : 100,
 
-    // Nesting factor (multiplier) to compute ideal edge length for nested edges
-    nestingFactor       : 5, 
+    // // Nesting factor (multiplier) to compute ideal edge length for nested edges
+    // nestingFactor       : 5, 
 
-    // Gravity force (constant)
-    gravity             : 25, 
+    // // Gravity force (constant)
+    // gravity             : 25, 
 
-    // Maximum number of iterations to perform
-    numIter             : 10,
+    // // Maximum number of iterations to perform
+    // numIter             : 10,
 
-    // Initial temperature (maximum node displacement)
-    initialTemp         : 200,
+    // // Initial temperature (maximum node displacement)
+    // initialTemp         : 200,
 
-    // Cooling factor (how the temperature is reduced between consecutive iterations
-    coolingFactor       : 0.95, 
+    // // Cooling factor (how the temperature is reduced between consecutive iterations
+    // coolingFactor       : 0.95, 
 
-    // Lower temperature threshold (below this point the layout will end)
-    minTemp             : 1
-};*/
+    // // Lower temperature threshold (below this point the layout will end)
+    // minTemp             : 1
+// };*/
 
-/*options = {
-    name: 'arbor',
+// /*options = {
+    // name: 'arbor',
 
-    liveUpdate: false, // whether to show the layout as it's running
-    ready: undefined, // callback on layoutready 
-    stop: undefined, // callback on layoutstop
-    maxSimulationTime: 4000, // max length in ms to run the layout
-    fit: true, // reset viewport to fit default simulationBounds
-    padding: [ 50, 50, 50, 50 ], // top, right, bottom, left
-    simulationBounds: undefined, // [x1, y1, x2, y2]; [0, 0, width, height] by default
-    ungrabifyWhileSimulating: true, // so you can't drag nodes during layout
+    // liveUpdate: false, // whether to show the layout as it's running
+    // ready: undefined, // callback on layoutready 
+    // stop: undefined, // callback on layoutstop
+    // maxSimulationTime: 4000, // max length in ms to run the layout
+    // fit: true, // reset viewport to fit default simulationBounds
+    // padding: [ 50, 50, 50, 50 ], // top, right, bottom, left
+    // simulationBounds: undefined, // [x1, y1, x2, y2]; [0, 0, width, height] by default
+    // ungrabifyWhileSimulating: true, // so you can't drag nodes during layout
 
-    // forces used by arbor (use arbor default on undefined)
-    repulsion: 100,
-    stiffness: undefined,
-    friction: undefined,
-    gravity: true,
-    fps: undefined,
-    precision: undefined,
+    // // forces used by arbor (use arbor default on undefined)
+    // repulsion: 100,
+    // stiffness: undefined,
+    // friction: undefined,
+    // gravity: true,
+    // fps: undefined,
+    // precision: undefined,
 
-    // static numbers or functions that dynamically return what these
-    // values should be for each element
-    nodeMass: undefined, 
-    edgeLength: 60,
+    // // static numbers or functions that dynamically return what these
+    // // values should be for each element
+    // nodeMass: undefined, 
+    // edgeLength: 60,
 
-    stepSize: 1, // size of timestep in simulation
+    // stepSize: 1, // size of timestep in simulation
 
-    // function that returns true if the system is stable to indicate
-    // that the layout can be stopped
-    stableEnergy: function( energy ){
-      var e = energy; 
-      return (e.max <= 0.5) || (e.mean <= 0.3);
-    }
-};*/
-	cy.layout( options );
-	//cy.reset();
+    // // function that returns true if the system is stable to indicate
+    // // that the layout can be stopped
+    // stableEnergy: function( energy ){
+      // var e = energy; 
+      // return (e.max <= 0.5) || (e.mean <= 0.3);
+    // }
+// };*/
+	// cy.layout( options );
+	// //cy.reset();
 	
   },
   
   columns: [
-    {data: "name"},
+    {data: "name"},//,readOnly: true
 	{data: "rule"},
-    //{data: "select",type: "checkbox"}
+    {data: "select",type: "checkbox"}
   ],
   
   minSpareRows: 1
 });
 
+function changeDataElements(){
+	if (cy){
+		var allElements = cy.elements();
+		//var allEdges  = allElements.filter('edge');                
+		//var allNodes = allElements.filter('node');
+		cy.remove(allElements);
+		var myelems=[];
+		var idEdge=0;
+		var listElem = Object.keys(listSelected);
+		//console.log(listElem)
+		for (var nb=0;nb<=listElem.length;nb++){
+		
+			myelems.push({ group: "nodes", data: { id: listElem[nb], name: listElem[nb] ,faveColor: '#ffffff', faveShape: 'rectangle'} });
+			if (placesTypesListPerTransition[listElem[nb]] ){
+				if (placesTypesListPerTransition[listElem[nb]].hasOwnProperty('activators')){
+					for(var i=0, j=placesTypesListPerTransition[listElem[nb]]['activators'].length; i<j;i++){
+						myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[listElem[nb]]['activators'][i], name: placesTypesListPerTransition[listElem[nb]]['activators'][i] ,faveColor: '#ffffff', faveShape: 'circle'} });
+						myelems.push({ group: "edges", data: { id: "e"+idEdge, source: placesTypesListPerTransition[listElem[nb]]['activators'][i], target: listElem[nb] ,faveColor: '#000000', faveShape: 'circle', faveWidth: 2} });
+						idEdge++;
+					}
+				}
+				if (placesTypesListPerTransition[listElem[nb]].hasOwnProperty('suppressors')){
+					for(var i=0, j=placesTypesListPerTransition[listElem[nb]]['suppressors'].length; i<j;i++){
+						myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[listElem[nb]]['suppressors'][i], name: placesTypesListPerTransition[listElem[nb]]['suppressors'][i] ,faveColor: '#ffffff', faveShape: 'circle'} });
+						myelems.push({ group: "edges", data: { id: "e"+idEdge, source: placesTypesListPerTransition[listElem[nb]]['suppressors'][i], target: listElem[nb] ,faveColor: '#000000', faveShape: 'tee', faveWidth: 2} });
+						idEdge++;
+					}
+				}
+				if (placesTypesListPerTransition[listElem[nb]].hasOwnProperty('consumed')){
+					for(var i=0, j=placesTypesListPerTransition[listElem[nb]]['consumed'].length; i<j;i++){
+						myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[listElem[nb]]['consumed'][i], name: placesTypesListPerTransition[listElem[nb]]['consumed'][i],faveColor: '#ffffff', faveShape: 'circle' } });
+						myelems.push({ group: "edges", data: { id: "e"+idEdge, source: placesTypesListPerTransition[listElem[nb]]['consumed'][i], target: listElem[nb],faveColor: '#000000' , faveShape: 'triangle', faveWidth: 2} });
+						idEdge++;
+					}
+				}
+				if (placesTypesListPerTransition[listElem[nb]].hasOwnProperty('postplaces')){
+					for(var i=0, j=placesTypesListPerTransition[listElem[nb]]['postplaces'].length; i<j;i++){
+						myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[listElem[nb]]['postplaces'][i], name: placesTypesListPerTransition[listElem[nb]]['postplaces'][i],faveColor: '#ffffff', faveShape: 'circle' } });
+						myelems.push({ group: "edges", data: { id: "e"+idEdge, source: listElem[nb], target: placesTypesListPerTransition[listElem[nb]]['postplaces'][i] ,faveColor: '#000000', faveShape: 'triangle', faveWidth: 2} });
+						idEdge++;
+					}
+				}
+			}
+		}
+		cy.add( myelems);
+		
+		
+	var el =document.getElementById("selectLayout");
+	if (parseInt(el.value)==0){
+			var options = {
+				name: 'breadthfirst2',
+
+				fit: true, // whether to fit the viewport to the graph
+				ready: undefined, // callback on layoutready
+				stop: undefined, // callback on layoutstop
+				directed: true, // whether the tree is directed downwards (or edges can point in any direction if false)
+				pan: true, 
+				textureOnViewport: false,
+				padding: 30, // padding on fit
+				circle: false, // put depths in concentric circles if true, put depths top down if false
+				roots: undefined, // the roots of the trees
+				maximalAdjustments: 5 // how many times to try to position the nodes in a maximal way (i.e. no backtracking)
+			};
+			
+		}
+		else if (parseInt(el.value)==1){
+			var options = {
+				name: 'circle',
+
+				fit: true, // whether to fit the viewport to the graph
+				ready: undefined, // callback on layoutready
+				stop: undefined, // callback on layoutstop
+				rStepSize: 10, // the step size for increasing the radius if the nodes don't fit on screen
+				padding: 30, // the padding on fit
+				startAngle: 3/2 * Math.PI, // the position of the first node
+				counterclockwise: false // whether the layout should go counterclockwise (true) or clockwise (false)
+			};
+			
+		}
+		else if (parseInt(el.value)==2){
+			var options = {
+				name: 'concentric',
+
+				fit: true, // whether to fit the viewport to the graph
+				ready: undefined, // callback on layoutready
+				stop: undefined, // callback on layoutstop
+				padding: 30, // the padding on fit
+				startAngle: 3/2 * Math.PI, // the position of the first node
+				counterclockwise: false, // whether the layout should go counterclockwise (true) or clockwise (false)
+				minNodeSpacing: 60, // min spacing between outside of nodes (used for radius adjustment)
+				height: undefined, // height of layout area (overrides container height)
+				width: undefined, // width of layout area (overrides container width)
+				concentric: function(){ // returns numeric value for each node, placing higher nodes in levels towards the centre
+					//console.log(this._private.data['faveShape'])
+					var val =0;
+					if (this._private.data['faveShape']=="rectangle"){
+						val =10;
+					}
+				  return val;
+				},
+				levelWidth: function(nodes){ // the variation of concentric values in each level
+				  return 0.5//nodes.maxDegree() / 4;
+				}
+			}
+			
+		}
+		else if (parseInt(el.value)==3){
+			var options = {
+				name: 'grid2',
+
+				fit: true, // whether to fit the viewport to the graph
+				padding: 30, // padding used on fit
+				rows: undefined, // force num of rows in the grid
+				columns: undefined, // force num of cols in the grid
+				position: function( node ){}, // returns { row, col } for element
+				ready: undefined, // callback on layoutready
+				stop: undefined // callback on layoutstop
+			};
+			
+		}
+		
+
+		cy.layout( options );
+	}
+}
 
 $('#searchgrid4').on('keyup',function(event){
+//console.log(listSelected)
+flagCondition=true;
 	var value = ('' + this.value).toLowerCase(),row,col,r_len,c_len,td;
 	//console.log(value)
 	var example = $('#tab8id');
@@ -1865,8 +2113,13 @@ $('#searchgrid4').on('keyup',function(event){
 					}
 				}
 			}
-			
-			rulesData.push([elem,ruleString])
+			if (listSelected.hasOwnProperty(elem)){
+				rulesData.push([elem,ruleString,true])
+			}
+			else{
+				rulesData.push([elem,ruleString,false])
+			}
+			//rulesData.push([elem,ruleString])
 		}
 	}
 	var data = rulesData;
@@ -1895,7 +2148,7 @@ $('#searchgrid4').on('keyup',function(event){
 		//console.log(searcharray)
 		
 		if ($.isArray(searcharray) && searcharray[0] && $.isArray(searcharray[0])){
-			ht.populateFromArray (0, 0, searcharray,searcharray.length-1, 1);
+			ht.populateFromArray (0, 0, searcharray,searcharray.length-1, 2);
 		}
 	}
 	else{
@@ -1947,14 +2200,19 @@ $('#searchgrid4').on('keyup',function(event){
 					}
 				}
 			}
-			
-			rulesData.push([elem,ruleString])
+			if (listSelected.hasOwnProperty(elem)){
+				rulesData.push([elem,ruleString,true])
+			}
+			else{
+				rulesData.push([elem,ruleString,false])
+			}
+			//rulesData.push([elem,ruleString])
 		}
 	}
 	var ht8 = $('#tab8id').handsontable('getInstance');
 	ht8.alter('remove_row', 0, rulesData.length);
 	if ($.isArray(rulesData) && rulesData[0] && $.isArray(rulesData[0])){
-		ht8.populateFromArray (0, 0, rulesData,rulesData.length-1, 1);
+		ht8.populateFromArray (0, 0, rulesData,rulesData.length-1, 2);
 	}
 		
 	}
@@ -1963,6 +2221,7 @@ $('#searchgrid4').on('keyup',function(event){
 	
 	
 	document.getElementById("searchgrid4").focus();
+	flagCondition=false;
 	
 });
 
@@ -2021,16 +2280,24 @@ for (elem in placesTypesListPerTransition){
 				}
 			}
 		}
-		
-		rulesData.push([elem,ruleString])
+		if (listSelected.hasOwnProperty(elem)){
+			rulesData.push([elem,ruleString,true])
+		}
+		else{
+			rulesData.push([elem,ruleString,false])
+		}
 	}
 }
 //console.log(transitionsTypesListPerPlace)
 //console.log(placesTypesListPerTransition)
 var ht8 = $('#tab8id').handsontable('getInstance');
 if ($.isArray(rulesData) && rulesData[0] && $.isArray(rulesData[0])){
-	ht8.populateFromArray (0, 0, rulesData,rulesData.length-1, 1);
+	ht8.populateFromArray (0, 0, rulesData,rulesData.length-1, 2);
 }
+
+
+flagCondition=false;
+
 
 
 //cy.style.border="thick solid #0000FF";
