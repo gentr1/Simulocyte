@@ -809,125 +809,129 @@ module.exports = {
 					var idMap_RPM={};
 					var counter=0;
 					//var data2 = mytb;
-					
-					for (var i=0, ii=data2['places'].length; i<ii;i++){
-						// a place with type 1 is a common node, a place with type 2 is an objective node, type 3 would be a constraint for a reaction node
-						// type qsspn =0 means a place and =1 means a reaction
-						// id nb + name + compartment nb + info + [state,max] + snoopy type + qsspn type + type sim + type reconx + [rate, transition type, delay] + empty stuff (products, reactants, modifiers) + model name
-						var subsys=[];
-						if (data2['places'][i]['place']['subsystem'])
-							subsys=[data2['places'][i]['place']['subsystem']];
-						model_data[2].push([counter, data2['places'][i]['place']['name'], -1, [[],subsys], [data2['places'][i]['place']['state'],data2['places'][i]['place']['max']] , 2, data2['places'][i]['place']['type'],1,0,[1, []], [[], [], []], [modelName]]);
-						idMap_RPM[data2['places'][i]['place']['name']]=counter;
-						counter++;
-						//console.log(data2['places'][i])
-					}
-					for (var i=0, ii=data2['transitions'].length; i<ii;i++){
-						var subsys=[];
-						if (data2['transitions'][i]['transition']['subsystem'])
-							subsys=[data2['transitions'][i]['transition']['subsystem']];
-						var myreaction = [counter, data2['transitions'][i]['transition']['name'], -1, [[],subsys], [data2['transitions'][i]['transition']['c'],data2['transitions'][i]['transition']['type'],data2['transitions'][i]['transition']['delay']] , 4, -1,1,0,[[], []], [[], [], []], [modelName]];
-						//console.log(data2['transitions'][i]['transition']['consumed'])
-						
-						// add reactants
-						var cons =[]
-						if (data2['transitions'][i]['transition']['consumed']){
-							for (var j=0, jj=data2['transitions'][i]['transition']['consumed'].length; j<jj;j++){ 
-								myreaction[10][0].push([idMap_RPM[data2['transitions'][i]['transition']['consumed'][j]['consumed_preplace']['name']],  data2['transitions'][i]['transition']['consumed'][j]['consumed_preplace']['name']]);
-								model_data[3].push([counter, idMap_RPM[data2['transitions'][i]['transition']['consumed'][j]['consumed_preplace']['name']],0,1,modelName]);
-								cons.push(data2['transitions'][i]['transition']['consumed'][j]['consumed_preplace']['name']);
-							}
+					if (data2['places']){
+						for (var i=0, ii=data2['places'].length; i<ii;i++){
+							// a place with type 1 is a common node, a place with type 2 is an objective node, type 3 would be a constraint for a reaction node
+							// type qsspn =0 means a place and =1 means a reaction
+							// id nb + name + compartment nb + info + [state,max] + snoopy type + qsspn type + type sim + type reconx + [rate, transition type, delay] + empty stuff (products, reactants, modifiers) + model name
+							var subsys=[];
+							if (data2['places'][i]['place']['subsystem'])
+								subsys=[data2['places'][i]['place']['subsystem']];
+							model_data[2].push([counter, data2['places'][i]['place']['name'], -1, [[],subsys], [data2['places'][i]['place']['state'],data2['places'][i]['place']['max']] , 2, data2['places'][i]['place']['type'],1,0,[1, []], [[], [], []], [modelName]]);
+							idMap_RPM[data2['places'][i]['place']['name']]=counter;
+							counter++;
+							//console.log(data2['places'][i])
 						}
-						// add modifiers
-						if (data2['transitions'][i]['transition']['preplaces']){
-							for (var j=0, jj=data2['transitions'][i]['transition']['preplaces'].length; j<jj;j++){ 
-								if (cons.indexOf(data2['transitions'][i]['transition']['preplaces'][j]['preplace']['name'])==-1){
-									myreaction[10][2].push([ idMap_RPM[data2['transitions'][i]['transition']['preplaces'][j]['preplace']['name']], data2['transitions'][i]['transition']['preplaces'][j]['preplace']['name']]);
-									model_data[3].push([counter, idMap_RPM[data2['transitions'][i]['transition']['preplaces'][j]['preplace']['name']],2,1,modelName]);
-								//console.log(data2['transitions'][i]['transition']['preplaces'][j]['preplace']['name']);
+					}
+					if (data2['transitions']){
+						for (var i=0, ii=data2['transitions'].length; i<ii;i++){
+							var subsys=[];
+							if (data2['transitions'][i]['transition']['subsystem'])
+								subsys=[data2['transitions'][i]['transition']['subsystem']];
+							var myreaction = [counter, data2['transitions'][i]['transition']['name'], -1, [[],subsys], [data2['transitions'][i]['transition']['c'],data2['transitions'][i]['transition']['type'],data2['transitions'][i]['transition']['delay']] , 4, -1,1,0,[[], []], [[], [], []], [modelName]];
+							//console.log(data2['transitions'][i]['transition']['consumed'])
+							
+							// add reactants
+							var cons =[]
+							if (data2['transitions'][i]['transition']['consumed']){
+								for (var j=0, jj=data2['transitions'][i]['transition']['consumed'].length; j<jj;j++){ 
+									myreaction[10][0].push([idMap_RPM[data2['transitions'][i]['transition']['consumed'][j]['consumed_preplace']['name']],  data2['transitions'][i]['transition']['consumed'][j]['consumed_preplace']['name']]);
+									model_data[3].push([counter, idMap_RPM[data2['transitions'][i]['transition']['consumed'][j]['consumed_preplace']['name']],0,1,modelName]);
+									cons.push(data2['transitions'][i]['transition']['consumed'][j]['consumed_preplace']['name']);
 								}
-								//cons.push(data2['transitions'][i]['transition']['consumed'][j]['consumed_preplace']['name']);
 							}
-						}
-						// add products
-						if (data2['transitions'][i]['transition']['postplaces']){
-							for (var j=0, jj=data2['transitions'][i]['transition']['postplaces'].length; j<jj;j++){ 
-								// a product has a name and a stoichiometry
-								
-								myreaction[10][1].push([idMap_RPM[data2['transitions'][i]['transition']['postplaces'][j]['postplace']['name']], data2['transitions'][i]['transition']['postplaces'][j]['postplace']['name'],data2['transitions'][i]['transition']['postplaces'][j]['postplace']['stoichiometry'] ]);
-								model_data[3].push([counter, idMap_RPM[data2['transitions'][i]['transition']['postplaces'][j]['postplace']['name']],1,1,modelName]);
-								//console.log(myreaction[10][1]);
+							// add modifiers
+							if (data2['transitions'][i]['transition']['preplaces']){
+								for (var j=0, jj=data2['transitions'][i]['transition']['preplaces'].length; j<jj;j++){ 
+									if (cons.indexOf(data2['transitions'][i]['transition']['preplaces'][j]['preplace']['name'])==-1){
+										myreaction[10][2].push([ idMap_RPM[data2['transitions'][i]['transition']['preplaces'][j]['preplace']['name']], data2['transitions'][i]['transition']['preplaces'][j]['preplace']['name']]);
+										model_data[3].push([counter, idMap_RPM[data2['transitions'][i]['transition']['preplaces'][j]['preplace']['name']],2,1,modelName]);
+									//console.log(data2['transitions'][i]['transition']['preplaces'][j]['preplace']['name']);
+									}
+									//cons.push(data2['transitions'][i]['transition']['consumed'][j]['consumed_preplace']['name']);
+								}
 							}
+							// add products
+							if (data2['transitions'][i]['transition']['postplaces']){
+								for (var j=0, jj=data2['transitions'][i]['transition']['postplaces'].length; j<jj;j++){ 
+									// a product has a name and a stoichiometry
+									
+									myreaction[10][1].push([idMap_RPM[data2['transitions'][i]['transition']['postplaces'][j]['postplace']['name']], data2['transitions'][i]['transition']['postplaces'][j]['postplace']['name'],data2['transitions'][i]['transition']['postplaces'][j]['postplace']['stoichiometry'] ]);
+									model_data[3].push([counter, idMap_RPM[data2['transitions'][i]['transition']['postplaces'][j]['postplace']['name']],1,1,modelName]);
+									//console.log(myreaction[10][1]);
+								}
+							}
+							model_data[2].push(myreaction);
+							counter++;
 						}
-						model_data[2].push(myreaction);
-						counter++;
 					}
-					
-					
-					for (var i=0, ii=data2['qssf']['objectives'].length; i<ii;i++){
-						//console.log("objective: "+data2['qssf']['objectives'][i]['objective']['name']+" activity: "+data2['qssf']['objectives'][i]['objective']['activity']+" objective: "+data2['qssf']['objectives'][i]['objective']['objective']);
-						//model_data[2][idMap_RPM[data2['qssf']['objectives'][i]['objective']['name']]][7]=2;
-						model_data[2][idMap_RPM[data2['qssf']['objectives'][i]['objective']['name']]][10]=[2, [data2['qssf']['objectives'][i]['objective']['activity'],data2['qssf']['objectives'][i]['objective']['objective']]]
-						//console.log(data2['qssf']['objectives'][i]['objective']['objective'])
-						var myTypeSim=2;
-						var isInRecon=false;
-						for (var j=0, jj=mytb.file[1].length; j<jj;j++){
-							//console.log(data0.sbml)
-							// check if the idname is the same as a metabolic network name, if so label that node as type sim 3 = interface between petrinet and metabolic
-							//data2['qssf']['objectives'][i]['objective'].length
-							var substring =mytb.file[1][j][1].substring(mytb.file[1][j][1].length-data2['qssf']['objectives'][i]['objective']['objective'].length,mytb.file[1][j][1].length)
+					if (data2['qssf']['objectives']){
+						for (var i=0, ii=data2['qssf']['objectives'].length; i<ii;i++){
+							//console.log("objective: "+data2['qssf']['objectives'][i]['objective']['name']+" activity: "+data2['qssf']['objectives'][i]['objective']['activity']+" objective: "+data2['qssf']['objectives'][i]['objective']['objective']);
+							//model_data[2][idMap_RPM[data2['qssf']['objectives'][i]['objective']['name']]][7]=2;
+							model_data[2][idMap_RPM[data2['qssf']['objectives'][i]['objective']['name']]][10]=[2, [data2['qssf']['objectives'][i]['objective']['activity'],data2['qssf']['objectives'][i]['objective']['objective']]]
 							//console.log(data2['qssf']['objectives'][i]['objective']['objective'])
-							//console.log(substring)
-							if (substring==data2['qssf']['objectives'][i]['objective']['objective']){
-								myTypeSim=3;
-								model_data[3].push( [idMap_RPM[data2['qssf']['objectives'][i]['objective']['name']], mytb.file[1][j][0], -1, 2,modelName]);
-								isInRecon=true;
-							}
-							//////////////////
-							// what do do if name of objective is not in the model file nor in the sbml file? -> add a new node
-							//else{
-								//console.log("objective node : "+data2['qssf']['objectives'][i]['objective']['objective']+" has no link to existing recon node")
-							//}
-							
-							
-						}
-						if (isInRecon== false){
-							// if not in recon do something
-							//console.log("objective node : "+data2['qssf']['objectives'][i]['objective']['objective']+" has no link to existing recon node");
-							
-							//model_data[2].push([counter, data2['qssf']['objectives'][i]['objective']['objective'], -1, [[],[]], [] , 2, -1,-1,-1,[1, []], [[], [], []], [modelName]]);
-							//model_data[3].push( [idMap_RPM[data2['qssf']['objectives'][i]['objective']['name']], counter, -1, 2,modelName]);
-							//counter++;
-						}
-						model_data[2][idMap_RPM[data2['qssf']['objectives'][i]['objective']['name']]][7]=myTypeSim;
-						//console.log(model_data[2][idMap_RPM[data2['qssf']['objectives'][i]['objective']['name']]][10][1]);
-					}
-					
-					for (var i=0, ii=data2['qssf']['constraints'].length; i<ii;i++){
-						//console.log("constraint: "+data2['qssf']['constraints'][i]['constraint']['name']+" activity: "+data2['qssf']['constraints'][i]['constraint']['activity'] +" Flux list: "+data2['qssf']['constraints'][i]['constraint']['flux_list']);
-						model_data[2][idMap_RPM[data2['qssf']['constraints'][i]['constraint']['name']]][10]=[3, [data2['qssf']['constraints'][i]['constraint']['activity'],data2['qssf']['constraints'][i]['constraint']['flux_list']]]
-						//console.log(data2['qssf']['constraints'][i]['constraint']['flux_list'])
-						var myTypeSim=2;
-						for (var j=0, jj=mytb.file[1].length; j<jj;j++){
-							//console.log(data2['qssf']['constraints'][i]['constraint']['flux_list'].length)
-							
-							for (var h=0, hh=data2['qssf']['constraints'][i]['constraint']['flux_list'].length; h<hh;h++){
-								//console.log(data2['qssf']['constraints'][i]['constraint']['flux_list'][h]);
-								//var substring =data0[1][j][1].substring(data0[1][j][1].length-1-data2['qssf']['constraints'][i]['constraint']['flux_list'][h].length,data0[1][j][1].length-1)
-								var substring =mytb.file[1][j][1].substring(mytb.file[1][j][1].length - data2['qssf']['constraints'][i]['constraint']['flux_list'][h].length , mytb.file[1][j][1].length);
+							var myTypeSim=2;
+							var isInRecon=false;
+							for (var j=0, jj=mytb.file[1].length; j<jj;j++){
+								//console.log(data0.sbml)
+								// check if the idname is the same as a metabolic network name, if so label that node as type sim 3 = interface between petrinet and metabolic
+								//data2['qssf']['objectives'][i]['objective'].length
+								var substring =mytb.file[1][j][1].substring(mytb.file[1][j][1].length-data2['qssf']['objectives'][i]['objective']['objective'].length,mytb.file[1][j][1].length)
+								//console.log(data2['qssf']['objectives'][i]['objective']['objective'])
 								//console.log(substring)
-								if (substring==data2['qssf']['constraints'][i]['constraint']['flux_list'][h]){
+								if (substring==data2['qssf']['objectives'][i]['objective']['objective']){
 									myTypeSim=3;
-									model_data[3].push( [idMap_RPM[data2['qssf']['constraints'][i]['constraint']['name']], mytb.file[1][j][0], -1, 2,modelName]);
-									//model_data[2][idMap_RPM[data2['qssf']['constraints'][i]['constraint']['name']]][7]=3;
-									//console.log(idMap_RPM[data2['qssf']['constraints'][i]['constraint']['name']]);
+									model_data[3].push( [idMap_RPM[data2['qssf']['objectives'][i]['objective']['name']], mytb.file[1][j][0], -1, 2,modelName]);
+									isInRecon=true;
 								}
+								//////////////////
+								// what do do if name of objective is not in the model file nor in the sbml file? -> add a new node
 								//else{
-								//	model_data[2][idMap_RPM[data2['qssf']['constraints'][i]['constraint']['name']]][7]=2;
+									//console.log("objective node : "+data2['qssf']['objectives'][i]['objective']['objective']+" has no link to existing recon node")
 								//}
+								
+								
 							}
+							if (isInRecon== false){
+								// if not in recon do something
+								//console.log("objective node : "+data2['qssf']['objectives'][i]['objective']['objective']+" has no link to existing recon node");
+								
+								//model_data[2].push([counter, data2['qssf']['objectives'][i]['objective']['objective'], -1, [[],[]], [] , 2, -1,-1,-1,[1, []], [[], [], []], [modelName]]);
+								//model_data[3].push( [idMap_RPM[data2['qssf']['objectives'][i]['objective']['name']], counter, -1, 2,modelName]);
+								//counter++;
+							}
+							model_data[2][idMap_RPM[data2['qssf']['objectives'][i]['objective']['name']]][7]=myTypeSim;
+							//console.log(model_data[2][idMap_RPM[data2['qssf']['objectives'][i]['objective']['name']]][10][1]);
 						}
-						model_data[2][idMap_RPM[data2['qssf']['constraints'][i]['constraint']['name']]][7]=myTypeSim;
+					}
+					if (data2['qssf']['constraints']){
+						for (var i=0, ii=data2['qssf']['constraints'].length; i<ii;i++){
+							//console.log("constraint: "+data2['qssf']['constraints'][i]['constraint']['name']+" activity: "+data2['qssf']['constraints'][i]['constraint']['activity'] +" Flux list: "+data2['qssf']['constraints'][i]['constraint']['flux_list']);
+							model_data[2][idMap_RPM[data2['qssf']['constraints'][i]['constraint']['name']]][10]=[3, [data2['qssf']['constraints'][i]['constraint']['activity'],data2['qssf']['constraints'][i]['constraint']['flux_list']]]
+							//console.log(data2['qssf']['constraints'][i]['constraint']['flux_list'])
+							var myTypeSim=2;
+							for (var j=0, jj=mytb.file[1].length; j<jj;j++){
+								//console.log(data2['qssf']['constraints'][i]['constraint']['flux_list'].length)
+								
+								for (var h=0, hh=data2['qssf']['constraints'][i]['constraint']['flux_list'].length; h<hh;h++){
+									//console.log(data2['qssf']['constraints'][i]['constraint']['flux_list'][h]);
+									//var substring =data0[1][j][1].substring(data0[1][j][1].length-1-data2['qssf']['constraints'][i]['constraint']['flux_list'][h].length,data0[1][j][1].length-1)
+									var substring =mytb.file[1][j][1].substring(mytb.file[1][j][1].length - data2['qssf']['constraints'][i]['constraint']['flux_list'][h].length , mytb.file[1][j][1].length);
+									//console.log(substring)
+									if (substring==data2['qssf']['constraints'][i]['constraint']['flux_list'][h]){
+										myTypeSim=3;
+										model_data[3].push( [idMap_RPM[data2['qssf']['constraints'][i]['constraint']['name']], mytb.file[1][j][0], -1, 2,modelName]);
+										//model_data[2][idMap_RPM[data2['qssf']['constraints'][i]['constraint']['name']]][7]=3;
+										//console.log(idMap_RPM[data2['qssf']['constraints'][i]['constraint']['name']]);
+									}
+									//else{
+									//	model_data[2][idMap_RPM[data2['qssf']['constraints'][i]['constraint']['name']]][7]=2;
+									//}
+								}
+							}
+							model_data[2][idMap_RPM[data2['qssf']['constraints'][i]['constraint']['name']]][7]=myTypeSim;
+						}
 					}
 					qm.file['extra']=model_data;
 					

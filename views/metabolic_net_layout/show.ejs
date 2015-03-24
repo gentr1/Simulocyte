@@ -21,9 +21,13 @@
 	<br>	
 	<br>
 	
-	<div id="searchfield" style="position: absolute;left: 20px;"><h3>Edit Nodes Compartments:</h3><br>Search Term: <input id="searchgrid" type="text" /></div>
+	<div id="searchfield" style="position: absolute;left: 20px;"><h3>Edit Metabolites Nodes Compartments:</h3><br>Search Term: <input id="searchgrid" type="text" /></div>
 	<br>
 	<div id="mtnTable" style="position: absolute;left: 20px;"></div>	
+	<br>
+	<div id="searchfield2" style="position: absolute;left: 20px;"><h3>Edit Reaction Nodes Compartments:</h3><br>Search Term: <input id="searchgrid2" type="text" /></div>
+	<br>
+	<div id="mtnTable2" style="position: absolute;left: 20px;height: 300px; overflow: scroll"></div>	
 	<br>
 	<h3 id="titleEditor" style="position: absolute;left: 20px;">Layout Editor:  
 	<select id="modeSelector" onchange="runModeSelector()">
@@ -2638,7 +2642,9 @@
 	//listNodes=selectedMetabolicData[1];
 	var tempdata2=[];
 	for (var i=0, j= listNodes.length;i<j;i++){
-		tempdata2.push([i,listNodes[i][1],listNodes[i][3]])
+		if (listNodes[i][6]==2){
+			tempdata2.push([i,listNodes[i][1],listNodes[i][3]])
+		}
 	}
 	
 
@@ -2646,13 +2652,299 @@
 	if ($.isArray(tempdata2) && tempdata2[0] && $.isArray(tempdata2[0])){
 		ht.populateFromArray (0, 0, tempdata2,tempdata2.length-1, 2);
 	}
+	
+	
+	var $container2 = $("#mtnTable2");
+	$container2.handsontable({
+	  data: [],
+	  width: 1150,
+	  height:200,
+	  colWidths: [100, 400,100,200,300],
+	  dataSchema: {n_id:null, n_name: null, c_name: null, subsystem: null, rule:null},
+	  startRows: 1,
+	  startCols: 5,
+	  colHeaders: ['Node nb','Node name', 'Comp. name', 'Sub-System','Rule'],
+	  columns: [
+		{data: "n_id"},
+		{data: "n_name"},
+		{data: "c_name"},
+		{data: "subsystem"},
+		{data: "rule"}//, type: 'dropdown',source: compIds}
+	  ],
+	  beforeChange: function(changes, source) {
+		// if ((Array.isArray(changes[0])) && changes[0][2] ){
+			// if (changes[0][1]!="c_name" && changes[0][1]!="n_name"){
+				// changes.length=0;
+				// return false;
+			// }
+			// else{ 
+				// if (changes[0][1]=="c_name" && compIds.indexOf(changes[0][3])==-1){
+					// changes.length=0;
+					// return false;
+				// }
+			// }
+		// }
+		
+	  },
+	  afterChange: function(changes, source) {
+		
+		// if (changes && changes[0] && changes[0][2]){	
+			
+					
+			// var dt = this.getData(changes[0][0],0,0,2);		
+			// //console.log(changes)	
+			// //console.log(dt)	
+			// //console.log(dt[changes[0][0]])	
+			// // change name			
+			// selectedMetabolicData[1][dt[dt.length-1][0]][1]=dt[dt.length-1][1];
+			// // change compartment
+			// selectedMetabolicData[1][dt[dt.length-1][0]][3]=dt[dt.length-1][2];
+			// metabolicNodes=selectedMetabolicData[1];
+			// mtnlLayout["nodes_compartments"][dt[dt.length-1][0]]=[];
+			// mtnlLayout["nodes_compartments"][dt[dt.length-1][0]].push(dt[dt.length-1][1]);
+			// mtnlLayout["nodes_compartments"][dt[dt.length-1][0]].push(dt[dt.length-1][2]);
+			// saveLayout();
+			// //console.log(mtnlLayout["nodes_compartments"])
+			// //console.log(mtnlLayout["nodes_compartments"][dt[dt.length-1][0]])
+			// //console.log(dt)
+			// //console.log("new name: "+dt[changes[0][0]][1])
+			// //console.log("new comp: "+dt[changes[0][0]][2])
+			
+			// var indexStartNodes=maxNbComp+3;
+			// nbCompartments= listCompartments.length;
+			
+			// nameComp=[];
+			// mapComp = {'-1':-1};
+			
+			// for (var i=0;i<listCompartments.length;i++){
+				// mapComp[listCompartments[i][0]]=i;
+				// nameComp.push(listCompartments[i][1]);
+			// }
+			
+			// //idMap[bw]=[2,bv];
+			// //scene.children[indexStartNodes].geometry.attributes.compartment.array[h]
+			// var oldComp;
+			// if (idMap[dt[changes[0][0]][0]] && idMap[dt[changes[0][0]][0]][0]==2){
+				// //console.log(dt[0][2])
+				// //console.log(mapComp[dt[0][2]]);
+				// //console.log (scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[0][0]][1]]);
+				// oldComp = scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[changes[0][0]][0]][1]];
+				// scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[changes[0][0]][0]][1]]=mapComp[dt[changes[0][0]][2]];
+				// scene.children[indexStartNodes].geometry.attributes.compartment.needsUpdate = true;
+			// }
+			// for ( var i = 0; i < listCompartments.length; i ++ ) {
+				// stackCompInitialPos[objects[i].name]= new THREE.Vector3(objects[i].position.x,objects[i].position.y,objects[i].position.z);
+				// objects[i].name=listCompartments[i][0]+" "+listCompartments[i][1];
+			// }
+			
+			
+			// var bv=0;
+			// for( var bw = 0 , bww= metabolicNodes.length; bw < bww; bw++ ) {
+				// if (metabolicNodes[bw][6]==4){
+					
+					// //b5values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;					
+					// // try to assign the compartment of the majority of the products the reaction is linked to 
+					// // if there is no product, assign the compartment of the majority of modifiers
+					// // if there is no modifier, assign the compartment of the majority of reactants
+					// var listProducts= metabolicNodes[bw][11][0];
+					// var listModifiers= metabolicNodes[bw][11][1];
+					// var listReactants= metabolicNodes[bw][11][2];
+					
+					// if (listProducts.length>0){
+						// var votes=[];
+						// for (var ncc=0;ncc<nbCompartments;ncc++){
+							// votes[ncc]=0;
+						// }
+						// for(var lp=0;lp<listProducts.length;lp++){
+							// if (mapComp[metabolicNodes[listProducts[lp]][3]]>=0)
+								// votes[mapComp[metabolicNodes[listProducts[lp]][3]]]++;
+						// }
+						// var winner= votes.indexOf(Math.max.apply( Math, votes ));
+						// //compartmentP2[ bv ] = winner;
+						// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv]= winner;
+						// if (winner==-1){
+							// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = mapComp[metabolicNodes[bw][3]];
+						// }
+					// } 
+					// else if (listModifiers.length>0){
+						// var votes=[];
+						// for (var ncc=0;ncc<nbCompartments;ncc++){
+							// votes[ncc]=0;
+						// }
+						// for(var lp=0;lp<listModifiers.length;lp++){
+							// if (mapComp[metabolicNodes[listModifiers[lp]][3]]>=0)
+								// votes[mapComp[metabolicNodes[listModifiers[lp]][3]]]++;
+						// }
+						// var winner= votes.indexOf(Math.max.apply( Math, votes ));
+						// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = winner;
+						
+						// if (winner==-1){
+							// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = mapComp[metabolicNodes[bw][3]];
+						// }
+					// }
+					// else if (listReactants.length>0){
+						// var votes=[];
+						// for (var ncc=0;ncc<nbCompartments;ncc++){
+							// votes[ncc]=0;
+						// }
+						// for(var lp=0;lp<listReactants.length;lp++){
+							// if (mapComp[metabolicNodes[listReactants[lp]][3]]>=0)
+								// votes[mapComp[metabolicNodes[listReactants[lp]][3]]]++;
+						// }
+						// var winner= votes.indexOf(Math.max.apply( Math, votes ));
+						// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = winner;
+						// if (winner==-1){
+							// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = mapComp[metabolicNodes[bw][3]];
+						// }
+					// }
+					// else {
+						// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv]= mapComp[metabolicNodes[bw][3]];
+					// }
+					// bv++;
+				// }	
+			// }		
+			// scene.children[indexStartNodes+1].geometry.attributes.compartment.needsUpdate = true;
+	
+			// for (var c=indexStartNodes;c<indexStartNodes+2;c++){
+				// for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
+					// for (var g=0;g<nbCompartments;g++){
+						// if (scene.children[c].geometry.attributes.compartment.array[h]==g){
+							// if (g==mapComp[dt[changes[0][0]][2]] && h==idMap[dt[changes[0][0]][0]][1]){
+								// scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x+(stackCompInitialPos[objects[g].name].x-stackCompInitialPos[objects[oldComp].name].x);//+stackCompInitialPos[objects[oldComp].name].x;
+								// scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y+(stackCompInitialPos[objects[g].name].y-stackCompInitialPos[objects[oldComp].name].y);//+stackCompInitialPos[objects[oldComp].name].y;
+								// scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z+(stackCompInitialPos[objects[g].name].z-stackCompInitialPos[objects[oldComp].name].z);//+stackCompInitialPos[objects[oldComp].name].z;
+							// }
+							// else{
+						// //nameComp[g]
+						// scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
+						// scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
+						// scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
+						// }
+						// //scene.children[c].geometry.attributes.position.array[h*3+1]+=1000;
+						// //scene.children[c].geometry.attributes.position.array[h*3+2]+=1000;
+						// }
+					// }
+				// }
+				// scene.children[c].geometry.attributes.position.needsUpdate = true;
+			// }
+			// var iv=0;
+			// for ( var i = 0; i < segments; i ++ ) {
+				// var t1 = metabolicNodes[metabolicEdges[i][0]][6]
+				// var t2 = metabolicNodes[metabolicEdges[i][1]][6]
+				// //console.log(t1)
+				// //console.log(t2)
+				// //var ivList=[]
+				// var doIt=0
+				// if (t1==2){
+					// //console.log(idMap[jsonObj2[i][0]][1])
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;					
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+					
+					// iv++;
+				// }
+				// else if (t1==4){
+					// //console.log(idMap[jsonObj2[i][0]][1])
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+					// iv++;
+				// }
+				// if (t2 ==2){
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;						
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;	
+					// iv++;
+				// }
+				// else if (t2 ==4){
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;				
+					// iv++;
+				// }
+				
+			// }
+			// scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
+			
+		// }
+		
+		
+	  },
+	  columnSorting: true,
+	  minSpareRows: 1
+	});
+	
+	//listNodes=selectedMetabolicData[1];
+	var tempdata3=[];
+	for (var i=0, j= listNodes.length;i<j;i++){
+		if (listNodes[i][6]==4){
+			var cp =listNodes[i][3];
+			if (listNodes[i][3]=="-1"){
+				cp="automated";
+			}
+			var sbsys=""
+			if (listNodes[i][4] && listNodes[i][4][1] && listNodes[i][4][1][0]){
+				sbsys = listNodes[i][4][1][0];
+			}
+			var rule="";
+			if (listNodes[i][11]){
+				if (listNodes[i][11][0]){
+					for (var k=0;k<listNodes[i][11][0].length;k++){
+						if (k!=listNodes[i][11][0].length-1){
+							rule += listNodes[listNodes[i][11][0][k]][1]+" + ";
+						}
+						else{
+							rule += listNodes[listNodes[i][11][0][k]][1]+" ";
+						}
+					}
+					
+				}
+				if (listNodes[i][11][2]){
+					for (var k=0;k<listNodes[i][11][2].length;k++){
+						if (k!=listNodes[i][11][2].length-1){
+							rule += listNodes[listNodes[i][11][2][k]][1]+" + ";
+						}
+						else{
+							rule += listNodes[listNodes[i][11][2][k]][1]+" ";
+						}
+					}
+					
+				}
+				if (listNodes[i][11][1]){
+					rule += " = "
+					for (var k=0;k<listNodes[i][11][1].length;k++){
+						if (k!=listNodes[i][11][1].length-1){
+							rule += listNodes[listNodes[i][11][1][k]][1]+" + ";
+						}
+						else{
+							rule += listNodes[listNodes[i][11][1][k]][1]+" ";
+						}
+					}
+					
+				}
+				
+			}
+			tempdata3.push([i,listNodes[i][1],cp,sbsys,rule])
+			
+		}
+	}
+	
+
+	var ht = $('#mtnTable2').handsontable('getInstance');
+	if ($.isArray(tempdata3) && tempdata3[0] && $.isArray(tempdata3[0])){
+		ht.populateFromArray (0, 0, tempdata3,tempdata3.length-1, 4);
+	}
+	
+	
 	//console.log(ht)
 	//ht.data.columns[0].readOnly=true;
 	//ht.columns[1].readOnly=true;
 	//$("#compTable").css({top:  $("#container").position().top + $("#container").height()+40});
 	$("#searchfield").css({top:  $("#compTable").position().top + $("#compTable").height()+40});
 	$("#mtnTable").css({top:  $("#searchfield").position().top + $("#searchfield").height()+10});
-	$("#titleEditor").css({top:  $("#mtnTable").position().top + $("#mtnTable").height()+40});
+	$("#searchfield2").css({top:  $("#mtnTable").position().top + $("#mtnTable").height()+40});
+	$("#mtnTable2").css({top:  $("#searchfield2").position().top + $("#searchfield2").height()+10});
+	$("#titleEditor").css({top:  $("#mtnTable2").position().top + $("#mtnTable2").height()+40});
 	$("#container").css({top:  $("#titleEditor").position().top + $("#titleEditor").height()+40});
 	$("#editplane").css({top:  $("#container").position().top + $("#container").height()-40});
 	
