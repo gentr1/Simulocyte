@@ -50,6 +50,20 @@
 		<button class="btn btn-default btn-xs" title="Add as Subset" id="b_subset" style="position: relative;left: 20px;">Add as Subset</button>
 		<button class="btn btn-warning btn-xs" title="Cancel" id="b_cancel" style="position: relative;left: 20px;">Cancel</button>
 	</div>
+	<br>
+	<h3 id="layoutEditor" style="position: absolute;left: 20px;">Manual Layout - Select compartment :  
+	<select id="compSelector" onchange="runCompSelector()"><option value="none" selected>None</option> 
+	</select></h3><br>
+	
+	<div id="layouttools" style="position: absolute;left: 20px;"> <br>
+	Choose Layout: <select name="select" id="selectLayout" onchange="selectValue(this)">
+	  <option value="0" selected>Default</option> 
+	  <option value="1">Circular</option>
+	  <option value="2">Concentric</option>
+	  <option value="3">Grid</option>
+	</select> &nbsp;&nbsp;&nbsp;  <button type="button" class="btn btn-sm btn-primary" onclick="updateLayout()" id="update-button">Update Layout</button></div>
+	<div id="cy"  style="height: 40%;width: 40%;position: absolute;left: 0;top: 0;"></div>
+	
 	
 <form action="/metabolic_net_layout/update/<%= mtnl.id %>" id="mtnl-update-form"  method="POST" style="left:0px;height:5%;width:40%;position: absolute;">	
 	<input type="text" name="layouts0" id ="layouts0" style="visibility: hidden;" value=<%=allLayout%>>
@@ -266,9 +280,20 @@
 	//console.log(listCompartments)
 	var nbCompartments=listCompartments.length
 	var compIds=[];
+	var compselector = document.getElementById("compSelector");
+	
 	for (var i=0; i<listCompartments.length;i++){
 		compIds.push(listCompartments[i][0]);
+		var option = document.createElement("option");
+		option.value = i;
+		option.text = listCompartments[i][1];
+		//console.log(i)
+		compselector.add(option);
 	}
+	
+	
+	
+	
 	
 	var txtComp=[]
 	var maxNbComp=20;
@@ -764,9 +789,9 @@
 					// try to assign the compartment of the majority of the products the reaction is linked to 
 					// if there is no product, assign the compartment of the majority of modifiers
 					// if there is no modifier, assign the compartment of the majority of reactants
-					var listProducts= metabolicNodes[bw][11][0];
-					var listModifiers= metabolicNodes[bw][11][1];
-					var listReactants= metabolicNodes[bw][11][2];
+					var listProducts= metabolicNodes[bw][11][1];
+					var listModifiers= metabolicNodes[bw][11][2];
+					var listReactants= metabolicNodes[bw][11][0];
 					
 					if (listProducts.length>0){
 						var votes=[];
@@ -932,9 +957,25 @@
 					positionsL1[ (iv * 3) + 2 ] = b1positions[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
 					compartmentL1[ (i*2)+0 ] = b1values_compartment[ (idMap[metabolicEdges[i][0]][1]) ];
 					opL1[iv]=lineOpacity;
-					colorsL1[ iv * 3 ] = 0.0;
-					colorsL1[ iv * 3 + 1 ] = 1.0;
-					colorsL1[ iv * 3 + 2 ] = 1.0;
+					//colorsL1[ iv * 3 ] = 0.0;
+					//colorsL1[ iv * 3 + 1 ] = 1.0;
+					//colorsL1[ iv * 3 + 2 ] = 1.0;
+					if(metabolicEdges[i][2]==1){
+						colorsL1[ iv * 3 ] = 0.2;
+						colorsL1[ iv * 3 + 1 ] = 1.0;
+						colorsL1[ iv * 3 + 2 ] = 1.0;
+					}
+					else if(metabolicEdges[i][2]==0){
+						
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.5;
+						colorsL1[ iv * 3 + 2 ] = 0.0;
+					}
+					else{
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.0;
+						colorsL1[ iv * 3 + 2 ] = 0.1;
+					}
 					ivList.push(iv)
 					//linesMap[i]=iv
 					
@@ -946,9 +987,22 @@
 					positionsL1[ (iv * 3) + 2 ] = b2positions[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
 					compartmentL1[ (i*2)+0 ] = b2values_compartment[ (idMap[metabolicEdges[i][0]][1]) ];
 					opL1[iv]=lineOpacity;
-					colorsL1[ iv * 3 ] = 0.0;
-					colorsL1[ iv * 3 + 1 ] = 1.0;
-					colorsL1[ iv * 3 + 2 ] = 1.0;
+					if(metabolicEdges[i][2]==1){
+						colorsL1[ iv * 3 ] = 0.2;
+						colorsL1[ iv * 3 + 1 ] = 1.0;
+						colorsL1[ iv * 3 + 2 ] = 1.0;
+					}
+					else if(metabolicEdges[i][2]==0){
+						
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.5;
+						colorsL1[ iv * 3 + 2 ] = 0.0;
+					}
+					else{
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.0;
+						colorsL1[ iv * 3 + 2 ] = 0.1;
+					}
 					//linesMap[i]=iv
 					ivList.push(iv)
 					iv++;
@@ -959,9 +1013,22 @@
 					positionsL1[ (iv * 3) + 2 ] = b1positions[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;
 					compartmentL1[ (i*2)+1 ] = b1values_compartment[ (idMap[metabolicEdges[i][1]][1]) ];
 					opL1[iv]=lineOpacity;
-					colorsL1[ iv * 3 ] = 0.0;
-					colorsL1[ iv * 3 + 1 ] = 1.0;
-					colorsL1[ iv * 3 + 2 ] = 1.0;
+					if(metabolicEdges[i][2]==1){
+						colorsL1[ iv * 3 ] = 0.2;
+						colorsL1[ iv * 3 + 1 ] = 1.0;
+						colorsL1[ iv * 3 + 2 ] = 1.0;
+					}
+					else if(metabolicEdges[i][2]==0){
+						
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.5;
+						colorsL1[ iv * 3 + 2 ] = 0.0;
+					}
+					else{
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.0;
+						colorsL1[ iv * 3 + 2 ] = 0.1;
+					}
 					//linesMap[i]=iv
 					ivList.push(iv)
 					iv++;
@@ -972,9 +1039,22 @@
 					positionsL1[ (iv * 3) + 2 ] = b2positions[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;
 					compartmentL1[ (i*2)+1 ] = b2values_compartment[ (idMap[metabolicEdges[i][1]][1]) ];
 					opL1[iv]=lineOpacity;
-					colorsL1[ iv * 3 ] = 0.0;
-					colorsL1[ iv * 3 + 1 ] = 1.0;
-					colorsL1[ iv * 3 + 2 ] = 1.0;
+					if(metabolicEdges[i][2]==1){
+						colorsL1[ iv * 3 ] = 0.2;
+						colorsL1[ iv * 3 + 1 ] = 1.0;
+						colorsL1[ iv * 3 + 2 ] = 1.0;
+					}
+					else if(metabolicEdges[i][2]==0){
+						
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.5;
+						colorsL1[ iv * 3 + 2 ] = 0.0;
+					}
+					else{
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.0;
+						colorsL1[ iv * 3 + 2 ] = 0.1;
+					}
 					//linesMap[i]=iv
 					ivList.push(iv)
 					iv++;
@@ -987,6 +1067,7 @@
 			bgeometryL1.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentL1, 2 ) );
 			bgeometryL1.computeBoundingSphere();
 			meshL1 = new THREE.Line( bgeometryL1, linesShaderMaterial,THREE.LinePieces );
+			linesShaderMaterial.blending = false;
 			meshL1.frustumCulled = false;
 			scene.add( meshL1 );
 			
@@ -2412,7 +2493,10 @@
 	  minSpareRows: 1
 	});
 	var tempdata1=listCompartments;
-
+	//for (var i=0;i<tempdata1.length;i++){
+	//	tempdata1[i].push('auto')
+	//}
+	
 	var ht = $('#compTable').handsontable('getInstance');
 	if ($.isArray(tempdata1) && tempdata1[0] && $.isArray(tempdata1[0])){
 		ht.populateFromArray (0, 0, tempdata1,tempdata1.length-1, 1);
@@ -2488,7 +2572,7 @@
 			//scene.children[indexStartNodes].geometry.attributes.compartment.array[h]
 			var oldComp;
 			if (idMap[dt[changes[0][0]][0]] && idMap[dt[changes[0][0]][0]][0]==2){
-				//console.log(dt[0][2])
+				//console.log(dt[changes[0][0]][2])
 				//console.log(mapComp[dt[0][2]]);
 				//console.log (scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[0][0]][1]]);
 				oldComp = scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[changes[0][0]][0]][1]];
@@ -2509,10 +2593,10 @@
 					// try to assign the compartment of the majority of the products the reaction is linked to 
 					// if there is no product, assign the compartment of the majority of modifiers
 					// if there is no modifier, assign the compartment of the majority of reactants
-					var listProducts= metabolicNodes[bw][11][0];
-					var listModifiers= metabolicNodes[bw][11][1];
-					var listReactants= metabolicNodes[bw][11][2];
-					
+					var listProducts= metabolicNodes[bw][11][1];
+					var listModifiers= metabolicNodes[bw][11][2];
+					var listReactants= metabolicNodes[bw][11][0];
+					//if (bv==0){console.log(listProducts)}
 					if (listProducts.length>0){
 						var votes=[];
 						for (var ncc=0;ncc<nbCompartments;ncc++){
@@ -2566,6 +2650,7 @@
 					bv++;
 				}	
 			}		
+			
 			scene.children[indexStartNodes+1].geometry.attributes.compartment.needsUpdate = true;
 	
 			for (var c=indexStartNodes;c<indexStartNodes+2;c++){
@@ -2672,43 +2757,175 @@
 		{data: "rule"}//, type: 'dropdown',source: compIds}
 	  ],
 	  beforeChange: function(changes, source) {
-		// if ((Array.isArray(changes[0])) && changes[0][2] ){
-			// if (changes[0][1]!="c_name" && changes[0][1]!="n_name"){
-				// changes.length=0;
-				// return false;
-			// }
-			// else{ 
-				// if (changes[0][1]=="c_name" && compIds.indexOf(changes[0][3])==-1){
-					// changes.length=0;
-					// return false;
-				// }
-			// }
-		// }
+		if ((Array.isArray(changes[0])) && changes[0][2] ){
+			if (changes[0][1]!="c_name" ){
+				changes.length=0;
+				return false;
+			}
+			else{ 
+				if (changes[0][1]=="c_name" && compIds.indexOf(changes[0][3])==-1){
+					changes.length=0;
+					return false;
+				}
+			}
+		}
 		
 	  },
 	  afterChange: function(changes, source) {
-		
-		// if (changes && changes[0] && changes[0][2]){	
+		if (changes && changes[0] && changes[0][2]){	
+			var oldComp={};
+			var oldReacComp={};
+			var dt = this.getData(changes[0][0],0,changes[changes.length-1][0],2);	
+			//console.log(changes)	
+			var indexStartNodes=maxNbComp+3;
 			
+			nbCompartments= listCompartments.length;
+			
+			nameComp=[];
+			mapComp = {'-1':-1};
+			
+			for (var i=0;i<listCompartments.length;i++){
+				mapComp[listCompartments[i][0]]=i;
+				nameComp.push(listCompartments[i][1]);
+			}
+			//nbCompartments= listCompartments.length;
+			for ( var i2 = 0; i2 < listCompartments.length; i2 ++ ) {
+				stackCompInitialPos[objects[i2].name]= new THREE.Vector3(objects[i2].position.x,objects[i2].position.y,objects[i2].position.z);
+				objects[i2].name=listCompartments[i2][0]+" "+listCompartments[i2][1];
+			}
+			for (var i=0;i<dt.length;i++){
+				var cp=-1;
+				if (compIds.indexOf(dt[i][2])!=-1){
+					cp = compIds.indexOf(dt[i][2]);
+				}
+				listNodes[dt[i][0]][3]= dt[i][2];
+				if (listNodes[dt[i][0]][11]){
+					//console.log(listNodes[dt[i][0]][11])
+					// reactants
+					if (listNodes[dt[i][0]][11][0]){
+						for (var i1=0;i1<listNodes[dt[i][0]][11][0].length;i1++){
+							oldComp[listNodes[dt[i][0]][11][0][i1]] = listNodes[listNodes[dt[i][0]][11][0][i1]][3];
+							listNodes[listNodes[dt[i][0]][11][0][i1]][3]= dt[i][2];
+							selectedMetabolicData[1][listNodes[dt[i][0]][11][0][i1]][3]=dt[i][2];
+							scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[listNodes[dt[i][0]][11][0][i1]][1]]=cp;
+							
+						}
+					}
+					// products
+					if (listNodes[dt[i][0]][11][1]){
+						for (var i1=0;i1<listNodes[dt[i][0]][11][1].length;i1++){
+							oldComp[listNodes[dt[i][0]][11][1][i1]] = listNodes[listNodes[dt[i][0]][11][1][i1]][3];
+							listNodes[listNodes[dt[i][0]][11][1][i1]][3]= dt[i][2];
+							selectedMetabolicData[1][listNodes[dt[i][0]][11][1][i1]][3]=dt[i][2];
+							scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[listNodes[dt[i][0]][11][1][i1]][1]]=cp;
+							
+						}
+					}
+					// modifiers
+					if (listNodes[dt[i][0]][11][2]){
+						for (var i1=0;i1<listNodes[dt[i][0]][11][2].length;i1++){
+							oldComp[listNodes[dt[i][0]][11][2][i1]] = listNodes[listNodes[dt[i][0]][11][2][i1]][3];
+							listNodes[listNodes[dt[i][0]][11][2][i1]][3]= dt[i][2];
+							selectedMetabolicData[1][listNodes[dt[i][0]][11][2][i1]][3]=dt[i][2];
+							scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[listNodes[dt[i][0]][11][2][i1]][1]]=cp;
+							
+						}
+					}
+				}
+				//console.log(scene.children[indexStartNodes+1].geometry.attributes.compartment.array[idMap[dt[i][0]][1]])
+				oldReacComp[dt[i][0]] = scene.children[indexStartNodes+1].geometry.attributes.compartment.array[idMap[dt[i][0]][1]];
+				listNodes[dt[i][0]][3]= dt[i][2];
+				selectedMetabolicData[1][dt[i][0]][3]=dt[i][2];
+				scene.children[indexStartNodes+1].geometry.attributes.compartment.array[idMap[dt[i][0]][1]]= cp;
+				//console.log(scene.children[indexStartNodes+1].geometry.attributes.compartment.array[idMap[dt[i][0]][1]])				
+			}
+			metabolicNodes=selectedMetabolicData[1];
+			scene.children[indexStartNodes].geometry.attributes.compartment.needsUpdate = true;
+			scene.children[indexStartNodes+1].geometry.attributes.compartment.needsUpdate = true;
+			//console.log(oldComp)
+			var listMod = Object.keys(oldComp);
+			for (var i=0;i<listMod.length;i++){
+				var tempcompnb=idMap[listMod[i]][0];
+				var tempindexnb=idMap[listMod[i]][1];
+					var g=compIds.indexOf(listNodes[listMod[i]][3]);
+					var oldg= compIds.indexOf(oldComp[listMod[i]]);
+					if (g!=oldg){
+	
+						scene.children[indexStartNodes].geometry.attributes.position.array[tempindexnb*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x+(stackCompInitialPos[objects[g].name].x-stackCompInitialPos[objects[oldg].name].x);//+stackCompInitialPos[objects[oldComp].name].x;
+						scene.children[indexStartNodes].geometry.attributes.position.array[tempindexnb*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y+(stackCompInitialPos[objects[g].name].y-stackCompInitialPos[objects[oldg].name].y);//+stackCompInitialPos[objects[oldComp].name].y;
+						scene.children[indexStartNodes].geometry.attributes.position.array[tempindexnb*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z+(stackCompInitialPos[objects[g].name].z-stackCompInitialPos[objects[oldg].name].z);//+stackCompInitialPos[objects[oldComp].name].z;
+					}
+					else{
+						scene.children[indexStartNodes].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
+						scene.children[indexStartNodes].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
+						scene.children[indexStartNodes].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
+					}
+			}
+			scene.children[indexStartNodes].geometry.attributes.position.needsUpdate = true;
+			
+			var listMod2 = Object.keys(oldReacComp);
+			for (var i=0;i<listMod2.length;i++){
+				var tempcompnb=idMap[listMod2[i]][0];
+				var tempindexnb=idMap[listMod2[i]][1];
+					var g=compIds.indexOf(listNodes[listMod2[i]][3]);
+					var oldg= oldReacComp[listMod2[i]];
+					//console.log(oldReacComp[listMod2[i]])
+					//console.log(g)
+					//console.log(oldg)
+					if (g!=oldg && oldg!=-1){
+	
+						scene.children[indexStartNodes+1].geometry.attributes.position.array[tempindexnb*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x+(stackCompInitialPos[objects[g].name].x-stackCompInitialPos[objects[oldg].name].x);//+stackCompInitialPos[objects[oldComp].name].x;
+						scene.children[indexStartNodes+1].geometry.attributes.position.array[tempindexnb*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y+(stackCompInitialPos[objects[g].name].y-stackCompInitialPos[objects[oldg].name].y);//+stackCompInitialPos[objects[oldComp].name].y;
+						scene.children[indexStartNodes+1].geometry.attributes.position.array[tempindexnb*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z+(stackCompInitialPos[objects[g].name].z-stackCompInitialPos[objects[oldg].name].z);//+stackCompInitialPos[objects[oldComp].name].z;
+					}
+					else{
+						scene.children[indexStartNodes+1].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
+						scene.children[indexStartNodes+1].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
+						scene.children[indexStartNodes+1].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
+					}
+			}
+			scene.children[indexStartNodes+1].geometry.attributes.position.needsUpdate = true;
+			
+			
+			var iv=0;
+			for ( var i = 0; i < segments; i ++ ) {
+				var t1 = metabolicNodes[metabolicEdges[i][0]][6]
+				var t2 = metabolicNodes[metabolicEdges[i][1]][6]
+				//console.log(t1)
+				//console.log(t2)
+				//var ivList=[]
+				var doIt=0
+				if (t1==2){
+					//console.log(idMap[jsonObj2[i][0]][1])
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;					
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
 					
-			// var dt = this.getData(changes[0][0],0,0,2);		
-			// //console.log(changes)	
-			// //console.log(dt)	
-			// //console.log(dt[changes[0][0]])	
-			// // change name			
-			// selectedMetabolicData[1][dt[dt.length-1][0]][1]=dt[dt.length-1][1];
-			// // change compartment
-			// selectedMetabolicData[1][dt[dt.length-1][0]][3]=dt[dt.length-1][2];
-			// metabolicNodes=selectedMetabolicData[1];
-			// mtnlLayout["nodes_compartments"][dt[dt.length-1][0]]=[];
-			// mtnlLayout["nodes_compartments"][dt[dt.length-1][0]].push(dt[dt.length-1][1]);
-			// mtnlLayout["nodes_compartments"][dt[dt.length-1][0]].push(dt[dt.length-1][2]);
-			// saveLayout();
-			// //console.log(mtnlLayout["nodes_compartments"])
-			// //console.log(mtnlLayout["nodes_compartments"][dt[dt.length-1][0]])
-			// //console.log(dt)
-			// //console.log("new name: "+dt[changes[0][0]][1])
-			// //console.log("new comp: "+dt[changes[0][0]][2])
+					iv++;
+				}
+				else if (t1==4){
+					//console.log(idMap[jsonObj2[i][0]][1])
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+					iv++;
+				}
+				if (t2 ==2){
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;						
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;	
+					iv++;
+				}
+				else if (t2 ==4){
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;
+					scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;				
+					iv++;
+				}
+				
+			}
+			scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
+			
 			
 			// var indexStartNodes=maxNbComp+3;
 			// nbCompartments= listCompartments.length;
@@ -2720,9 +2937,6 @@
 				// mapComp[listCompartments[i][0]]=i;
 				// nameComp.push(listCompartments[i][1]);
 			// }
-			
-			// //idMap[bw]=[2,bv];
-			// //scene.children[indexStartNodes].geometry.attributes.compartment.array[h]
 			// var oldComp;
 			// if (idMap[dt[changes[0][0]][0]] && idMap[dt[changes[0][0]][0]][0]==2){
 				// //console.log(dt[0][2])
@@ -2866,8 +3080,64 @@
 			// }
 			// scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
 			
-		// }
+			
+			
+			
+			
+			var value = ('' + document.getElementById("searchgrid").value).toLowerCase(),row,col,r_len,c_len,td;
 		
+			tempdata2=[];
+			for (var i=0, j= listNodes.length;i<j;i++){
+				tempdata2.push([i,listNodes[i][1],listNodes[i][3]])
+			}
+			var data = tempdata2;
+			
+			//var data = $('#tab2id').handsontable('getData');
+			//console.log(data)
+			var searcharray = [];
+			if(value){
+				if( value.length>1){
+					for(row=0,r_len = data.length;row< r_len;row++){
+						for(col=0,c_len = data[row].length;col < c_len-1; col++){
+							if(data[row][col] == null){
+								continue;
+							}
+							if(('' + data[row][col]).toLowerCase().indexOf(value) > -1){
+								searcharray.push(data[row]);
+								break;
+							}
+							else{
+							}
+						}
+					}
+					
+					//console.log(searcharray.length)
+					var ht = $('#mtnTable').handsontable('getInstance');
+					//ht.clear();
+					ht.alter('remove_row', 0, tempdata2.length);
+					//console.log(searcharray)
+					tempdata2=searcharray;
+					if ($.isArray(searcharray) && searcharray[0] && $.isArray(searcharray[0])){
+						ht.populateFromArray (0, 0, searcharray,searcharray.length-1, 2);
+					}
+				}
+			}
+			else{
+				tempdata2=[];
+				for (var i=0, j= listNodes.length;i<j;i++){
+					tempdata2.push([i,listNodes[i][1],listNodes[i][3]])
+				}
+				var ht = $('#mtnTable').handsontable('getInstance');
+				ht.alter('remove_row', 0, tempdata2.length);
+				if ($.isArray(tempdata2) && tempdata2[0] && $.isArray(tempdata2[0])){
+					ht.populateFromArray (0, 0, tempdata2,tempdata2.length-1, 2);
+				}
+			}
+			$('#mtnTable').handsontable('deselectCell');
+			
+			
+			
+		}
 		
 	  },
 	  columnSorting: true,
@@ -2878,17 +3148,21 @@
 	var tempdata3=[];
 	for (var i=0, j= listNodes.length;i<j;i++){
 		if (listNodes[i][6]==4){
-			var cp =listNodes[i][3];
-			if (listNodes[i][3]=="-1"){
-				cp="automated";
-			}
+			
 			var sbsys=""
 			if (listNodes[i][4] && listNodes[i][4][1] && listNodes[i][4][1][0]){
 				sbsys = listNodes[i][4][1][0];
 			}
 			var rule="";
+			var listProducts= [];
+			var listModifiers= [];
+			var listReactants= [];
+			var winner;
 			if (listNodes[i][11]){
+				
 				if (listNodes[i][11][0]){
+					
+					listReactants =listNodes[i][11][0];
 					for (var k=0;k<listNodes[i][11][0].length;k++){
 						if (k!=listNodes[i][11][0].length-1){
 							rule += listNodes[listNodes[i][11][0][k]][1]+" + ";
@@ -2900,6 +3174,7 @@
 					
 				}
 				if (listNodes[i][11][2]){
+					listModifiers = listNodes[i][11][2];
 					for (var k=0;k<listNodes[i][11][2].length;k++){
 						if (k!=listNodes[i][11][2].length-1){
 							rule += listNodes[listNodes[i][11][2][k]][1]+" + ";
@@ -2911,6 +3186,8 @@
 					
 				}
 				if (listNodes[i][11][1]){
+					listProducts=listNodes[i][11][1];
+					
 					rule += " = "
 					for (var k=0;k<listNodes[i][11][1].length;k++){
 						if (k!=listNodes[i][11][1].length-1){
@@ -2923,6 +3200,49 @@
 					
 				}
 				
+			}
+			if (listProducts.length>0){
+				var votes=[];
+				for (var ncc=0;ncc<nbCompartments;ncc++){
+					votes[ncc]=0;
+				}
+				for(var lp=0;lp<listProducts.length;lp++){
+					if (mapComp[listNodes[listProducts[lp]][3]]>=0)
+						votes[mapComp[listNodes[listProducts[lp]][3]]]++;
+				}
+				winner= votes.indexOf(Math.max.apply( Math, votes ));
+			}
+			else if (listModifiers.length>0){
+				var votes=[];
+				for (var ncc=0;ncc<nbCompartments;ncc++){
+					votes[ncc]=0;
+				}
+				for(var lp=0;lp<listModifiers.length;lp++){
+					if (mapComp[listNodes[listModifiers[lp]][3]]>=0)
+						votes[mapComp[listNodes[listModifiers[lp]][3]]]++;
+				}
+				winner= votes.indexOf(Math.max.apply( Math, votes ));
+			}
+			else if (listReactants.length>0){
+				var votes=[];
+				for (var ncc=0;ncc<nbCompartments;ncc++){
+					votes[ncc]=0;
+				}
+				for(var lp=0;lp<listReactants.length;lp++){
+					if (mapComp[listNodes[listReactants[lp]][3]]>=0)
+						votes[mapComp[listNodes[listReactants[lp]][3]]]++;
+				}
+				winner= votes.indexOf(Math.max.apply( Math, votes ));
+			}
+			else {
+				winner= mapComp[listNodes[i][3]];
+			}		
+			var cp =winner;
+			if (winner==-1){
+				cp="";
+			}
+			else{
+				cp=compIds[winner]
 			}
 			tempdata3.push([i,listNodes[i][1],cp,sbsys,rule])
 			
@@ -2947,7 +3267,10 @@
 	$("#titleEditor").css({top:  $("#mtnTable2").position().top + $("#mtnTable2").height()+40});
 	$("#container").css({top:  $("#titleEditor").position().top + $("#titleEditor").height()+40});
 	$("#editplane").css({top:  $("#container").position().top + $("#container").height()-40});
-	
+	$("#layoutEditor").css({top:  $("#container").position().top + $("#container").height()+40});
+	$("#layouttools").css({top:  $("#layoutEditor").position().top + $("#layoutEditor").height()+40});
+	$("#cy").css({top:  $("#layouttools").height()+$("#layouttools").position().top+80, left:0, width:"80%",height:'400pt', border:"thin solid #000000"});
+	$("#mtnl-update-form").css({top:  $("#cy").position().top + $("#cy").height()+40});
 	$('#searchgrid').on('keyup',function(event){
 		var value = ('' + this.value).toLowerCase(),row,col,r_len,c_len,td;
 		
@@ -2961,29 +3284,30 @@
 		//console.log(data)
 		var searcharray = [];
 		if(value){
-			
-			for(row=0,r_len = data.length;row< r_len;row++){
-				for(col=0,c_len = data[row].length;col < c_len-1; col++){
-					if(data[row][col] == null){
-						continue;
-					}
-					if(('' + data[row][col]).toLowerCase().indexOf(value) > -1){
-						searcharray.push(data[row]);
-						break;
-					}
-					else{
+			if( value.length>1){
+				for(row=0,r_len = data.length;row< r_len;row++){
+					for(col=0,c_len = data[row].length;col < c_len-1; col++){
+						if(data[row][col] == null){
+							continue;
+						}
+						if(('' + data[row][col]).toLowerCase().indexOf(value) > -1){
+							searcharray.push(data[row]);
+							break;
+						}
+						else{
+						}
 					}
 				}
-			}
-			
-			//console.log(searcharray.length)
-			var ht = $('#mtnTable').handsontable('getInstance');
-			//ht.clear();
-			ht.alter('remove_row', 0, tempdata2.length);
-			//console.log(searcharray)
-			tempdata2=searcharray;
-			if ($.isArray(searcharray) && searcharray[0] && $.isArray(searcharray[0])){
-				ht.populateFromArray (0, 0, searcharray,searcharray.length-1, 2);
+				
+				//console.log(searcharray.length)
+				var ht = $('#mtnTable').handsontable('getInstance');
+				//ht.clear();
+				ht.alter('remove_row', 0, tempdata2.length);
+				//console.log(searcharray)
+				tempdata2=searcharray;
+				if ($.isArray(searcharray) && searcharray[0] && $.isArray(searcharray[0])){
+					ht.populateFromArray (0, 0, searcharray,searcharray.length-1, 2);
+				}
 			}
 		}
 		else{
@@ -2995,6 +3319,160 @@
 			ht.alter('remove_row', 0, tempdata2.length);
 			if ($.isArray(tempdata2) && tempdata2[0] && $.isArray(tempdata2[0])){
 				ht.populateFromArray (0, 0, tempdata2,tempdata2.length-1, 2);
+			}
+		}
+		$('#mtnTable').handsontable('deselectCell');
+			
+		
+	});
+	
+	$('#searchgrid2').on('keyup',function(event){
+		var value = ('' + this.value).toLowerCase(),row,col,r_len,c_len,td;
+		
+		
+		
+		
+		//var data = $('#tab2id').handsontable('getData');
+		//console.log(data)
+		var searcharray = [];
+		if(value ){
+			if( value.length>1){
+				if (tempdata3){
+					var data = tempdata3;
+					for(row=0,r_len = data.length;row< r_len;row++){
+						for(col=0,c_len = data[row].length;col < c_len-1; col++){
+							if(data[row][col] == null){
+								continue;
+							}
+							if(('' + data[row][col]).toLowerCase().indexOf(value) > -1){
+								searcharray.push(data[row]);
+								break;
+							}
+							else{
+							}
+						}
+					}
+					
+					//console.log(searcharray.length)
+					var ht = $('#mtnTable2').handsontable('getInstance');
+					//ht.clear();
+					ht.alter('remove_row', 0, tempdata2.length);
+					//console.log(searcharray)
+					tempdata2=searcharray;
+					if ($.isArray(searcharray) && searcharray[0] && $.isArray(searcharray[0])){
+						ht.populateFromArray (0, 0, searcharray,searcharray.length-1, 4);
+					}
+				}
+			}
+		}
+		else{
+			tempdata3=[];
+			for (var i=0, j= listNodes.length;i<j;i++){
+				if (listNodes[i][6]==4){
+					
+					var sbsys=""
+					if (listNodes[i][4] && listNodes[i][4][1] && listNodes[i][4][1][0]){
+						sbsys = listNodes[i][4][1][0];
+					}
+					var rule="";
+					var listProducts= [];
+					var listModifiers= [];
+					var listReactants= [];
+					var winner;
+					if (listNodes[i][11]){
+						
+						if (listNodes[i][11][0]){
+							
+							listReactants =listNodes[i][11][0];
+							for (var k=0;k<listNodes[i][11][0].length;k++){
+								if (k!=listNodes[i][11][0].length-1){
+									rule += listNodes[listNodes[i][11][0][k]][1]+" + ";
+								}
+								else{
+									rule += listNodes[listNodes[i][11][0][k]][1]+" ";
+								}
+							}
+							
+						}
+						if (listNodes[i][11][2]){
+							listModifiers = listNodes[i][11][2];
+							for (var k=0;k<listNodes[i][11][2].length;k++){
+								if (k!=listNodes[i][11][2].length-1){
+									rule += listNodes[listNodes[i][11][2][k]][1]+" + ";
+								}
+								else{
+									rule += listNodes[listNodes[i][11][2][k]][1]+" ";
+								}
+							}
+							
+						}
+						if (listNodes[i][11][1]){
+							listProducts=listNodes[i][11][1];
+							
+							rule += " = "
+							for (var k=0;k<listNodes[i][11][1].length;k++){
+								if (k!=listNodes[i][11][1].length-1){
+									rule += listNodes[listNodes[i][11][1][k]][1]+" + ";
+								}
+								else{
+									rule += listNodes[listNodes[i][11][1][k]][1]+" ";
+								}
+							}
+							
+						}
+						
+					}
+					if (listProducts.length>0){
+						var votes=[];
+						for (var ncc=0;ncc<nbCompartments;ncc++){
+							votes[ncc]=0;
+						}
+						for(var lp=0;lp<listProducts.length;lp++){
+							if (mapComp[listNodes[listProducts[lp]][3]]>=0)
+								votes[mapComp[listNodes[listProducts[lp]][3]]]++;
+						}
+						winner= votes.indexOf(Math.max.apply( Math, votes ));
+					}
+					else if (listModifiers.length>0){
+						var votes=[];
+						for (var ncc=0;ncc<nbCompartments;ncc++){
+							votes[ncc]=0;
+						}
+						for(var lp=0;lp<listModifiers.length;lp++){
+							if (mapComp[listNodes[listModifiers[lp]][3]]>=0)
+								votes[mapComp[listNodes[listModifiers[lp]][3]]]++;
+						}
+						winner= votes.indexOf(Math.max.apply( Math, votes ));
+					}
+					else if (listReactants.length>0){
+						var votes=[];
+						for (var ncc=0;ncc<nbCompartments;ncc++){
+							votes[ncc]=0;
+						}
+						for(var lp=0;lp<listReactants.length;lp++){
+							if (mapComp[listNodes[listReactants[lp]][3]]>=0)
+								votes[mapComp[listNodes[listReactants[lp]][3]]]++;
+						}
+						winner= votes.indexOf(Math.max.apply( Math, votes ));
+					}
+					else {
+						winner= mapComp[listNodes[i][3]];
+					}		
+					var cp =winner;
+					if (winner==-1){
+						cp="automated";
+					}
+					else{
+						cp=compIds[winner]
+					}
+					tempdata3.push([i,listNodes[i][1],cp,sbsys,rule])
+					
+				}
+			}
+			var ht = $('#mtnTable2').handsontable('getInstance');
+			ht.alter('remove_row', 0, tempdata3.length);
+			if ($.isArray(tempdata3) && tempdata3[0] && $.isArray(tempdata3[0])){
+				ht.populateFromArray (0, 0, tempdata3,tempdata3.length-1, 4);
 			}
 		}
 		$('#mtnTable').handsontable('deselectCell');
@@ -3564,7 +4042,7 @@
 	}
 	
 	//$("#container2").css({top:  $("#mtnTable").position().top + $("#mtnTable").height()+40});
-	$("#mtnl-update-form").css({top:  $("#container").position().top + $("#container").height()+40});
+	
 	
 	
 	positionContainer = $("#container").position();
@@ -3607,6 +4085,7 @@
 	
 	function saveLayout(){
 		var mlength=JSON.stringify(mtnlLayout).length;
+		//console.log(mlength)
 		var nbArrays=1;
 		if (mlength>524288){
 			nbArrays=parseInt(Math.ceil(mlength/524288.0));
@@ -3631,7 +4110,7 @@
 	}
 	
 	
-	var indexStartNodes=maxNbComp+3;
+		var indexStartNodes=maxNbComp+3;
 		nbCompartments= listCompartments.length;
 		//var indSelectedComp= SELECTED
 		
@@ -3764,8 +4243,1092 @@
 		scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
 		
 		
+		;(function($$){ 'use strict';
+  
+		  var defaults = {
+			fit: true, // whether to fit the viewport to the graph
+			ready: undefined, // callback on layoutready
+			stop: undefined, // callback on layoutstop
+			directed: false, // whether the tree is directed downwards (or edges can point in any direction if false)
+			padding: 30, // padding on fit
+			circle: false, // put depths in concentric circles if true, put depths top down if false
+			roots: undefined, // the roots of the trees
+			maximalAdjustments: 0 // how many times to try to position the nodes in a maximal way (i.e. no backtracking)
+		  };
+		  
+		  function BreadthFirstLayout2( options ){
+			this.options = $$.util.extend({}, defaults, options);
+		  }
+		  
+		  BreadthFirstLayout2.prototype.run = function(){
+			var params = this.options;
+			var options = params;
+			
+			var cy = params.cy;
+			var nodes = cy.nodes();
+			var edges = cy.edges();
+			var graph = nodes.add(edges);
+			var container = cy.container();
+			
+			var width = container.clientWidth;
+			var height = container.clientHeight;
+
+			var roots;
+			if( $$.is.elementOrCollection(options.roots) ){
+			  roots = options.roots;
+			} else if( $$.is.array(options.roots) ){
+			  var rootsArray = [];
+
+			  for( var i = 0; i < options.roots.length; i++ ){
+				var id = options.roots[i];
+				var ele = cy.getElementById( id );
+				rootsArray.push( ele );
+			  }
+
+			  roots = new $$.Collection( cy, rootsArray );
+			} else if( $$.is.string(options.roots) ){
+			  roots = cy.$( options.roots );
+
+			} else {
+			  if( options.directed ){
+				roots = nodes.roots();
+			  } else {
+				var maxDegree = nodes.maxDegree( false );
+				roots = nodes.filter(function(){
+				  return this.degree() === maxDegree;
+				});
+			  }
+			}
+
+
+			var depths = [];
+			var foundByBfs = {};
+			var id2depth = {};
+
+			// find the depths of the nodes
+			graph.bfs(roots, function(i, depth){
+			  var ele = this[0];
+
+			  if( !depths[depth] ){
+				depths[depth] = [];
+			  }
+
+			  depths[depth].push( ele );
+			  foundByBfs[ ele.id() ] = true;
+			  id2depth[ ele.id() ] = depth;
+			}, options.directed);
+
+			// check for nodes not found by bfs
+			var orphanNodes = [];
+			for( var i = 0; i < nodes.length; i++ ){
+			  var ele = nodes[i];
+
+			  if( foundByBfs[ ele.id() ] ){
+				continue;
+			  } else {
+				orphanNodes.push( ele );
+			  }
+			}
+
+			// assign orphan nodes a depth from their neighborhood
+			var maxChecks = orphanNodes.length * 3;
+			var checks = 0;
+			while( orphanNodes.length !== 0 && checks < maxChecks ){
+			  var node = orphanNodes.shift();
+			  var neighbors = node.neighborhood().nodes();
+			  var assignedDepth = false;
+
+			  for( var i = 0; i < neighbors.length; i++ ){
+				var depth = id2depth[ neighbors[i].id() ];
+
+				if( depth !== undefined ){
+				  depths[depth].push( node );
+				  assignedDepth = true;
+				  break;
+				}
+			  }
+
+			  if( !assignedDepth ){
+				orphanNodes.push( node );
+			  }
+
+			  checks++;
+			}
+
+			// assign orphan nodes that are still left to the depth of their subgraph
+			while( orphanNodes.length !== 0 ){
+			  var node = orphanNodes.shift();
+			  //var subgraph = graph.bfs( node ).path;
+			  var assignedDepth = false;
+
+			  // for( var i = 0; i < subgraph.length; i++ ){
+			  //   var depth = id2depth[ subgraph[i].id() ];
+
+			  //   if( depth !== undefined ){
+			  //     depths[depth].push( node );
+			  //     assignedDepth = true;
+			  //     break;
+			  //   }
+			  // }
+
+			  if( !assignedDepth ){ // worst case if the graph really isn't tree friendly, then just dump it in 0
+				if( depths.length === 0 ){
+				  depths.push([]);
+				}
+				
+				depths[0].push( node );
+			  }
+			}
+
+			// assign the nodes a depth and index
+			var assignDepthsToEles = function(){
+			  for( var i = 0; i < depths.length; i++ ){
+				var eles = depths[i];
+
+				for( var j = 0; j < eles.length; j++ ){
+				  var ele = eles[j];
+
+				  ele._private.scratch.BreadthFirstLayout = {
+					depth: i,
+					index: j
+				  };
+				}
+			  }
+			};
+			assignDepthsToEles();
+
+
+			var intersectsDepth = function( node ){ // returns true if has edges pointing in from a higher depth
+			  var edges = node.connectedEdges(function(){
+				return this.data('target') === node.id();
+			  });
+			  var thisInfo = node._private.scratch.BreadthFirstLayout;
+			  var highestDepthOfOther = 0;
+			  var highestOther;
+			  for( var i = 0; i < edges.length; i++ ){
+				var edge = edges[i];
+				var otherNode = edge.source()[0];
+				var otherInfo = otherNode._private.scratch.BreadthFirstLayout;
+
+				if( thisInfo.depth <= otherInfo.depth && highestDepthOfOther < otherInfo.depth ){
+				  highestDepthOfOther = otherInfo.depth;
+				  highestOther = otherNode;
+				}
+			  }
+
+			  return highestOther;
+			};
+
+			 // make maximal if so set by adjusting depths
+			for( var adj = 0; adj < options.maximalAdjustments; adj++ ){
+
+			  var nDepths = depths.length;
+			  var elesToMove = [];
+			  for( var i = 0; i < nDepths; i++ ){
+				var depth = depths[i];
+
+				var nDepth = depth.length;
+				for( var j = 0; j < nDepth; j++ ){
+				  var ele = depth[j];
+				  var info = ele._private.scratch.BreadthFirstLayout;
+				  var intEle = intersectsDepth(ele);
+
+				  if( intEle ){
+					info.intEle = intEle;
+					elesToMove.push( ele );
+				  }
+				}
+			  }
+
+			  for( var i = 0; i < elesToMove.length; i++ ){ 
+				var ele = elesToMove[i];
+				var info = ele._private.scratch.BreadthFirstLayout;
+				var intEle = info.intEle;
+				var intInfo = intEle._private.scratch.BreadthFirstLayout;
+
+				depths[ info.depth ].splice( info.index, 1 ); // remove from old depth & index
+
+				// add to end of new depth
+				var newDepth = intInfo.depth + 1;
+				while( newDepth > depths.length - 1 ){
+				  depths.push([]);
+				}
+				depths[ newDepth ].push( ele );
+
+				info.depth = newDepth;
+				info.index = depths[newDepth].length - 1;
+			  }
+
+			  assignDepthsToEles();
+			}
+
+			// find min distance we need to leave between nodes
+			var minDistance = 0;
+			for( var i = 0; i < nodes.length; i++ ){
+			  var w = nodes[i].outerWidth();
+			  var h = nodes[i].outerHeight();
+			  
+			  minDistance = Math.max(minDistance, w, h);
+			}
+			minDistance *= 1.75; // just to have some nice spacing
+
+			// get the weighted percent for an element based on its connectivity to other levels
+			var cachedWeightedPercent = {};
+			var getWeightedPercent = function( ele ){
+			  if( cachedWeightedPercent[ ele.id() ] ){
+				return cachedWeightedPercent[ ele.id() ];
+			  }
+
+			  var eleDepth = ele._private.scratch.BreadthFirstLayout.depth;
+			  var neighbors = ele.neighborhood().nodes();
+			  var percent = 0;
+			  var samples = 0;
+
+			  for( var i = 0; i < neighbors.length; i++ ){
+				var neighbor = neighbors[i];
+				var index = neighbor._private.scratch.BreadthFirstLayout.index;
+				var depth = neighbor._private.scratch.BreadthFirstLayout.depth;
+				var nDepth = depths[depth].length;
+
+				if( eleDepth > depth || eleDepth === 0 ){ // only get influenced by elements above
+				  percent += index / nDepth;
+				  samples++;
+				}
+			  }
+
+			  samples = Math.max(1, samples);
+			  percent = percent / samples;
+
+			  if( samples === 0 ){ // so lone nodes have a "don't care" state in sorting
+				percent = undefined;
+			  }
+
+			  cachedWeightedPercent[ ele.id() ] = percent;
+			  return percent;
+			};
+
+
+			// rearrange the indices in each depth level based on connectivity
+
+			var sortFn = function(a, b){
+			  var apct = getWeightedPercent( a );
+			  var bpct = getWeightedPercent( b );
+
+			  return apct - bpct;
+			};
+
+			for( var times = 0; times < 3; times++ ){ // do it a few times b/c the depths are dynamic and we want a more stable result
+
+			  for( var i = 0; i < depths.length; i++ ){
+				depths[i] = depths[i].sort( sortFn );
+			  }
+			  assignDepthsToEles(); // and update
+
+			}
+
+			var center = {
+			  x: width/2,
+			  y: height/2
+			};
+			nodes.positions(function(){
+			  var ele = this[0];
+			  var info = ele._private.scratch.BreadthFirstLayout;
+			  var depth = info.depth;
+			  var index = info.index;
+			  var depthSize = depths[depth].length;
+
+			  var distanceX = Math.max( width / (depthSize + 1), minDistance );
+			  var distanceY = Math.max( height / (depths.length + 1), minDistance );
+			  var radiusStepSize = Math.min( width / 2 / depths.length, height / 2 / depths.length );
+			  radiusStepSize = Math.max( radiusStepSize, minDistance );
+
+			  if( options.circle ){
+				var radius = radiusStepSize * depth + radiusStepSize - (depths.length > 0 && depths[0].length <= 3 ? radiusStepSize/2 : 0);
+				var theta = 2 * Math.PI / depths[depth].length * index;
+
+				if( depth === 0 && depths[0].length === 1 ){
+				  radius = 1;
+				}
+
+				return {
+				  x: center.x + radius * Math.cos(theta),
+				  y: center.y + radius * Math.sin(theta)
+				};
+
+			  } else {
+				return {
+				  x: center.x + (index + 1 - (depthSize + 1)/2) * distanceX*2,
+				  y: (depths.length <= 6) ? (depth + 1) * distanceY: (depth + 1) * distanceY*6,
+				};
+			  }
+			  
+			});
+			
+			if( params.fit ){
+			  cy.fit( options.padding );
+			} 
+			
+			cy.one('layoutready', params.ready);
+			cy.trigger('layoutready');
+			
+			cy.one('layoutstop', params.stop);
+			cy.trigger('layoutstop');
+		  };
+
+		  BreadthFirstLayout2.prototype.stop = function(){
+			// not a continuous layout
+		  };
+		  
+		  $$('layout', 'breadthfirst2', BreadthFirstLayout2);
+		  
+		})( cytoscape );
+
+
+		;(function($$){ 'use strict';
+		  
+		  var defaults = {
+			fit: true, // whether to fit the viewport to the graph
+			padding: 30, // padding used on fit
+			rows: undefined, // force num of rows in the grid
+			columns: undefined, // force num of cols in the grid
+			position: function( node ){}, // returns { row, col } for element
+			ready: undefined, // callback on layoutready
+			stop: undefined // callback on layoutstop
+		  };
+		  
+		  function GridLayout2( options ){
+			this.options = $$.util.extend({}, defaults, options);
+		  }
+		  
+		  GridLayout2.prototype.run = function(){
+			var params = this.options;
+			var options = params;
+			
+			var cy = params.cy;
+			var nodes = cy.nodes();
+			var container = cy.container();
+			
+			var width = container.clientWidth;
+			var height = container.clientHeight;
+
+			if( height === 0 || width === 0){
+			  nodes.positions(function(){
+				return { x: 0, y: 0 };
+			  });
+			  
+			} else {
+			  
+			  // width/height * splits^2 = cells where splits is number of times to split width
+			  var cells = nodes.size();
+			  var splits = Math.sqrt( cells * height/width );
+			  var rows = Math.round( splits );
+			  var cols = Math.round( width/height * splits );
+
+			  var small = function(val){
+				if( val == null ){
+				  return Math.min(rows, cols);
+				} else {
+				  var min = Math.min(rows, cols);
+				  if( min == rows ){
+					rows = val;
+				  } else {
+					cols = val;
+				  }
+				}
+			  };
+			  
+			  var large = function(val){
+				if( val == null ){
+				  return Math.max(rows, cols);
+				} else {
+				  var max = Math.max(rows, cols);
+				  if( max == rows ){
+					rows = val;
+				  } else {
+					cols = val;
+				  }
+				}
+			  };
+			  
+			  // if rows or columns were set in options, use those values
+			  if( options.rows != null && options.columns != null ){
+				rows = options.rows;
+				cols = options.columns;
+			  } else if( options.rows != null && options.columns == null ){
+				rows = options.rows;
+				cols = Math.ceil( cells / rows );
+			  } else if( options.rows == null && options.columns != null ){
+				cols = options.columns;
+				rows = Math.ceil( cells / cols );
+			  }
+			  
+			  // otherwise use the automatic values and adjust accordingly
+			  
+			  // if rounding was up, see if we can reduce rows or columns
+			  else if( cols * rows > cells ){
+				var sm = small();
+				var lg = large();
+				
+				// reducing the small side takes away the most cells, so try it first
+				if( (sm - 1) * lg >= cells ){
+				  small(sm - 1);
+				} else if( (lg - 1) * sm >= cells ){
+				  large(lg - 1);
+				} 
+			  } else {
+				
+				// if rounding was too low, add rows or columns
+				while( cols * rows < cells ){
+				  var sm = small();
+				  var lg = large();
+				  
+				  // try to add to larger side first (adds less in multiplication)
+				  if( (lg + 1) * sm >= cells ){
+					large(lg + 1);
+				  } else {
+					small(sm + 1);
+				  }
+				}
+			  }
+			  
+			  var cellWidth = width / cols;
+			  var cellHeight = height / rows;
+
+			  for( var i = 0; i < nodes.length; i++ ){
+				var node = nodes[i];
+				var w = node.outerWidth();
+				var h = node.outerHeight();
+
+				cellWidth = Math.max( cellWidth, w );
+				cellHeight = Math.max( cellHeight, h );
+			  }
+			  
+			  var cellUsed = {}; // e.g. 'c-0-2' => true
+			  
+			  var used = function(row, col){
+				return cellUsed['c-' + row + '-' + col] ? true : false;
+			  };
+			  
+			  var use = function(row, col){
+				cellUsed['c-' + row + '-' + col] = true;
+			  };
+
+			  // to keep track of current cell position
+			  var row = 0;
+			  var col = 0;
+			  var moveToNextCell = function(){
+				col++;
+				if( col >= cols ){
+				  col = 0;
+				  row++;
+				}
+			  };
+
+			  // get a cache of all the manual positions
+			  var id2manPos = {};
+			  for( var i = 0; i < nodes.length; i++ ){
+				var node = nodes[i];
+				var rcPos = options.position( node );
+
+				if( rcPos && (rcPos.row !== undefined || rcPos.col !== undefined) ){ // must have at least row or col def'd
+				  var pos = {
+					row: rcPos.row,
+					col: rcPos.col
+				  };
+
+				  if( pos.col === undefined ){ // find unused col
+					pos.col = 0;
+
+					while( used(pos.row, pos.col) ){
+					  pos.col++;
+					}
+				  } else if( pos.row === undefined ){ // find unused row
+					pos.row = 0;
+
+					while( used(pos.row, pos.col) ){
+					  pos.row++;
+					}
+				  }
+
+				  id2manPos[ node.id() ] = pos;
+				  use( pos.row, pos.col );
+				}
+			  }
+
+			  nodes.positions(function(i, element){
+				var x, y;
+
+				if( element.locked() || element.isFullAutoParent() ){
+				  return false;
+				}
+
+				// see if we have a manual position set
+				var rcPos = id2manPos[ element.id() ];
+				if( rcPos ){
+				  x = rcPos.col * cellWidth + cellWidth/2;
+				  y = rcPos.row * cellHeight + cellHeight/2;
+				
+				} else { // otherwise set automatically
+				
+				  while( used(row, col) ){
+					moveToNextCell();
+				  }
+
+				  x = (cols <= 10) ? col * cellWidth + cellWidth/2 : col * cellWidth*4 + cellWidth/2;//col * cellWidth*4 + cellWidth/2; 
+				  y = (rows <= 10) ? row * cellHeight + cellHeight/2 : row * cellHeight*4 + cellHeight/2;//row * cellHeight*4 + cellHeight/2;
+				  use( row, col );
+				  
+				  moveToNextCell();
+				}
+				
+				return { x: x, y: y };
+				
+			  });
+			}
+			
+			if( params.fit ){
+			  cy.fit( options.padding );
+			} 
+			
+			cy.one('layoutready', params.ready);
+			cy.trigger('layoutready');
+			
+			cy.one('layoutstop', params.stop);
+			cy.trigger('layoutstop');
+		  };
+
+		  GridLayout2.prototype.stop = function(){
+			// not a continuous layout
+		  };
+		  
+		  $$('layout', 'grid2', GridLayout2);
+		  
+		})( cytoscape );
+
 		
 		
+		// initialise cytoscape.js on a html dom element with some options:
+		cy = cytoscape( options = {
+		  container: document.getElementById('cy'),
+		 
+		  minZoom: 0.0,
+		  maxZoom: 10,
+
+		  // style can be specified as plain JSON, a stylesheet string (probably a CSS-like
+		  // file pulled from the server), or in a functional format
+		  style: [
+			{
+			  selector: 'node',
+			  css: {
+				'content': 'data(name)',
+				'shape': 'data(faveShape)',
+				'background-color': 'data(faveColor)',
+				'border-width': 1,
+				//'font-family': 'helvetica',
+				'font-size': 10,
+				//'text-outline-width': 3,
+				//'text-outline-color': '#888',
+				//'text-valign': 'center',
+				'color': '#61210B',
+				//'width': 'mapData(weight, 30, 80, 20, 50)',
+				//'height': 'mapData(height, 0, 200, 10, 45)',
+				//'border-color': '#fff'
+			  }
+			},
+
+			{
+			  selector: 'node:selected',
+			  css: {
+				'background-color': '#5555ff',
+				
+				//'width': 4,
+				
+				//'text-outline-color': '#000'
+			  }
+			},
+			{
+			  selector: 'edge:selected',
+			  css: {
+				'background-color': '#5555ff',
+				'line-color': '#5555ff',
+				'width': 4,
+				'target-arrow-color': '#5555ff',
+				//'text-outline-color': '#000'
+			  }
+			},
+
+			{
+			  selector: 'edge',
+			  css: {
+				'width': 'data(faveWidth)',
+				'line-color': 'data(faveColor)',
+				'target-arrow-shape': 'data(faveShape)',
+				//'curve-style': 'haystack',
+				//'control-point-weight': 0.8,
+				'target-arrow-color': 'data(faveColor)'
+			  }
+			}
+		  ],
+
+		  // specify the elements in the graph
+		  elements: {
+			nodes: [
+			  //{ data: { id: 'j', name: 'Jerry', weight: 65, height: 174 } },
+			  //{ data: { id: 'e', name: 'Elaine', weight: 48, height: 160 } },
+			 // { data: { id: 'k', name: 'Kramer', weight: 75, height: 185 } },
+			  //{ data: { id: 'g', name: 'George', weight: 70, height: 150 } }
+			],
+
+			edges: [
+			  //{ data: { source: 'j', target: 'e' } },
+			  //{ data: { source: 'j', target: 'k' } },
+			  //{ data: { source: 'j', target: 'g' } },
+
+			  //{ data: { source: 'e', target: 'j' } },
+			 // { data: { source: 'e', target: 'k' } },
+
+			  //{ data: { source: 'k', target: 'j' } },
+			  //{ data: { source: 'k', target: 'e' } },
+			  //{ data: { source: 'k', target: 'g' } },
+
+			  //{ data: { source: 'g', target: 'j' } }
+			],
+		  },
+
+		  
+		  
+		} );
+		//cy.panningEnabled();
+
+
+  
+		var nodeClicked = cy.on('click', 'node', function(e) {
+			// get json of graph
+			// console.log(cy.elements().jsons())
+			// load json of graph
+			// cy.add( the json object of elements )
+			
+			//console.log(e.cyTarget._private.position)
+			clearTimeout( timeout );
+		   var timeout = setTimeout(function(){
+			 //window["selectedNodes"] = cy.$('node:selected');
+
+		   
+			e.cyTarget._private.selected=true;
+			for (elem in e.cyTarget._private.ids){
+				if (e.cyTarget._private.ids.hasOwnProperty(elem)){
+					var edgesFromNode = cy.elements('edge[source="'+elem+'"], edge[target = "'+elem+'"]');
+					//console.log(edgesFromNode)
+					edgesFromNode.select();
+					
+				}
+			}
+			
+			  // and so on...
+		   }, 1); // may have to adjust this val
+			
+			
+			
+			
+		});
+		
+		
+		
+		
+		var dataTempLayout=[];
+		
+		
+		function changeDataElements(nameC){
+			if (cy){
+				var allElements = cy.elements();
+				//var allEdges  = allElements.filter('edge');                
+				//var allNodes = allElements.filter('node');
+				cy.remove(allElements);
+				var myelems=[];
+				var idEdge=0;
+				var listElem = dataTempLayout;
+				//console.log(listElem)
+				var idEdge=0;
+				for (var nb=0, maxnb=listElem.length; nb<maxnb; nb++){
+					//console.log(nb)
+					if (listNodes[listElem[nb][0]] && listNodes[listElem[nb][0]][6]){
+						//if (listNodes[listElem[nb][0]][6]==2){
+						//	myelems.push({ group: "nodes", data: { id: listElem[nb][1], name: listElem[nb][1] ,faveColor: '#ffffff', faveShape: 'circle'} });
+						//}
+						
+						if (listNodes[listElem[nb][0]][6]==4){
+						
+							myelems.push({ group: "nodes", data: { id: listElem[nb][1], name: listElem[nb][1] , nameid: listElem[nb][0],nameCp: nameC, faveColor: '#ffffff', faveShape: 'rectangle'} });
+							if (listNodes[listElem[nb][0]][11]){
+								if (listNodes[listElem[nb][0]][11][0]){
+								//console.log("a")
+									// reactants
+									for (var i=0; i<listNodes[listElem[nb][0]][11][0].length; i++){
+										if (listNodes[listNodes[listElem[nb][0]][11][0][i]][3]==nameC){
+											myelems.push({ group: "nodes", data: { id: listNodes[listNodes[listElem[nb][0]][11][0][i]][1], name: listNodes[listNodes[listElem[nb][0]][11][0][i]][1], nameid: listNodes[listNodes[listElem[nb][0]][11][0][i]][0],nameCp: nameC,faveColor: '#ffffff', faveShape: 'circle'} });
+											myelems.push({ group: "edges", data: { id: "e"+idEdge, source: listNodes[listNodes[listElem[nb][0]][11][0][i]][1], target: listElem[nb][1] ,faveColor: '#ffa500', faveShape: 'triangle', faveWidth: 2} });
+											idEdge++;
+										}
+									}
+								}
+								// products
+								if (listNodes[listElem[nb][0]][11][1]){
+									for (var i=0; i<listNodes[listElem[nb][0]][11][1].length; i++){
+										if (listNodes[listNodes[listElem[nb][0]][11][1][i]][3]==nameC){
+											myelems.push({ group: "nodes", data: { id: listNodes[listNodes[listElem[nb][0]][11][1][i]][1], name: listNodes[listNodes[listElem[nb][0]][11][1][i]][1], nameid: listNodes[listNodes[listElem[nb][0]][11][1][i]][0] ,nameCp: nameC,faveColor: '#ffffff', faveShape: 'circle'} });
+											myelems.push({ group: "edges", data: { id: "e"+idEdge, source: listElem[nb][1], target: listNodes[listNodes[listElem[nb][0]][11][1][i]][1],faveColor: '#008000', faveShape: 'triangle', faveWidth: 2} });
+											idEdge++;
+										}
+									}
+								}
+								// modifiers
+								if (listNodes[listElem[nb][0]][11][2]){
+								//console.log("a")
+									for (var i=0; i<listNodes[listElem[nb][0]][11][2].length; i++){
+										if (listNodes[listNodes[listElem[nb][0]][11][2][i]][3]==nameC){
+											myelems.push({ group: "nodes", data: { id: listNodes[listNodes[listElem[nb][0]][11][2][i]][1], name: listNodes[listNodes[listElem[nb][0]][11][2][i]][1], nameid: listNodes[listNodes[listElem[nb][0]][11][2][i]][0] ,nameCp: nameC,faveColor: '#ffffff', faveShape: 'circle'} });
+											myelems.push({ group: "edges", data: { id: "e"+idEdge, source: listNodes[listNodes[listElem[nb][0]][11][2][i]][1], target: listElem[nb][1] ,faveColor: '#800080', faveShape: 'triangle', faveWidth: 2} });
+											idEdge++;
+										}
+									}
+								}
+							}
+						}
+					}
+					
+					// if (placesTypesListPerTransition[listElem[nb]] ){
+						// if (placesTypesListPerTransition[listElem[nb]].hasOwnProperty('activators')){
+							// for(var i=0, j=placesTypesListPerTransition[listElem[nb]]['activators'].length; i<j;i++){
+								// myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[listElem[nb]]['activators'][i], name: placesTypesListPerTransition[listElem[nb]]['activators'][i] ,faveColor: '#ffffff', faveShape: 'circle'} });
+								// myelems.push({ group: "edges", data: { id: "e"+idEdge, source: placesTypesListPerTransition[listElem[nb]]['activators'][i], target: listElem[nb] ,faveColor: '#000000', faveShape: 'circle', faveWidth: 2} });
+								// idEdge++;
+							// }
+						// }
+						// if (placesTypesListPerTransition[listElem[nb]].hasOwnProperty('suppressors')){
+							// for(var i=0, j=placesTypesListPerTransition[listElem[nb]]['suppressors'].length; i<j;i++){
+								// myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[listElem[nb]]['suppressors'][i], name: placesTypesListPerTransition[listElem[nb]]['suppressors'][i] ,faveColor: '#ffffff', faveShape: 'circle'} });
+								// myelems.push({ group: "edges", data: { id: "e"+idEdge, source: placesTypesListPerTransition[listElem[nb]]['suppressors'][i], target: listElem[nb] ,faveColor: '#000000', faveShape: 'tee', faveWidth: 2} });
+								// idEdge++;
+							// }
+						// }
+						// if (placesTypesListPerTransition[listElem[nb]].hasOwnProperty('consumed')){
+							// for(var i=0, j=placesTypesListPerTransition[listElem[nb]]['consumed'].length; i<j;i++){
+								// myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[listElem[nb]]['consumed'][i], name: placesTypesListPerTransition[listElem[nb]]['consumed'][i],faveColor: '#ffffff', faveShape: 'circle' } });
+								// myelems.push({ group: "edges", data: { id: "e"+idEdge, source: placesTypesListPerTransition[listElem[nb]]['consumed'][i], target: listElem[nb],faveColor: '#000000' , faveShape: 'triangle', faveWidth: 2} });
+								// idEdge++;
+							// }
+						// }
+						// if (placesTypesListPerTransition[listElem[nb]].hasOwnProperty('postplaces')){
+							// for(var i=0, j=placesTypesListPerTransition[listElem[nb]]['postplaces'].length; i<j;i++){
+								// myelems.push({ group: "nodes", data: { id: placesTypesListPerTransition[listElem[nb]]['postplaces'][i], name: placesTypesListPerTransition[listElem[nb]]['postplaces'][i],faveColor: '#ffffff', faveShape: 'circle' } });
+								// myelems.push({ group: "edges", data: { id: "e"+idEdge, source: listElem[nb], target: placesTypesListPerTransition[listElem[nb]]['postplaces'][i] ,faveColor: '#000000', faveShape: 'triangle', faveWidth: 2} });
+								// idEdge++;
+							// }
+						// }
+					// }
+				}
+				cy.add( myelems);
+				
+				
+			var el =document.getElementById("selectLayout");
+			if (parseInt(el.value)==0){
+					var options = {
+						name: 'breadthfirst2',
+
+						fit: true, // whether to fit the viewport to the graph
+						ready: undefined, // callback on layoutready
+						stop: undefined, // callback on layoutstop
+						directed: true, // whether the tree is directed downwards (or edges can point in any direction if false)
+						pan: true, 
+						textureOnViewport: false,
+						padding: 30, // padding on fit
+						circle: false, // put depths in concentric circles if true, put depths top down if false
+						roots: undefined, // the roots of the trees
+						maximalAdjustments: 5 // how many times to try to position the nodes in a maximal way (i.e. no backtracking)
+					};
+					
+				}
+				else if (parseInt(el.value)==1){
+					var options = {
+						name: 'circle',
+
+						fit: true, // whether to fit the viewport to the graph
+						ready: undefined, // callback on layoutready
+						stop: undefined, // callback on layoutstop
+						rStepSize: 10, // the step size for increasing the radius if the nodes don't fit on screen
+						padding: 30, // the padding on fit
+						startAngle: 3/2 * Math.PI, // the position of the first node
+						counterclockwise: false // whether the layout should go counterclockwise (true) or clockwise (false)
+					};
+					
+				}
+				else if (parseInt(el.value)==2){
+					var options = {
+						name: 'concentric',
+
+						fit: true, // whether to fit the viewport to the graph
+						ready: undefined, // callback on layoutready
+						stop: undefined, // callback on layoutstop
+						padding: 30, // the padding on fit
+						startAngle: 3/2 * Math.PI, // the position of the first node
+						counterclockwise: false, // whether the layout should go counterclockwise (true) or clockwise (false)
+						minNodeSpacing: 60, // min spacing between outside of nodes (used for radius adjustment)
+						height: undefined, // height of layout area (overrides container height)
+						width: undefined, // width of layout area (overrides container width)
+						concentric: function(){ // returns numeric value for each node, placing higher nodes in levels towards the centre
+							//console.log(this._private.data['faveShape'])
+							var val =0;
+							if (this._private.data['faveShape']=="rectangle"){
+								val =10;
+							}
+						  return val;
+						},
+						levelWidth: function(nodes){ // the variation of concentric values in each level
+						  return 0.5//nodes.maxDegree() / 4;
+						}
+					}
+					
+				}
+				else if (parseInt(el.value)==3){
+					var options = {
+						name: 'grid2',
+
+						fit: true, // whether to fit the viewport to the graph
+						padding: 30, // padding used on fit
+						rows: undefined, // force num of rows in the grid
+						columns: undefined, // force num of cols in the grid
+						position: function( node ){}, // returns { row, col } for element
+						ready: undefined, // callback on layoutready
+						stop: undefined // callback on layoutstop
+					};
+					
+				}
+				
+
+				cy.layout( options );
+			}
+		}
+		
+		
+		
+		
+		
+		function runCompSelector(){
+			//console.log(tempdata3);
+			var nameComp =document.getElementById("compSelector").value;
+			dataTempLayout=[];
+			if (nameComp!="none"){
+				
+				//console.log(tempdata3)
+				//for (var i=0, j=tempdata2.length; i<j; i++){
+				//	if (tempdata2[i][2]== compIds[parseInt(nameComp)] ){
+				//		dataTempLayout.push(tempdata2[i]);
+				//	}
+				//}
+				for (var i=0, j=tempdata3.length; i<j; i++){
+					if (tempdata3[i][2]== compIds[parseInt(nameComp)] ){
+						dataTempLayout.push(tempdata3[i]);
+					}
+				}
+				
+			}
+			//console.log(dataTempLayout)
+			changeDataElements(compIds[parseInt(nameComp)]);
+			
+		}
+		
+		
+		
+		
+		
+		
+		
+		function selectValue(el){
+			//console.log(el.value)
+			if (parseInt(el.value)==0){
+				var options = {
+					name: 'breadthfirst2',
+
+					fit: true, // whether to fit the viewport to the graph
+					ready: undefined, // callback on layoutready
+					stop: undefined, // callback on layoutstop
+					directed: true, // whether the tree is directed downwards (or edges can point in any direction if false)
+					pan: true, 
+					textureOnViewport: false,
+					padding: 30, // padding on fit
+					circle: false, // put depths in concentric circles if true, put depths top down if false
+					roots: undefined, // the roots of the trees
+					maximalAdjustments: 5 // how many times to try to position the nodes in a maximal way (i.e. no backtracking)
+				};
+				cy.layout( options );
+				cy.fit(30);
+			}
+			else if (parseInt(el.value)==1){
+				var options = {
+					name: 'circle',
+
+					fit: true, // whether to fit the viewport to the graph
+					ready: undefined, // callback on layoutready
+					stop: undefined, // callback on layoutstop
+					rStepSize: 10, // the step size for increasing the radius if the nodes don't fit on screen
+					padding: 30, // the padding on fit
+					startAngle: 3/2 * Math.PI, // the position of the first node
+					counterclockwise: false // whether the layout should go counterclockwise (true) or clockwise (false)
+				};
+				cy.layout( options );
+				cy.fit(30);
+			}
+			else if (parseInt(el.value)==2){
+				var options = {
+					name: 'concentric',
+
+					fit: true, // whether to fit the viewport to the graph
+					ready: undefined, // callback on layoutready
+					stop: undefined, // callback on layoutstop
+					padding: 30, // the padding on fit
+					startAngle: 3/2 * Math.PI, // the position of the first node
+					counterclockwise: false, // whether the layout should go counterclockwise (true) or clockwise (false)
+					minNodeSpacing: 60, // min spacing between outside of nodes (used for radius adjustment)
+					height: undefined, // height of layout area (overrides container height)
+					width: undefined, // width of layout area (overrides container width)
+					concentric: function(){ // returns numeric value for each node, placing higher nodes in levels towards the centre
+						//console.log(this._private.data['faveShape'])
+						var val =0;
+						if (this._private.data['faveShape']=="rectangle"){
+							val =10;
+						}
+					  return val;
+					},
+					levelWidth: function(nodes){ // the variation of concentric values in each level
+					  return 0.5//nodes.maxDegree() / 4;
+					}
+				}
+				cy.layout( options );
+				cy.fit(30);
+			}
+			else if (parseInt(el.value)==3){
+				var options = {
+					name: 'grid2',
+
+					fit: true, // whether to fit the viewport to the graph
+					padding: 30, // padding used on fit
+					rows: undefined, // force num of rows in the grid
+					columns: undefined, // force num of cols in the grid
+					position: function( node ){}, // returns { row, col } for element
+					ready: undefined, // callback on layoutready
+					stop: undefined // callback on layoutstop
+				};
+				cy.layout( options );
+				cy.fit(30);
+			}
+			else{
+				var allElements = cy.elements();
+				cy.remove(allElements);
+				cy.add( layoutJSON[el.value] )
+				cy.fit(30)
+			}
+			
+		}
+		
+		function updateLayout(){
+			//console.log("update coordinates")
+			//console.log(cy.extent());
+			//console.log(cy.boundingBox())
+			var boundingBox=cy.boundingBox()
+			var boundWidth=boundingBox['w'];
+			var boundHeight=boundingBox['h'];
+			var centerBoundX=(boundingBox['x2']+boundingBox['x1'])/2.0
+			var centerBoundY=(boundingBox['y2']+boundingBox['y1'])/2.0
+			var scalingFactor= ((radiusComp*2)*0.9) / Math.max(boundWidth, boundWidth) ;
+			if (cy.nodes()){
+				var allElements = cy.nodes();
+				for (var el in allElements){
+					if (allElements.hasOwnProperty(el) && allElements[el]['_private']){
+						
+						//console.log(allElements[el]['_private']['data']['nameid']);
+						//console.log(idMap[allElements[el]['_private']['data']['nameid']]);
+						//console.log(allElements[el]['_private']['data']['nameCp']);
+						// position compartment:
+						var posComp = new THREE.Vector3();
+						var nComp= allElements[el]['_private']['data']['nameCp'];
+						var scalecomp=1.0;
+						for ( var i = 0; i < listCompartments.length; i ++ ) {
+							if (objects[i].name.split(" ")[0]==nComp){
+								posComp.x=objects[i].position.x;
+								posComp.y=objects[i].position.y;
+								posComp.z=objects[i].position.z;
+								scalecomp=objects[i].scale.x;
+							}
+						}
+						
+						//console.log(posComp)
+						var ind= idMap[allElements[el]['_private']['data']['nameid']];
+						if (ind[0]==2){
+							scene.children[indexStartNodes].geometry.attributes.position.array[ind[1]*3+0]=posComp.x-((allElements[el]['_private']['position']['x']-centerBoundX)*scalingFactor*scalecomp);
+							scene.children[indexStartNodes].geometry.attributes.position.array[ind[1]*3+1]=posComp.y;
+							scene.children[indexStartNodes].geometry.attributes.position.array[ind[1]*3+2]=posComp.z-((allElements[el]['_private']['position']['y']-centerBoundY)*scalingFactor*scalecomp);
+							mtnlLayout["nodes_layout"][allElements[el]['_private']['data']['nameid']]=new THREE.Vector3(scene.children[indexStartNodes].geometry.attributes.position.array[ind[1]*3+0],scene.children[indexStartNodes].geometry.attributes.position.array[ind[1]*3+1],scene.children[indexStartNodes].geometry.attributes.position.array[ind[1]*3+2]);
+						}
+						else if (ind[0]==4){
+							scene.children[indexStartNodes+1].geometry.attributes.position.array[ind[1]*3+0]=posComp.x-((allElements[el]['_private']['position']['x']-centerBoundX)*scalingFactor*scalecomp);
+							scene.children[indexStartNodes+1].geometry.attributes.position.array[ind[1]*3+1]=posComp.y;
+							scene.children[indexStartNodes+1].geometry.attributes.position.array[ind[1]*3+2]=posComp.z-((allElements[el]['_private']['position']['y']-centerBoundY)*scalingFactor*scalecomp);
+							mtnlLayout["nodes_layout"][allElements[el]['_private']['data']['nameid']]=new THREE.Vector3(scene.children[indexStartNodes+1].geometry.attributes.position.array[ind[1]*3+0],scene.children[indexStartNodes+1].geometry.attributes.position.array[ind[1]*3+1],scene.children[indexStartNodes+1].geometry.attributes.position.array[ind[1]*3+2]);
+						}
+						//console.log((allElements[el]['_private']['position']['x']-centerBoundX)*scalingFactor)
+						//console.log((allElements[el]['_private']['position']['y']-centerBoundY)*scalingFactor)
+						
+					}
+				}
+				//console.log(mtnlLayout["nodes_layout"])
+				scene.children[indexStartNodes].geometry.attributes.position.needsUpdate = true;
+				scene.children[indexStartNodes+1].geometry.attributes.position.needsUpdate = true;
+				var iv=0;
+				for ( var i = 0; i < segments; i ++ ) {
+					var t1 = metabolicNodes[metabolicEdges[i][0]][6]
+					var t2 = metabolicNodes[metabolicEdges[i][1]][6]
+					//console.log(t1)
+					//console.log(t2)
+					//var ivList=[]
+					var doIt=0
+					if (t1==2){
+						//console.log(idMap[jsonObj2[i][0]][1])
+						scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+						scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;					
+						scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+						
+						iv++;
+					}
+					else if (t1==4){
+						//console.log(idMap[jsonObj2[i][0]][1])
+						scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+						scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
+						scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+						iv++;
+					}
+					if (t2 ==2){
+						scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+						scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;						
+						scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;	
+						iv++;
+					}
+					else if (t2 ==4){
+						scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+						scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;
+						scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;				
+						iv++;
+					}
+					
+				}
+				scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
+			}
+			saveLayout();
+			//console.log(allElements)
+		}
+		
+		cy.on('free', function (e) {
+			cy.boundingBox();
+		});
 	
 	</script>	
 	

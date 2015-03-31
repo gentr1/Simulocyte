@@ -2775,9 +2775,9 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 							// try to assign the compartment of the majority of the products the reaction is linked to 
 							// if there is no product, assign the compartment of the majority of modifiers
 							// if there is no modifier, assign the compartment of the majority of reactants
-							var listProducts= jsonObj1[bw][11][0];
-							var listModifiers= jsonObj1[bw][11][1];
-							var listReactants= jsonObj1[bw][11][2];
+							var listProducts= jsonObj1[bw][11][1];
+							var listModifiers= jsonObj1[bw][11][2];
+							var listReactants= jsonObj1[bw][11][0];
 							
 							if (listProducts.length>0){
 								var votes=[];
@@ -3196,9 +3196,22 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 					positionsL1[ (iv * 3) + 2 ] = b3positions[ (idMap[jsonObj2[i][0]][1] * 3) + 2 ]+0.0;
 					compartmentL1[ (i*2)+0 ] = b3values_compartment[ (idMap[jsonObj2[i][0]][1]) ];
 					opL1[iv]=0.25;
-					colorsL1[ iv * 3 ] = 0.0;
-					colorsL1[ iv * 3 + 1 ] = 1.0;
-					colorsL1[ iv * 3 + 2 ] = 1.0;
+					if(jsonObj2[i][2]==1){
+						colorsL1[ iv * 3 ] = 0.2;
+						colorsL1[ iv * 3 + 1 ] = 1.0;
+						colorsL1[ iv * 3 + 2 ] = 1.0;
+					}
+					else if(jsonObj2[i][2]==0){
+						
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.5;
+						colorsL1[ iv * 3 + 2 ] = 0.0;
+					}
+					else{
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.0;
+						colorsL1[ iv * 3 + 2 ] = 0.1;
+					}
 					ivList.push(iv)
 					//linesMap[i]=iv
 					
@@ -3210,9 +3223,22 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 					positionsL1[ (iv * 3) + 2 ] = b5positions[ (idMap[jsonObj2[i][0]][1] * 3) + 2 ]+0.0;
 					compartmentL1[ (i*2)+0 ] = b5values_compartment[ (idMap[jsonObj2[i][0]][1]) ];
 					opL1[iv]=0.25;
-					colorsL1[ iv * 3 ] = 0.0;
-					colorsL1[ iv * 3 + 1 ] = 1.0;
-					colorsL1[ iv * 3 + 2 ] = 1.0;
+					if(jsonObj2[i][2]==1){
+						colorsL1[ iv * 3 ] = 0.2;
+						colorsL1[ iv * 3 + 1 ] = 1.0;
+						colorsL1[ iv * 3 + 2 ] = 1.0;
+					}
+					else if(jsonObj2[i][2]==0){
+						
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.5;
+						colorsL1[ iv * 3 + 2 ] = 0.0;
+					}
+					else{
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.0;
+						colorsL1[ iv * 3 + 2 ] = 0.1;
+					}
 					//linesMap[i]=iv
 					ivList.push(iv)
 					iv++;
@@ -3223,9 +3249,22 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 					positionsL1[ (iv * 3) + 2 ] = b3positions[ (idMap[jsonObj2[i][1]][1] * 3) + 2 ]+0.0;
 					compartmentL1[ (i*2)+1 ] = b3values_compartment[ (idMap[jsonObj2[i][1]][1]) ];
 					opL1[iv]=0.25;
-					colorsL1[ iv * 3 ] = 0.0;
-					colorsL1[ iv * 3 + 1 ] = 1.0;
-					colorsL1[ iv * 3 + 2 ] = 1.0;
+					if(jsonObj2[i][2]==1){
+						colorsL1[ iv * 3 ] = 0.2;
+						colorsL1[ iv * 3 + 1 ] = 1.0;
+						colorsL1[ iv * 3 + 2 ] = 1.0;
+					}
+					else if(jsonObj2[i][2]==0){
+						
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.5;
+						colorsL1[ iv * 3 + 2 ] = 0.0;
+					}
+					else{
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.0;
+						colorsL1[ iv * 3 + 2 ] = 0.1;
+					}
 					//linesMap[i]=iv
 					ivList.push(iv)
 					iv++;
@@ -3236,9 +3275,22 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 					positionsL1[ (iv * 3) + 2 ] = b5positions[ (idMap[jsonObj2[i][1]][1] * 3) + 2 ]+0.0;
 					compartmentL1[ (i*2)+1 ] = b5values_compartment[ (idMap[jsonObj2[i][1]][1]) ];
 					opL1[iv]=0.25;
-					colorsL1[ iv * 3 ] = 0.0;
-					colorsL1[ iv * 3 + 1 ] = 1.0;
-					colorsL1[ iv * 3 + 2 ] = 1.0;
+					if(jsonObj2[i][2]==1){
+						colorsL1[ iv * 3 ] = 0.2;
+						colorsL1[ iv * 3 + 1 ] = 1.0;
+						colorsL1[ iv * 3 + 2 ] = 1.0;
+					}
+					else if(jsonObj2[i][2]==0){
+						
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.5;
+						colorsL1[ iv * 3 + 2 ] = 0.0;
+					}
+					else{
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.0;
+						colorsL1[ iv * 3 + 2 ] = 0.1;
+					}
 					//linesMap[i]=iv
 					ivList.push(iv)
 					iv++;
@@ -3375,7 +3427,8 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 			//}
 			
 			bgeometry2.computeBoundingSphere();
-		//console.log(bgeometry2);
+			//console.log(bgeometry2);
+			linesShaderMaterial.blending = false;
 			mesh = new THREE.Line( bgeometry2, linesShaderMaterial,THREE.LinePieces );
 			scene.add( mesh );
 			b2lpositions = bgeometry2.attributes.position.array;
@@ -3883,7 +3936,7 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				scene.children[2].geometry.attributes.position.needsUpdate = true;
 				scene.children[4].geometry.attributes.position.needsUpdate = true;
 				
-				var col2 = new THREE.Color( 0xffa500 );
+				var col2 = new THREE.Color( 0xffff00 );
 				
 				
 				//console.log(selectedModelNodes)
