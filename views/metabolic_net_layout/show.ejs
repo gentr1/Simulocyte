@@ -2536,55 +2536,41 @@
 	  afterChange: function(changes, source) {
 		
 		if (changes && changes[0] && changes[0][2]){	
-			
-					
-			var dt = this.getData(changes[0][0],0,0,2);		
-			//console.log(changes)	
-			//console.log(dt)	
-			//console.log(dt[changes[0][0]])	
-			// change name			
-			selectedMetabolicData[1][dt[dt.length-1][0]][1]=dt[dt.length-1][1];
-			// change compartment
-			selectedMetabolicData[1][dt[dt.length-1][0]][3]=dt[dt.length-1][2];
-			metabolicNodes=selectedMetabolicData[1];
-			mtnlLayout["nodes_compartments"][dt[dt.length-1][0]]=[];
-			mtnlLayout["nodes_compartments"][dt[dt.length-1][0]].push(dt[dt.length-1][1]);
-			mtnlLayout["nodes_compartments"][dt[dt.length-1][0]].push(dt[dt.length-1][2]);
-			saveLayout();
-			//console.log(mtnlLayout["nodes_compartments"])
-			//console.log(mtnlLayout["nodes_compartments"][dt[dt.length-1][0]])
-			//console.log(dt)
-			//console.log("new name: "+dt[changes[0][0]][1])
-			//console.log("new comp: "+dt[changes[0][0]][2])
-			
+		
 			var indexStartNodes=maxNbComp+3;
 			nbCompartments= listCompartments.length;
-			
 			nameComp=[];
 			mapComp = {'-1':-1};
-			
 			for (var i=0;i<listCompartments.length;i++){
 				mapComp[listCompartments[i][0]]=i;
 				nameComp.push(listCompartments[i][1]);
 			}
-			
-			//idMap[bw]=[2,bv];
-			//scene.children[indexStartNodes].geometry.attributes.compartment.array[h]
-			var oldComp;
-			if (idMap[dt[changes[0][0]][0]] && idMap[dt[changes[0][0]][0]][0]==2){
-				//console.log(dt[changes[0][0]][2])
-				//console.log(mapComp[dt[0][2]]);
-				//console.log (scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[0][0]][1]]);
-				oldComp = scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[changes[0][0]][0]][1]];
-				scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[changes[0][0]][0]][1]]=mapComp[dt[changes[0][0]][2]];
-				scene.children[indexStartNodes].geometry.attributes.compartment.needsUpdate = true;
-			}
+			var oldComp={};
 			for ( var i = 0; i < listCompartments.length; i ++ ) {
 				stackCompInitialPos[objects[i].name]= new THREE.Vector3(objects[i].position.x,objects[i].position.y,objects[i].position.z);
 				objects[i].name=listCompartments[i][0]+" "+listCompartments[i][1];
 			}
-			
-			
+			//var dt = this.getData(changes[0][0],0,0,2);	
+			var dt = this.getData(changes[0][0],0,changes[changes.length-1][0],2);
+			//console.log(dt)	
+			//console.log(dt2)	
+			//var dt = this.getData(changes[0][0],0,changes[changes.length-1][0],2);	
+			for (var c=0;c<dt.length;c++){
+				selectedMetabolicData[1][dt[c][0]][1]=dt[c][1];
+				// change compartment
+				selectedMetabolicData[1][dt[c][0]][3]=dt[c][2];
+				metabolicNodes=selectedMetabolicData[1];
+				mtnlLayout["nodes_compartments"][dt[c][0]]=[];
+				mtnlLayout["nodes_compartments"][dt[c][0]].push(dt[c][1]);
+				mtnlLayout["nodes_compartments"][dt[c][0]].push(dt[c][2]);
+				
+				if (idMap[dt[c][0]] && idMap[dt[c][0]][0]==2){
+					oldComp[dt[c][0]] = scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[c][0]][1]];
+					scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[c][0]][1]]=mapComp[dt[c][2]];
+					scene.children[indexStartNodes].geometry.attributes.compartment.needsUpdate = true;
+				}
+			}
+			var oldCompReac={};
 			var bv=0;
 			for( var bw = 0 , bww= metabolicNodes.length; bw < bww; bw++ ) {
 				if (metabolicNodes[bw][6]==4){
@@ -2607,10 +2593,12 @@
 								votes[mapComp[metabolicNodes[listProducts[lp]][3]]]++;
 						}
 						var winner= votes.indexOf(Math.max.apply( Math, votes ));
-						//compartmentP2[ bv ] = winner;
-						scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv]= winner;
-						if (winner==-1){
-							scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = mapComp[metabolicNodes[bw][3]];
+						if (scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv]!=winner && scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] !=mapComp[metabolicNodes[bw][3]]){
+							oldCompReac[bv]=scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv];
+							scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv]= winner;
+							if (winner==-1){
+								scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = mapComp[metabolicNodes[bw][3]];
+							}
 						}
 					} 
 					else if (listModifiers.length>0){
@@ -2623,10 +2611,13 @@
 								votes[mapComp[metabolicNodes[listModifiers[lp]][3]]]++;
 						}
 						var winner= votes.indexOf(Math.max.apply( Math, votes ));
-						scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = winner;
-						
-						if (winner==-1){
-							scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = mapComp[metabolicNodes[bw][3]];
+						if (scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv]!=winner && scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] !=mapComp[metabolicNodes[bw][3]]){
+							oldCompReac[bv]=scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv];
+							scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = winner;
+							
+							if (winner==-1){
+								scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = mapComp[metabolicNodes[bw][3]];
+							}
 						}
 					}
 					else if (listReactants.length>0){
@@ -2639,42 +2630,69 @@
 								votes[mapComp[metabolicNodes[listReactants[lp]][3]]]++;
 						}
 						var winner= votes.indexOf(Math.max.apply( Math, votes ));
-						scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = winner;
-						if (winner==-1){
-							scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = mapComp[metabolicNodes[bw][3]];
+						if (scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv]!=winner && scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] !=mapComp[metabolicNodes[bw][3]]){
+							oldCompReac[bv]=scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv];
+							scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = winner;
+							if (winner==-1){
+								scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = mapComp[metabolicNodes[bw][3]];
+							}
 						}
 					}
 					else {
-						scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv]= mapComp[metabolicNodes[bw][3]];
+						if (scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv]!=mapComp[metabolicNodes[bw][3]]){
+							oldCompReac[bv]=scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv];
+							scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv]= mapComp[metabolicNodes[bw][3]];
+						}
 					}
 					bv++;
 				}	
 			}		
 			
 			scene.children[indexStartNodes+1].geometry.attributes.compartment.needsUpdate = true;
-	
-			for (var c=indexStartNodes;c<indexStartNodes+2;c++){
-				for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
-					for (var g=0;g<nbCompartments;g++){
-						if (scene.children[c].geometry.attributes.compartment.array[h]==g){
-							if (g==mapComp[dt[changes[0][0]][2]] && h==idMap[dt[changes[0][0]][0]][1]){
-								scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x+(stackCompInitialPos[objects[g].name].x-stackCompInitialPos[objects[oldComp].name].x);//+stackCompInitialPos[objects[oldComp].name].x;
-								scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y+(stackCompInitialPos[objects[g].name].y-stackCompInitialPos[objects[oldComp].name].y);//+stackCompInitialPos[objects[oldComp].name].y;
-								scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z+(stackCompInitialPos[objects[g].name].z-stackCompInitialPos[objects[oldComp].name].z);//+stackCompInitialPos[objects[oldComp].name].z;
+			
+			for (var c=0;c<dt.length;c++){
+					for (var h=0, hh=scene.children[indexStartNodes].geometry.attributes.size.array.length;h<hh;h++){
+						for (var g=0;g<nbCompartments;g++){
+							if (scene.children[indexStartNodes].geometry.attributes.compartment.array[h]==g){
+								if (g==mapComp[dt[c][2]] && h==idMap[dt[c][0]][1]){
+									scene.children[indexStartNodes].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x+(stackCompInitialPos[objects[g].name].x-stackCompInitialPos[objects[oldComp[dt[c][0]]].name].x);//+stackCompInitialPos[objects[oldComp].name].x;
+									scene.children[indexStartNodes].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y+(stackCompInitialPos[objects[g].name].y-stackCompInitialPos[objects[oldComp[dt[c][0]]].name].y);//+stackCompInitialPos[objects[oldComp].name].y;
+									scene.children[indexStartNodes].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z+(stackCompInitialPos[objects[g].name].z-stackCompInitialPos[objects[oldComp[dt[c][0]]].name].z);//+stackCompInitialPos[objects[oldComp].name].z;
+								}
+								else{
+								//nameComp[g]
+								scene.children[indexStartNodes].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
+								scene.children[indexStartNodes].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
+								scene.children[indexStartNodes].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
+								}
 							}
-							else{
-						//nameComp[g]
-						scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
-						scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
-						scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
-						}
-						//scene.children[c].geometry.attributes.position.array[h*3+1]+=1000;
-						//scene.children[c].geometry.attributes.position.array[h*3+2]+=1000;
 						}
 					}
-				}
-				scene.children[c].geometry.attributes.position.needsUpdate = true;
+					scene.children[indexStartNodes].geometry.attributes.position.needsUpdate = true;
 			}
+			var tableMod={};
+			var listMod2 = Object.keys(oldCompReac);
+			for (var i=0;i<listMod2.length;i++){
+				var tempcompnb=scene.children[indexStartNodes+1].geometry.attributes.compartment.array[listMod2[i]];//typesMap[4][listMod2[i]];//oldCompReac[listMod2[i]];
+				var tempindexnb=listMod2[i];
+				var g=tempcompnb;
+				var oldg= oldCompReac[listMod2[i]];
+				if (g!=oldg && oldg!=-1){
+
+					scene.children[indexStartNodes+1].geometry.attributes.position.array[tempindexnb*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x+(stackCompInitialPos[objects[g].name].x-stackCompInitialPos[objects[oldg].name].x);//+stackCompInitialPos[objects[oldComp].name].x;
+					scene.children[indexStartNodes+1].geometry.attributes.position.array[tempindexnb*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y+(stackCompInitialPos[objects[g].name].y-stackCompInitialPos[objects[oldg].name].y);//+stackCompInitialPos[objects[oldComp].name].y;
+					scene.children[indexStartNodes+1].geometry.attributes.position.array[tempindexnb*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z+(stackCompInitialPos[objects[g].name].z-stackCompInitialPos[objects[oldg].name].z);//+stackCompInitialPos[objects[oldComp].name].z;
+				}
+				else{
+					scene.children[indexStartNodes+1].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
+					scene.children[indexStartNodes+1].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
+					scene.children[indexStartNodes+1].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
+				}
+				//console.log(typesMap[4][listMod2[i]])
+				tableMod[typesMap[4][listMod2[i]]]=g;
+			}
+			scene.children[indexStartNodes+1].geometry.attributes.position.needsUpdate = true;
+			
 			var iv=0;
 			for ( var i = 0; i < segments; i ++ ) {
 				var t1 = metabolicNodes[metabolicEdges[i][0]][6]
@@ -2714,7 +2732,393 @@
 			}
 			scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
 			
+			
+			var tableMod2 = Object.keys(tableMod);
+			for (var i=0;i<tempdata3.length;i++){
+				for (var j=0;j<tableMod2.length;j++){
+					if (tempdata3[i][0]==tableMod2[j]){
+						tempdata3[i][2]= compIds[tableMod[tableMod2[j]]];
+					}
+				
+				}
+			}
+			
+			var ht = $('#mtnTable2').handsontable('getInstance');
+			//ht.clear();
+			ht.alter('remove_row', 0, tempdata3.length);
+			//console.log(searcharray)
+			if ($.isArray(tempdata3) && tempdata3[0] && $.isArray(tempdata3[0])){
+				ht.populateFromArray (0, 0, tempdata3,tempdata3.length-1, 4);
+			}
+			
+			
+			
+			
+			saveLayout();
+			
+			
+			
+			
+			
+			
+			
 		}
+			//console.log(mtnlLayout["nodes_compartments"])
+			//console.log(mtnlLayout["nodes_compartments"][dt[dt.length-1][0]])
+			//console.log(dt)
+			//console.log("new name: "+dt[changes[0][0]][1])
+			//console.log("new comp: "+dt[changes[0][0]][2])
+			
+			// var indexStartNodes=maxNbComp+3;
+			// nbCompartments= listCompartments.length;
+			
+			// nameComp=[];
+			// mapComp = {'-1':-1};
+			
+			// for (var i=0;i<listCompartments.length;i++){
+				// mapComp[listCompartments[i][0]]=i;
+				// nameComp.push(listCompartments[i][1]);
+			// }
+			
+			// //idMap[bw]=[2,bv];
+			// //scene.children[indexStartNodes].geometry.attributes.compartment.array[h]
+			// var oldComp;
+			// if (idMap[dt[changes[0][0]][0]] && idMap[dt[changes[0][0]][0]][0]==2){
+				// //console.log(dt[changes[0][0]][2])
+				// //console.log(mapComp[dt[0][2]]);
+				// //console.log (scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[0][0]][1]]);
+				// oldComp = scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[changes[0][0]][0]][1]];
+				// scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[changes[0][0]][0]][1]]=mapComp[dt[changes[0][0]][2]];
+				// scene.children[indexStartNodes].geometry.attributes.compartment.needsUpdate = true;
+			// }
+			// for ( var i = 0; i < listCompartments.length; i ++ ) {
+				// stackCompInitialPos[objects[i].name]= new THREE.Vector3(objects[i].position.x,objects[i].position.y,objects[i].position.z);
+				// objects[i].name=listCompartments[i][0]+" "+listCompartments[i][1];
+			// }
+			
+			
+			// var bv=0;
+			// for( var bw = 0 , bww= metabolicNodes.length; bw < bww; bw++ ) {
+				// if (metabolicNodes[bw][6]==4){
+					
+					// //b5values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;					
+					// // try to assign the compartment of the majority of the products the reaction is linked to 
+					// // if there is no product, assign the compartment of the majority of modifiers
+					// // if there is no modifier, assign the compartment of the majority of reactants
+					// var listProducts= metabolicNodes[bw][11][1];
+					// var listModifiers= metabolicNodes[bw][11][2];
+					// var listReactants= metabolicNodes[bw][11][0];
+					// //if (bv==0){console.log(listProducts)}
+					// if (listProducts.length>0){
+						// var votes=[];
+						// for (var ncc=0;ncc<nbCompartments;ncc++){
+							// votes[ncc]=0;
+						// }
+						// for(var lp=0;lp<listProducts.length;lp++){
+							// if (mapComp[metabolicNodes[listProducts[lp]][3]]>=0)
+								// votes[mapComp[metabolicNodes[listProducts[lp]][3]]]++;
+						// }
+						// var winner= votes.indexOf(Math.max.apply( Math, votes ));
+						// //compartmentP2[ bv ] = winner;
+						// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv]= winner;
+						// if (winner==-1){
+							// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = mapComp[metabolicNodes[bw][3]];
+						// }
+					// } 
+					// else if (listModifiers.length>0){
+						// var votes=[];
+						// for (var ncc=0;ncc<nbCompartments;ncc++){
+							// votes[ncc]=0;
+						// }
+						// for(var lp=0;lp<listModifiers.length;lp++){
+							// if (mapComp[metabolicNodes[listModifiers[lp]][3]]>=0)
+								// votes[mapComp[metabolicNodes[listModifiers[lp]][3]]]++;
+						// }
+						// var winner= votes.indexOf(Math.max.apply( Math, votes ));
+						// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = winner;
+						
+						// if (winner==-1){
+							// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = mapComp[metabolicNodes[bw][3]];
+						// }
+					// }
+					// else if (listReactants.length>0){
+						// var votes=[];
+						// for (var ncc=0;ncc<nbCompartments;ncc++){
+							// votes[ncc]=0;
+						// }
+						// for(var lp=0;lp<listReactants.length;lp++){
+							// if (mapComp[metabolicNodes[listReactants[lp]][3]]>=0)
+								// votes[mapComp[metabolicNodes[listReactants[lp]][3]]]++;
+						// }
+						// var winner= votes.indexOf(Math.max.apply( Math, votes ));
+						// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = winner;
+						// if (winner==-1){
+							// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = mapComp[metabolicNodes[bw][3]];
+						// }
+					// }
+					// else {
+						// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv]= mapComp[metabolicNodes[bw][3]];
+					// }
+					// bv++;
+				// }	
+			// }		
+			
+			// scene.children[indexStartNodes+1].geometry.attributes.compartment.needsUpdate = true;
+	
+			// for (var c=indexStartNodes;c<indexStartNodes+2;c++){
+				// for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
+					// for (var g=0;g<nbCompartments;g++){
+						// if (scene.children[c].geometry.attributes.compartment.array[h]==g){
+							// if (g==mapComp[dt[changes[0][0]][2]] && h==idMap[dt[changes[0][0]][0]][1]){
+								// scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x+(stackCompInitialPos[objects[g].name].x-stackCompInitialPos[objects[oldComp].name].x);//+stackCompInitialPos[objects[oldComp].name].x;
+								// scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y+(stackCompInitialPos[objects[g].name].y-stackCompInitialPos[objects[oldComp].name].y);//+stackCompInitialPos[objects[oldComp].name].y;
+								// scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z+(stackCompInitialPos[objects[g].name].z-stackCompInitialPos[objects[oldComp].name].z);//+stackCompInitialPos[objects[oldComp].name].z;
+							// }
+							// else{
+						// //nameComp[g]
+						// scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
+						// scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
+						// scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
+						// }
+						// //scene.children[c].geometry.attributes.position.array[h*3+1]+=1000;
+						// //scene.children[c].geometry.attributes.position.array[h*3+2]+=1000;
+						// }
+					// }
+				// }
+				// scene.children[c].geometry.attributes.position.needsUpdate = true;
+			// }
+			// var iv=0;
+			// for ( var i = 0; i < segments; i ++ ) {
+				// var t1 = metabolicNodes[metabolicEdges[i][0]][6]
+				// var t2 = metabolicNodes[metabolicEdges[i][1]][6]
+				// //console.log(t1)
+				// //console.log(t2)
+				// //var ivList=[]
+				// var doIt=0
+				// if (t1==2){
+					// //console.log(idMap[jsonObj2[i][0]][1])
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;					
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+					
+					// iv++;
+				// }
+				// else if (t1==4){
+					// //console.log(idMap[jsonObj2[i][0]][1])
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+					// iv++;
+				// }
+				// if (t2 ==2){
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;						
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;	
+					// iv++;
+				// }
+				// else if (t2 ==4){
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;				
+					// iv++;
+				// }
+				
+			// }
+			// scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
+			
+		// }
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			//console.log(changes)	
+			
+			//console.log(dt[changes[0][0]])	
+			// change name			
+			// selectedMetabolicData[1][dt[dt.length-1][0]][1]=dt[dt.length-1][1];
+			// // change compartment
+			// selectedMetabolicData[1][dt[dt.length-1][0]][3]=dt[dt.length-1][2];
+			// metabolicNodes=selectedMetabolicData[1];
+			// mtnlLayout["nodes_compartments"][dt[dt.length-1][0]]=[];
+			// mtnlLayout["nodes_compartments"][dt[dt.length-1][0]].push(dt[dt.length-1][1]);
+			// mtnlLayout["nodes_compartments"][dt[dt.length-1][0]].push(dt[dt.length-1][2]);
+			// saveLayout();
+			// //console.log(mtnlLayout["nodes_compartments"])
+			// //console.log(mtnlLayout["nodes_compartments"][dt[dt.length-1][0]])
+			// //console.log(dt)
+			// //console.log("new name: "+dt[changes[0][0]][1])
+			// //console.log("new comp: "+dt[changes[0][0]][2])
+			
+			// var indexStartNodes=maxNbComp+3;
+			// nbCompartments= listCompartments.length;
+			
+			// nameComp=[];
+			// mapComp = {'-1':-1};
+			
+			// for (var i=0;i<listCompartments.length;i++){
+				// mapComp[listCompartments[i][0]]=i;
+				// nameComp.push(listCompartments[i][1]);
+			// }
+			
+			// //idMap[bw]=[2,bv];
+			// //scene.children[indexStartNodes].geometry.attributes.compartment.array[h]
+			// var oldComp;
+			// if (idMap[dt[changes[0][0]][0]] && idMap[dt[changes[0][0]][0]][0]==2){
+				// //console.log(dt[changes[0][0]][2])
+				// //console.log(mapComp[dt[0][2]]);
+				// //console.log (scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[0][0]][1]]);
+				// oldComp = scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[changes[0][0]][0]][1]];
+				// scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[changes[0][0]][0]][1]]=mapComp[dt[changes[0][0]][2]];
+				// scene.children[indexStartNodes].geometry.attributes.compartment.needsUpdate = true;
+			// }
+			// for ( var i = 0; i < listCompartments.length; i ++ ) {
+				// stackCompInitialPos[objects[i].name]= new THREE.Vector3(objects[i].position.x,objects[i].position.y,objects[i].position.z);
+				// objects[i].name=listCompartments[i][0]+" "+listCompartments[i][1];
+			// }
+			
+			
+			// var bv=0;
+			// for( var bw = 0 , bww= metabolicNodes.length; bw < bww; bw++ ) {
+				// if (metabolicNodes[bw][6]==4){
+					
+					// //b5values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;					
+					// // try to assign the compartment of the majority of the products the reaction is linked to 
+					// // if there is no product, assign the compartment of the majority of modifiers
+					// // if there is no modifier, assign the compartment of the majority of reactants
+					// var listProducts= metabolicNodes[bw][11][1];
+					// var listModifiers= metabolicNodes[bw][11][2];
+					// var listReactants= metabolicNodes[bw][11][0];
+					// //if (bv==0){console.log(listProducts)}
+					// if (listProducts.length>0){
+						// var votes=[];
+						// for (var ncc=0;ncc<nbCompartments;ncc++){
+							// votes[ncc]=0;
+						// }
+						// for(var lp=0;lp<listProducts.length;lp++){
+							// if (mapComp[metabolicNodes[listProducts[lp]][3]]>=0)
+								// votes[mapComp[metabolicNodes[listProducts[lp]][3]]]++;
+						// }
+						// var winner= votes.indexOf(Math.max.apply( Math, votes ));
+						// //compartmentP2[ bv ] = winner;
+						// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv]= winner;
+						// if (winner==-1){
+							// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = mapComp[metabolicNodes[bw][3]];
+						// }
+					// } 
+					// else if (listModifiers.length>0){
+						// var votes=[];
+						// for (var ncc=0;ncc<nbCompartments;ncc++){
+							// votes[ncc]=0;
+						// }
+						// for(var lp=0;lp<listModifiers.length;lp++){
+							// if (mapComp[metabolicNodes[listModifiers[lp]][3]]>=0)
+								// votes[mapComp[metabolicNodes[listModifiers[lp]][3]]]++;
+						// }
+						// var winner= votes.indexOf(Math.max.apply( Math, votes ));
+						// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = winner;
+						
+						// if (winner==-1){
+							// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = mapComp[metabolicNodes[bw][3]];
+						// }
+					// }
+					// else if (listReactants.length>0){
+						// var votes=[];
+						// for (var ncc=0;ncc<nbCompartments;ncc++){
+							// votes[ncc]=0;
+						// }
+						// for(var lp=0;lp<listReactants.length;lp++){
+							// if (mapComp[metabolicNodes[listReactants[lp]][3]]>=0)
+								// votes[mapComp[metabolicNodes[listReactants[lp]][3]]]++;
+						// }
+						// var winner= votes.indexOf(Math.max.apply( Math, votes ));
+						// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = winner;
+						// if (winner==-1){
+							// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv] = mapComp[metabolicNodes[bw][3]];
+						// }
+					// }
+					// else {
+						// scene.children[indexStartNodes+1].geometry.attributes.compartment.array[bv]= mapComp[metabolicNodes[bw][3]];
+					// }
+					// bv++;
+				// }	
+			// }		
+			
+			// scene.children[indexStartNodes+1].geometry.attributes.compartment.needsUpdate = true;
+	
+			// for (var c=indexStartNodes;c<indexStartNodes+2;c++){
+				// for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
+					// for (var g=0;g<nbCompartments;g++){
+						// if (scene.children[c].geometry.attributes.compartment.array[h]==g){
+							// if (g==mapComp[dt[changes[0][0]][2]] && h==idMap[dt[changes[0][0]][0]][1]){
+								// scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x+(stackCompInitialPos[objects[g].name].x-stackCompInitialPos[objects[oldComp].name].x);//+stackCompInitialPos[objects[oldComp].name].x;
+								// scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y+(stackCompInitialPos[objects[g].name].y-stackCompInitialPos[objects[oldComp].name].y);//+stackCompInitialPos[objects[oldComp].name].y;
+								// scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z+(stackCompInitialPos[objects[g].name].z-stackCompInitialPos[objects[oldComp].name].z);//+stackCompInitialPos[objects[oldComp].name].z;
+							// }
+							// else{
+						// //nameComp[g]
+						// scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x-stackCompInitialPos[objects[g].name].x;
+						// scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y-stackCompInitialPos[objects[g].name].y;
+						// scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z-stackCompInitialPos[objects[g].name].z;
+						// }
+						// //scene.children[c].geometry.attributes.position.array[h*3+1]+=1000;
+						// //scene.children[c].geometry.attributes.position.array[h*3+2]+=1000;
+						// }
+					// }
+				// }
+				// scene.children[c].geometry.attributes.position.needsUpdate = true;
+			// }
+			// var iv=0;
+			// for ( var i = 0; i < segments; i ++ ) {
+				// var t1 = metabolicNodes[metabolicEdges[i][0]][6]
+				// var t2 = metabolicNodes[metabolicEdges[i][1]][6]
+				// //console.log(t1)
+				// //console.log(t2)
+				// //var ivList=[]
+				// var doIt=0
+				// if (t1==2){
+					// //console.log(idMap[jsonObj2[i][0]][1])
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;					
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+					
+					// iv++;
+				// }
+				// else if (t1==4){
+					// //console.log(idMap[jsonObj2[i][0]][1])
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+					// iv++;
+				// }
+				// if (t2 ==2){
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;						
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;	
+					// iv++;
+				// }
+				// else if (t2 ==4){
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;
+					// scene.children[indexStartNodes+2].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[indexStartNodes+1].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;				
+					// iv++;
+				// }
+				
+			// }
+			// scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
+			
+		// }
 		
 		
 	  },
@@ -2794,6 +3198,21 @@
 				objects[i2].name=listCompartments[i2][0]+" "+listCompartments[i2][1];
 			}
 			for (var i=0;i<dt.length;i++){
+			
+			
+				
+				
+				//mtnlLayout["nodes_compartments"][dt[c][0]]=[];
+				//mtnlLayout["nodes_compartments"][dt[c][0]].push(dt[c][1]);
+				
+				//console.log(dt[c])
+				if (idMap[dt[i][0]] && idMap[dt[i][0]][0]==2){
+					oldComp[dt[i][0]] = scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[i][0]][1]];
+					scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[dt[i][0]][1]]=mapComp[dt[i][2]];
+					scene.children[indexStartNodes].geometry.attributes.compartment.needsUpdate = true;
+				}
+			
+			
 				var cp=-1;
 				if (compIds.indexOf(dt[i][2])!=-1){
 					cp = compIds.indexOf(dt[i][2]);
@@ -2808,7 +3227,8 @@
 							listNodes[listNodes[dt[i][0]][11][0][i1]][3]= dt[i][2];
 							selectedMetabolicData[1][listNodes[dt[i][0]][11][0][i1]][3]=dt[i][2];
 							scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[listNodes[dt[i][0]][11][0][i1]][1]]=cp;
-							
+							mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][0][i1]][1]=dt[i][2];
+							//console.log(mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][0][i1]][1])
 						}
 					}
 					// products
@@ -2818,6 +3238,8 @@
 							listNodes[listNodes[dt[i][0]][11][1][i1]][3]= dt[i][2];
 							selectedMetabolicData[1][listNodes[dt[i][0]][11][1][i1]][3]=dt[i][2];
 							scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[listNodes[dt[i][0]][11][1][i1]][1]]=cp;
+							mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][1][i1]][1]=dt[i][2];
+							//console.log(mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][1][i1]][1])
 							
 						}
 					}
@@ -2828,6 +3250,8 @@
 							listNodes[listNodes[dt[i][0]][11][2][i1]][3]= dt[i][2];
 							selectedMetabolicData[1][listNodes[dt[i][0]][11][2][i1]][3]=dt[i][2];
 							scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[listNodes[dt[i][0]][11][2][i1]][1]]=cp;
+							mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][2][i1]][1]=dt[i][2];
+							//console.log(mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][2][i1]][1])
 							
 						}
 					}
@@ -2840,6 +3264,7 @@
 				//console.log(scene.children[indexStartNodes+1].geometry.attributes.compartment.array[idMap[dt[i][0]][1]])				
 			}
 			metabolicNodes=selectedMetabolicData[1];
+			saveLayout();
 			scene.children[indexStartNodes].geometry.attributes.compartment.needsUpdate = true;
 			scene.children[indexStartNodes+1].geometry.attributes.compartment.needsUpdate = true;
 			//console.log(oldComp)
@@ -3358,7 +3783,7 @@
 					//ht.clear();
 					ht.alter('remove_row', 0, tempdata2.length);
 					//console.log(searcharray)
-					tempdata2=searcharray;
+					tempdata3=searcharray;
 					if ($.isArray(searcharray) && searcharray[0] && $.isArray(searcharray[0])){
 						ht.populateFromArray (0, 0, searcharray,searcharray.length-1, 4);
 					}
