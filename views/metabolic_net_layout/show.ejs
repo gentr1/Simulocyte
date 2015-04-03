@@ -3227,7 +3227,10 @@
 							listNodes[listNodes[dt[i][0]][11][0][i1]][3]= dt[i][2];
 							selectedMetabolicData[1][listNodes[dt[i][0]][11][0][i1]][3]=dt[i][2];
 							scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[listNodes[dt[i][0]][11][0][i1]][1]]=cp;
-							mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][0][i1]][1]=dt[i][2];
+							//console.log(mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][0][i1]]);
+							//console.log(listNodes[dt[i][0]][11][0][i1]);
+							mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][0][i1]]=[listNodes[listNodes[dt[i][0]][11][0][i1]][1],listNodes[listNodes[dt[i][0]][11][0][i1]][3]];
+							//mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][0][i1]][1]=dt[i][2];
 							//console.log(mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][0][i1]][1])
 						}
 					}
@@ -3238,7 +3241,8 @@
 							listNodes[listNodes[dt[i][0]][11][1][i1]][3]= dt[i][2];
 							selectedMetabolicData[1][listNodes[dt[i][0]][11][1][i1]][3]=dt[i][2];
 							scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[listNodes[dt[i][0]][11][1][i1]][1]]=cp;
-							mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][1][i1]][1]=dt[i][2];
+							mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][1][i1]]=[listNodes[listNodes[dt[i][0]][11][1][i1]][1],listNodes[listNodes[dt[i][0]][11][1][i1]][3]];
+							//mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][1][i1]][1]=dt[i][2];
 							//console.log(mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][1][i1]][1])
 							
 						}
@@ -3250,7 +3254,8 @@
 							listNodes[listNodes[dt[i][0]][11][2][i1]][3]= dt[i][2];
 							selectedMetabolicData[1][listNodes[dt[i][0]][11][2][i1]][3]=dt[i][2];
 							scene.children[indexStartNodes].geometry.attributes.compartment.array[idMap[listNodes[dt[i][0]][11][2][i1]][1]]=cp;
-							mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][2][i1]][1]=dt[i][2];
+							mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][2][i1]]=[listNodes[listNodes[dt[i][0]][11][2][i1]][1],listNodes[listNodes[dt[i][0]][11][2][i1]][3]];
+							//mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][2][i1]][1]=dt[i][2];
 							//console.log(mtnlLayout["nodes_compartments"][listNodes[dt[i][0]][11][2][i1]][1])
 							
 						}
