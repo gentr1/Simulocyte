@@ -184,47 +184,141 @@ module.exports = {
 			FbaExperiment.findOne(req.param('id'), function foundExp(err, exp) {
 				if (err) return next(err);
 				if (!exp) return next();
+				Metabolic_net.findOne({ name: exp.metabolic_net_name}, function foundMtb(merr, mtb) {
+					if (merr) return next(merr);
+					if (!mtb) return next();
+					
+					Metabolic_net_layout.find({ metabolic_net: mtb.name}, function foundMtnls(errl, mtnls) {
+						if (errl) return next(errl);
+						if (!mtnls) return next();
+						var mtnlID="";
+						if (req.param('mtnl-id')){	
+							mtnlID=req.param('mtnl-id');
+						}
+					
+					
+						Lab.find(function(err2, labs) {
+							if (err2) return next(err2);
+							var inLabs=[];
+							for (var j=0;j<labs.length;j++){
+								if (labs[j]["users"].indexOf(username)!=-1){
+									inLabs.push(labs[j].name)
+								}
+							}
+							var goNext =false;
+							var users = exp.users;
+							for (var j=0;j<users.length;j++){
+								if ((users[j][0]==username || inLabs.indexOf(users[j][0])!=-1) && users[j][1]!=true){
+									goNext=true;
+								}
+							}
+							if (goNext==true ){
+								
+								var mtnl={};
+								var listLayouts=[];
+								
+								for (var i=0;i<mtnls.length;i++){
+									var users = mtnls[i].users;
+									var userIndex = users.indexOf(username);
+									var isNotIn=true;
+									for (var j=0;j<users.length;j++){
+										if (users[j][0]==username){
+											isNotIn=false;
+										}
+									}
+									for (var j=0;j<users.length;j++){
+										if ((users[j][0]==username || inLabs.indexOf(users[j][0])!=-1) && users[j][1]!=true){
+											var isin=false;
+											for (var j1=0;j1<listLayouts.length;j1++){
+												if (listLayouts[j1][0]==mtnls[i].id){
+													isin=true;
+												}
+											}
+											if (isin==false){
+												listLayouts.push([mtnls[i].id, mtnls[i].name, mtnls[i].comment, mtnls[i].metabolic_net]);
+												if (mtnlID!="" && mtnlID==mtnls[i].id){
+													mtnl =mtnls[i];
+												}
+											}
+										}
+										
+									}
+									if (isNotIn && mtnls[i].openpolicy && mtnls[i].openpolicy==true){
+										listLayouts.push([mtnls[i].id, mtnls[i].name, mtnls[i].comment, mtnls[i].metabolic_net]);
+										if (mtnlID!="" && mtnlID==mtnls[i].id){
+											mtnl =mtnls[i];
+										}
+									}
+								}
+								
+								
+								// for (var i=0;i<mtnls.length;i++){
+									// listLayouts.push([mtnls[i].id, mtnls[i].name, mtnls[i].comment]);
+									// if (mtnlID!="" && mtnlID==mtnls[i].id){
+										// mtnl =mtnls[i];
+									// }
+								// }
+								var goNextL =false;
+								var users = mtb.users;
+								for (var j=0;j<users.length;j++){
+									if ((users[j][0]==username || inLabs.indexOf(users[j][0])!=-1) && users[j][1]!=true){
+										goNextL=true;
+									}
+								}
+								var isNotIn=true;
+								for (var j=0;j<users.length;j++){
+									if (users[j][0]==username){
+										isNotIn=false;
+									}
+								}
+								
+								
+								var method = exp.results[0]['method'];
+								var status = exp.results[0]['status'];
+								var file = 'assets/output-fba-files/'+exp.name+'__' + 0 + '.' + method + '.xls';
+								  
+								  try {
+									fs.readFile(file,"utf-8", function (err, data) {
+									
+										if (goNextL==true){	
+										  res.view(
+											{
+											  result: data, 
+											  name: exp.name, 
+											  id: exp.id,
+											  comment: exp.comment,
+											  objective: exp.objective,
+											  method: method,
+											  status: status,
+											  mtb: mtb,
+											  mtnls: listLayouts,
+											  mtnl: mtnl
+											});
+										}
+										else if (isNotIn && mtn.openpolicy==true){
+											res.view(
+											{
+											  result: data, 
+											  name: exp.name, 
+											  id: exp.id,
+											  comment: exp.comment,
+											  objective: exp.objective,
+											  method: method,
+											  status: status,
+											  mtb: mtb,
+											  mtnls: listLayouts,
+											  mtnl: mtnl
+											});
+										}
+										else return next();
+									});
+								  } catch(erf){}
+							}
+							else return next();
+						});
+					
+					});
 				
-				Lab.find(function(err2, labs) {
-					if (err2) return next(err2);
-					var inLabs=[];
-					for (var j=0;j<labs.length;j++){
-						if (labs[j]["users"].indexOf(username)!=-1){
-							inLabs.push(labs[j].name)
-						}
-					}
-					var goNext =false;
-					var users = exp.users;
-					for (var j=0;j<users.length;j++){
-						if ((users[j][0]==username || inLabs.indexOf(users[j][0])!=-1) && users[j][1]!=true){
-							goNext=true;
-						}
-					}
-					if (goNext==true ){
-					
-						var method = exp.results[0]['method'];
-						var status = exp.results[0]['status'];
-					
-					
-					
-						  var file = 'assets/output-fba-files/'+exp.name+'__' + 0 + '.' + method + '.xls';
-						  
-						  try {
-							fs.readFile(file,"utf-8", function (err, data) {
-							  res.view(
-								{
-								  result: data, 
-								  name: exp.name, 
-								  id: exp.id,
-								  comment: exp.comment,
-								  objective: exp.objective,
-								  method: method,
-								  status: status
-								});
-							});
-						  } catch(erf){}
-					}
-					else return next();
 				});
 			});
 		}

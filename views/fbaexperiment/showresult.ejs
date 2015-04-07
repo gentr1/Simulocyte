@@ -1,5 +1,10 @@
 <br><br>
 <div class='container' id="showresult" style="width:80%">
+<%var data=[];
+	_.each(mtb.file, function(compartment) {
+		data.push(compartment);
+	});
+%>
 <% if(status!=="Processed") { %>
 	<h1><center>Calculations in progress</center></h1>
 	<form action="/fbaexperiment/show/<%= id %>" id="experiment-edit-form" method="POST" class="form-signin form-inline">
@@ -67,10 +72,366 @@
 	<br><br><div id="fvaResult"></div>
 <% } %>
 
+<nav>
+	<a href="" id="menuToggle" title="show menu">
+	<span class="navClosed"><i>show menu</i></span>
+	</a>
+	<form action="/fbaexperiment/showresult/<%= id %>" id="layout-select-form" method="POST" style="position: relative;left: 0px;width:250px"><p style="position: relative;left: 20px;color:white">Choose Layout: 
+	<input type="text" name="mtnl-id" id ="mtnl-id" style="visibility: hidden;" value=""/>
+	<select name="metabolic_net_layouts" id="layout-selector" onchange="selectMTNLayout(this)" style="position: relative;left: 0px;width:120px;color:black">
+			<option value="">None</option>
+			<% _.each(mtnls, function(mtnl) {%>
+			   <option value=<%=mtnl[0]%>><%=mtnl[1]%></option>
+			<% }) %>
+		</select>
+		
+	</p>
+	<input type="submit" value="Select Layout:" class="btn btn-sm btn-success" style="position: relative;left: 20px;width:100px"/>
+	<input type="hidden" name="_csrf" value="<%= _csrf %>" />
+	</form>
+	<a href="#" title="Item 1">Hide/Show</a>		
+	<br><p style="position: relative;left: 20px;color:white">Line Opacity: <input id="defaultSlider" type="range" min="0.0" max="20.0" value="15" step="0.005" onchange="updateSlider(this.value)" style="position: relative;left: 20px"/></p>			
+</nav>
+
+<div id="menu" >
+
+
+</div><br><br>
+<div id="democ0" style="position: absolute;left: 0px;z-index:1000"></div>
+<div id="container"  style="position: absolute;left: 0px; overflow: inherit">  </div>
+	
+<div id="advert" ></div>
+<div id="dataTable" style="position: absolute; " align="left">
+<table id="list4"></table>
 </div>
+</div>
+
+
+
+
+<script type="x-shader/x-vertex" id="vertexshaderP1">
+
+			attribute float size;
+			attribute vec3 ca;
+			varying vec3 vColor;
+			attribute float customVisible;
+			void main() {
+				vColor = ca;
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );				
+				//gl_PointSize = size;
+				gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );
+				gl_Position = projectionMatrix * mvPosition;
+
+			}
+
+		</script>
+
+		<script type="x-shader/x-fragment" id="fragmentshaderP1">
+
+			uniform vec3 color;
+			uniform sampler2D texture;
+			varying vec3 vColor;
+			void main() {
+				gl_FragColor = vec4( color * vColor, 1.0 );
+				gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+			}
+
+		</script>
+		
+		<script type="x-shader/x-vertex" id="vertexshaderP2">
+
+			attribute float size;
+			attribute vec3 ca;
+			varying vec3 vColor;
+			attribute float customVisible;
+			void main() {
+				vColor = ca;
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );				
+				//gl_PointSize = size;
+				gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );
+				gl_Position = projectionMatrix * mvPosition;
+
+			}
+
+		</script>
+
+		<script type="x-shader/x-fragment" id="fragmentshaderP2">
+
+			uniform vec3 color;
+			uniform sampler2D texture;
+			varying vec3 vColor;
+			void main() {
+				gl_FragColor = vec4( color * vColor, 1.0 );
+				gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+			}
+
+		</script>
+		
+		<script type="x-shader/x-vertex" id="vertexshaderP3">
+
+			attribute float size;
+			attribute vec3 ca;
+			varying vec3 vColor;
+			attribute float customVisible;
+			void main() {
+				vColor = ca;
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );				
+				//gl_PointSize = size;
+				gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );
+				gl_Position = projectionMatrix * mvPosition;
+
+			}
+
+		</script>
+
+		<script type="x-shader/x-fragment" id="fragmentshaderP3">
+
+			uniform vec3 color;
+			uniform sampler2D texture;
+			varying vec3 vColor;
+			void main() {
+				gl_FragColor = vec4( color * vColor, 1.0 );
+				gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+			}
+
+		</script>
+		
+		<script type="x-shader/x-vertex" id="vertexshaderP4">
+
+			attribute float size;
+			attribute vec3 ca;
+			varying vec3 vColor;
+			attribute float customVisible;
+			void main() {
+				vColor = ca;
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );				
+				//gl_PointSize = size;
+				gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );
+				gl_Position = projectionMatrix * mvPosition;
+
+			}
+
+		</script>
+
+		<script type="x-shader/x-fragment" id="fragmentshaderP4">
+
+			uniform vec3 color;
+			uniform sampler2D texture;
+			varying vec3 vColor;
+			void main() {
+				gl_FragColor = vec4( color * vColor, 1.0 );
+				gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+			}
+
+		</script>
+		
+		
+		<script type="x-shader/x-vertex" id="vertexshaderP5">
+
+			attribute float size;
+			attribute vec3 ca;
+			varying vec3 vColor;
+			attribute float customVisible;
+			void main() {
+				vColor = ca;
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );				
+				//gl_PointSize = size;
+				gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );
+				gl_Position = projectionMatrix * mvPosition;
+
+			}
+
+		</script>
+
+		<script type="x-shader/x-fragment" id="fragmentshaderP5">
+
+			uniform vec3 color;
+			uniform sampler2D texture;
+			varying vec3 vColor;
+			void main() {
+				gl_FragColor = vec4( color * vColor, 1.0 );
+				gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+			}
+
+		</script>
+		
+		<script type="x-shader/x-vertex" id="vertexshaderP6">
+
+			attribute float size;
+			attribute vec3 ca;
+			varying vec3 vColor;
+			attribute float customVisible;
+			void main() {
+				vColor = ca;
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );				
+				//gl_PointSize = size;
+				gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );
+				gl_Position = projectionMatrix * mvPosition;
+
+			}
+
+		</script>
+
+		<script type="x-shader/x-fragment" id="fragmentshaderP6">
+
+			uniform vec3 color;
+			uniform sampler2D texture;
+			varying vec3 vColor;
+			void main() {
+				gl_FragColor = vec4( color * vColor, 1.0 );
+				gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+			}
+
+		</script>
+		
+		<script type="x-shader/x-vertex" id="vertexshaderP7">
+
+			attribute float size;
+			attribute vec3 ca;
+			varying vec3 vColor;
+			attribute float customVisible;
+			void main() {
+				vColor = ca;
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );				
+				//gl_PointSize = size;
+				gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );
+				gl_Position = projectionMatrix * mvPosition;
+
+			}
+
+		</script>
+
+		<script type="x-shader/x-fragment" id="fragmentshaderP7">
+
+			uniform vec3 color;
+			uniform sampler2D texture;
+			varying vec3 vColor;
+			void main() {
+				gl_FragColor = vec4( color * vColor, 1.0 );
+				gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+			}
+
+		</script>
+		
+		<script type="x-shader/x-vertex" id="vertexshader2">
+
+			//uniform float amplitude;
+			//attribute vec3 displacement;
+			attribute vec3 ca;
+			varying vec3 vColor;
+			varying float opacity;
+			attribute float op;
+			void main() {
+				//vec3 newPosition = position + amplitude * displacement;
+				vColor = ca;
+				opacity =op;
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+			}
+			//uniform float amplitude;
+			//attribute vec3 displacement;
+			//attribute vec3 ca;
+			//varying vec3 vColor;
+			//void main() {
+			//	vec3 newPosition = position + amplitude * displacement;
+			//	vColor = ca;
+			//	gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
+			//}
+
+		</script>
+
+		<script type="x-shader/x-fragment" id="fragmentshader2">
+			uniform vec3 color;
+			varying float opacity;
+			varying vec3 vColor;
+			void main() {
+
+				gl_FragColor = vec4( vColor * color, opacity );
+
+			}
+			//uniform vec3 color;
+			//uniform float opacity;
+			//varying vec3 vColor;
+			//void main() {
+
+			//	gl_FragColor = vec4( vColor * color, opacity );
+
+			//}
+
+		</script>
+		
+		<script type="x-shader/x-vertex" id="vertexshader3">
+
+			attribute float size;
+			attribute vec3 ca;
+			uniform float mixAmount;
+			attribute vec3 endPosition;
+			varying vec3 vColor;
+
+			void main() {
+
+				vColor = ca;
+				vec3 newPosition = mix( position, endPosition, mixAmount );
+				vec4 mvPosition = modelViewMatrix * vec4( newPosition, 1.0 );
+
+				//gl_PointSize = size;
+				gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );
+
+				gl_Position = projectionMatrix * mvPosition;
+
+			}
+
+		</script>
+
+		<script type="x-shader/x-fragment" id="fragmentshader3">
+
+			uniform vec3 color;
+			uniform sampler2D texture;
+
+			varying vec3 vColor;
+
+			void main() {
+
+				gl_FragColor = vec4( color * vColor, 1.0 );
+				gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+
+			}
+
+		</script>
+
+
+
+
 <script>
+
+(function($){
+	$(document).ready(function(){
+	$('#menuToggle').click(function(e){
+	var $parent = $(this).parent('nav');
+	$parent.toggleClass("open");
+	var navState = $parent.hasClass('open') ? "hide" : "show";
+	$(this).attr("title", navState + " navigation");
+	// Set the timeout to the animation length in the CSS.
+	setTimeout(function(){
+	//console.log("timeout set");
+	$('#menuToggle > span').toggleClass("navClosed").toggleClass("navOpen");
+	}, 200);
+	e.preventDefault();
+	});
+	});
+})(jQuery);
+
+function selectMTNLayout(el){
+	document.getElementById("mtnl-id").value=el.value;
+}
+
+var mtnl = <%-JSON.stringify(mtnl)%>
+if (mtnl.hasOwnProperty("id")){
+	document.getElementById("layout-selector").value=mtnl.id;
+	//console.log(mtnl.id)
+}
+var fbaData = [];
 if(<%- JSON.stringify(method) %>==="fba") {
-	var fbaData = [];
+	fbaData = [];
 	var result =<%- JSON.stringify(result) %>;
 	result = result.split(';')[0];
 	var lines = result.split('\n');
@@ -88,8 +449,8 @@ if(<%- JSON.stringify(method) %>==="fba") {
 		fbaData.push([ fields[0], fields[1], comment ]);
 	}
 
-	var $container = $("#fbaResult");
-	$container.handsontable({
+	var $containerf = $("#fbaResult");
+	$containerf.handsontable({
 	  data: fbaData,
 	  width: ($("#showresult").width()),
 	  height:600,
@@ -99,10 +460,12 @@ if(<%- JSON.stringify(method) %>==="fba") {
 	  colHeaders: ['Reaction name', 'Reaction Flux', 'Comment'],
 	  minSpareRows: 1
 	});
+	
+	
 }
 
 if(<%- JSON.stringify(method) %>==="fva") {
-	var fbaData = [];
+	fbaData = [];
 	var result =<%- JSON.stringify(result) %>;
 	result = result.split(';')[0];
 	var lines = result.split('\n');
@@ -120,8 +483,8 @@ if(<%- JSON.stringify(method) %>==="fva") {
 		fbaData.push([ fields[0], fields[1].split(':')[0], fields[1].split(':')[1], fields[2].split(':')[0], fields[2].split(':')[1],comment ]);
 	}
 
-	var $container1 = $("#fvaResult");
-	$container1.handsontable({
+	var $containerf1 = $("#fvaResult");
+	$containerf1.handsontable({
 	  data: fbaData,
 	  width: ($("#showresult").width()),
 	  height:600,
@@ -132,5 +495,3671 @@ if(<%- JSON.stringify(method) %>==="fva") {
 	  minSpareRows: 1
 	});
 }
+
+var cbColModel, idsOfSelectedRows = [];
+		
+		var layouts = <%-JSON.stringify(mtnls)%>
+		var mtnl = <%-JSON.stringify(mtnl)%>
+		if (mtnl.hasOwnProperty("id")){
+			document.getElementById("layout-selector").value=mtnl.id;
+			//console.log(mtnl.id)
+		}
+		var mtnlLayout=mtnl.layout;
+		var generalLayout ={'merged':{},'above':{},'outer':{},'satellite':{},'in':{}};
+		var objects = [];
+		var spacing=1650;
+		var radiusComp=550;
+		var yStartDisplacement=100;
+		//var yStartDisplacement=400;
+		var nodeSize=5;
+		var lineOpacity=0.1;
+		
+		
+		if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+		
+		var renderer, renderer2, scene,scene2,  camera, stats, controls, camera2,pip;
+		var element1;
+		var PointCloud1, uniforms, attributes;
+		var mouse = new THREE.Vector2(), INTERSECTED;
+		var projector;
+		//var vc1;
+		var camTween;
+		var mtween=false;
+		var animatorT1;
+		
+		var allFalse= true;
+		var simModeValue=0;
+		var simFlowChart=0;
+		var cntLabels=0;
+		
+		var WIDTH = window.innerWidth;
+		var HEIGHT = window.innerHeight;
+		var geometry;
+		var bgeometryP1;
+		var bgeometryP2;
+		var bgeometryP3;
+		var bgeometryP4;
+		var bgeometryP5;
+		var bgeometryP6;
+		var bgeometryP7;
+		
+		var bgeometry2;
+		var tokenGeometry;
+		var tvertices ;
+		var tvalues_size ;
+		var tvalues_color ;
+		var tvalues_p ;
+		var KeggMapPlan;
+		var MiniKeggMapPlan;
+		var geometryKegg;
+		var keggSegment = 1000;
+		var keggSegmentPts = keggSegment*2;
+		var keggPositions;
+		var keggColors;
+		var listChangingKeggCoordinates=[];
+		var previousKeggLength=0;
+		var cubesGeometry=[];
+		var keggCubesProperties={};
+		var noKeggCube=true;
+		
+		var simTimer=0;
+		var reactionIsDone=false;
+		var listReactionsDone=[]
+		//var simTimerPrevious=0;
+		var simEnd=0;
+		var simulationIsOn=false;
+		var simulationIsPaused=false;
+		var simRow=[];
+		var simDataTime={};
+		
+		
+		var arraymaterial=[];
+		
+		
+		var particleClass = {
+					0: "DNA",
+					1: "RNA",
+					2: "Protein",
+					3: "Degradation Product",
+					4: "Standard Petri Net",
+					5: "Logical Transition",
+					6: "Coarse Transition"
+					};
+		
+		var particles;
+		
+		
+		var arrows =[];
+		
+		
+		var b1values_size;
+		var b1positions;
+		var b1values_color;
+		var b1values_compartment;
+		var particle1ShaderMaterial ;
+		
+		var b2values_size;
+		var b2positions;
+		var b2values_color;
+		var b2values_compartment;
+		var particle2ShaderMaterial ;
+		
+		var b3values_size;
+		var b3positions;
+		var b3values_color;
+		var b3values_compartment;
+		var particle3ShaderMaterial ;
+		
+		var b4values_size;
+		var b4positions;
+		var b4values_color;
+		var b4values_compartment;
+		var particle4ShaderMaterial ;
+		
+		var b5values_size;
+		var b5positions;
+		var b5values_color;
+		var b5values_compartment;
+		var particle5ShaderMaterial ;
+		
+		var b6values_size;
+		var b6positions;
+		var b6values_color;
+		var b6values_compartment;
+		var particle6ShaderMaterial ;
+		
+		var b7values_size;
+		var b7positions;
+		var b7values_color;
+		var b7values_compartment;
+		var particle7ShaderMaterial ;
+		var linesShaderMaterial;
+		var tokenShaderMaterial;
+		var marker=0;
+		var sprite;
+		
+		var b2lpositions;
+		var b2lcolors ;
+		var b2lcompartments;
+		var b2lopacity;
+		// 
+		var cssScene;
+		var rendererCSS;
+		var cssObjects=[];
+		
+		var cssScene2;
+		var rendererCSS2;
+		var cssObjects2=[];
+		
+		var cssScene3;
+		var rendererCSS3;
+		var cssObjects3=[];
+		// 
+		var flagPick=0;
+		
+			
+		var outlineMaterial1;
+		var outlineMesh1;
+		var lineGeometry;
+		var mesh;
+		var tokenPS;
+		// clock to animate particles
+		var clock = new THREE.Clock();
+		
+		var parameters;
+		var gui;
+		
+		var isOnParticle=0;
+		var isOnLine=0;
+		var keyboard = new KeyboardState();
+		var goUp=false;
+		var goDown=false;
+		var goLeft=false;
+		var goRight=false;
+		var zoomIn=false;
+		var zoomOut=false;
+		var closest;
+		var closestLine;
+		var closestid;
+		var closestType=-1;
+		var hoveredType=-1;
+		var sizeParticleGuiElem;
+		var colorParticleGuiElem;
+		var colorParticleGui = new THREE.Color( 0xffffff );
+		
+		var stopThreeJsMouseEvent=false;
+		var spreadsheet1Visible=false
+		
+		var updatedListModels=false;
+		var updatedModel=false;
+		var resetSpreadsheet=false;
+		var modelData;
+		var simData;
+		var simDataBounds=[];
+		
+		var stackTokenModel=[];
+		startPositionTokenMap={};
+		endPositionTokenMap={};
+		
+		function cameraGoTo(position, target) {
+						TWEEN.removeAll();
+						new TWEEN.Tween( camera.position ).delay(300)
+						.to( { x: position.x, y: position.y, z: position.z }, 300 )
+						.start();
+						new TWEEN.Tween( controls.target )
+						.to( { x: target.x, y: target.y, z: target.z }, 300 )
+						.start();
+						
+					}
+		var timerElement=document.getElementById("timer");
+		var sliderElement=document.getElementById("slider");
+		var listModels;
+		
+		
+		var modelVisible=false;
+		var selectedModel;
+		var selectedMetabolicData;
+		
+		selectedMetabolicData = <%-JSON.stringify(data)%>
+		//console.log("getting metabolic data from default file recon2");
+		// set list of edges and nodes from default metabolic data
+		var metabolicEdges;
+		var metabolicNodes;
+		var metabolicCompartments;
+		
+		// part where compartment data come from layout
+		var listCompartments=[];
+	
+		if (!mtnlLayout){
+			listCompartments=selectedMetabolicData[0];
+			mtnlLayout={"list_compartments":[],"compartments_layout":{}, "nodes_layout":{},"nodes_compartments":{}};
+		}
+		else {
+			if (mtnlLayout["list_compartments"] && mtnlLayout["list_compartments"].length==0){
+				listCompartments=selectedMetabolicData[0];
+			}
+			else if (mtnlLayout["list_compartments"] && mtnlLayout["list_compartments"].length>0){
+				listCompartments=mtnlLayout["list_compartments"];
+				//console.log("initial existing list of compartments")
+			}
+		}
+		mtnlLayout["list_compartments"]=listCompartments;
+		
+		//console.log(listCompartments)
+		var nbCompartments=listCompartments.length
+		var compIds=[];
+		for (var i=0; i<listCompartments.length;i++){
+			compIds.push(listCompartments[i][0]);
+		}
+		
+		// change compartment nodes attribution from data
+		if (mtnlLayout["nodes_compartments"]){
+			var listChangedNodes = Object.keys(mtnlLayout["nodes_compartments"]);
+			if (listChangedNodes.length>0){
+			
+				for(var i=0, ii= listChangedNodes.length;i<ii;i++){			
+					//console.log(selectedMetabolicData[1][listChangedNodes[i]])
+					selectedMetabolicData[1][listChangedNodes[i]][1]=mtnlLayout["nodes_compartments"][listChangedNodes[i]][0];
+					selectedMetabolicData[1][listChangedNodes[i]][3]=mtnlLayout["nodes_compartments"][listChangedNodes[i]][1];
+					//console.log(selectedMetabolicData[1][listChangedNodes[i]])
+				}
+			}
+			
+		}
+		
+		metabolicCompartments = listCompartments;
+		nbCompartments=listCompartments.length
+					
+		
+		var nameModel=<%- JSON.stringify(mtb.name) %>;
+		
+		var txtComp=[]
+		var maxNbComp=20;
+		
+		
+		var nameComp=[];
+		var mapComp = {'-1':-1};
+		
+		for (var i=0;i<listCompartments.length;i++){
+			mapComp[listCompartments[i][0]]=i;
+			nameComp.push(listCompartments[i][1]);
+		}
+		
+		
+		metabolicNodes = selectedMetabolicData[1];
+		metabolicEdges = selectedMetabolicData[2];
+		
+		
+		
+		var jsonObj1=metabolicNodes
+		var jsonObj2=metabolicEdges
+		
+		// extract number of qsspn typed icons from lists of nodes...
+		var mnbDNA=0;
+		var mnbRNA=0;
+		var mnbProt=0;
+		var mnbDegProd=0;
+		var mnbPN=0;
+		var mnbLog=0;
+		var mnbCoarse=0;
+		
+		var nbPlacesModel=0;
+		var nbReactionsModel=0;
+		var nbEdgesModel=0;
+		
+		for (var i = 0, ii= jsonObj1.length;i<ii;i++){
+			if (jsonObj1[i][6]==0){
+				mnbDNA++;
+			}
+			if (jsonObj1[i][6]==1){
+				mnbRNA++;
+			}
+			if (jsonObj1[i][6]==2){
+				mnbProt++;
+			}
+			if (jsonObj1[i][6]==3){
+				mnbDegProd++;
+			}
+			if (jsonObj1[i][6]==4){
+				mnbPN++;
+			}
+			if (jsonObj1[i][6]==5){
+				mnbLog++;
+			}
+			if (jsonObj1[i][6]==6){
+				mnbCoarse++;
+			}
+		}
+		var selectedModelEdges;
+		var selectedModelNodes;
+		
+		
+		var nbDNAParticles=mnbDNA; // nb of DNA elements
+		var nbRNAParticles=mnbRNA; // nb of RNA elements
+		var nbProtParticles=mnbProt; // nb of proteins
+		var nbDegradParticles=mnbDegProd; // nb of degradation products
+		var nbPNParticles=mnbPN; // nb of PN standard places
+		var nbLogParticles=mnbLog; // nb of logical PN places
+		var nbCoarseParticles=mnbCoarse; // nb of PN coarse transitions
+		var maxNbTokenModel=nbPNParticles;
+		var idMap=[];
+		var typesMap=[];
+		for (var i=0;i<7;i++){
+			typesMap[i]=[];
+		};
+		var reactionMap=[];
+		
+		var segments =jsonObj2.length;
+		//var segments =0;
+		var segmentPts =segments*2;
+		
+		
+		var geometryLineChart;
+		var chartSegment = 6000;
+		var chartSegmentPts = chartSegment*2;
+		var chartPositions ;
+		var chartColors ;
+		var meshLineChart ;
+		
+		
+		//$.get( "slickgrid7.html", function( data ) {
+  //alert( "Data Loaded: " + data );
+//});
+		
+		var mselectedList=[];
+		// element for spreadsheet selection
+		spritesSelected=[];
+		nbSpritesSelected=50;
+		var modelReactionLocators=[];
+		var modelProductLocators=[];
+		var modelReactantLocators=[];
+		var modelModifierLocators=[];
+		
+		var nbModelReactionLocators=50;
+		var nbModelPlanesFlow=500;
+		var planeMesh=[];
+		var stackModel2PlaneMesh=[];
+		var flowsStack=[];
+		var selectedNodesPaths=[];
+		var selectedLinesPaths=[];
+		var toggledLines=0
+		var toggledToken=0
+		var linesMap=[]
+		var selectedLinesPathsIds=[];
+		var extraLinesCnt=0;
+		var startModelPlaces=0;
+		var startModelReactions=0;
+		var endModelPlaces=0;
+		var endModelReactions=0;
+		var myLink =[]
+		var myLinkName=[]
+		for (var ln =0;ln<10;ln++){
+			myLink[ln]=""
+			myLinkName[ln]=""
+		}
+		
+		var tokenFlux=[];
+		var tokenBounds=[];
+		var indexDisabledToken=[];
+		
+		var tokenStackCount=0;
+		var clearedTokenIndex=[]
+		
+		//var anim = document.getElementById("animload");
+		//anim.style.visibility="hidden";
+		
+		
+		
+		//var announcementText= document.createElement('div');
+		var announcementText= document.getElementById("advert");
+		announcementText.style.position = 'absolute';
+		
+		announcementText.style.width = 100;
+		announcementText.style.height = 100;
+		//announcementText.setAttribute('animation', 'fadeOut');
+		
+		announcementText.style.color = "white";
+		announcementText.style.textAlign="left";
+		announcementText.style.border="3px solid";
+		announcementText.style.font="italic bold 20px arial";
+		announcementText.style.padding="5px";
+		announcementText.style.background="#33AA33";
+		//announcementText.style.cssText = 'border: 3px solid #FFF;border-radius: 5px;color: #FFF;font-family: arial;';
+		//text0.style.backgroundColor = "#FFFFCC";
+		//text1.innerHTML = ' <input type="text" name="first_name" value="" maxlength="100" />';
+		announcementText.innerHTML = '<p>hello </p>';
+		
+		announcementText.style.top = 2000 + 'px';
+		announcementText.style.left = 2000 + 'px';
+		document.body.appendChild(announcementText);
+		
+		
+		var text0 = document.createElement('div');
+		text0.style.position = 'absolute';
+		text0.style.width = 100;
+		text0.style.height = 100;
+		text0.style.color = "white";
+		text0.style.textAlign="left";
+		//text0.style.backgroundColor = "#FFFFCC";
+		//text1.innerHTML = ' <input type="text" name="first_name" value="" maxlength="100" />';
+		text0.innerHTML = 'hello ';
+		text0.style.top = 2000 + 'px';
+		text0.style.left = 2000 + 'px';
+		document.body.appendChild(text0);
+		
+		var text1 = document.createElement('div');
+		text1.style.position = 'absolute';
+		text1.style.width = 100;
+		text1.style.height = 100;
+		text1.style.color = "black";
+		text1.style.backgroundColor = "#FFFFCC";
+		//text1.innerHTML = ' <input type="text" name="first_name" value="" maxlength="100" />';
+		text1.innerHTML = 'hello ';
+		text1.style.top = 2000 + 'px';
+		text1.style.left = 2000 + 'px';
+		//text1.style.zIndex = -1;
+		document.body.appendChild(text1);
+		
+		var textk = document.createElement('div');
+		textk.style.position = 'absolute';
+		textk.style.width = 100;
+		textk.style.height = 100;
+		textk.style.color = "black";
+		textk.style.backgroundColor = "#FFFFCC";
+		//text1.innerHTML = ' <input type="text" name="first_name" value="" maxlength="100" />';
+		textk.innerHTML = 'hello ';
+		textk.style.top = 2000 + 'px';
+		textk.style.left = 2000 + 'px';
+		document.body.appendChild(textk);
+		var textkPreviousPos= new THREE.Vector3( 2000, 2000, 1 );
+		
+		var text1PreviousPos= new THREE.Vector3( 2000, 2000, 1 );
+		var text1PreviousString="";
+		
+		var listGenes = document.createElement('div');
+		listGenes.id="listGenes";
+		var listGenesTitle = document.createElement('div');
+		listGenesTitle.innerHTML="Expressed by gene(s):";
+		listGenesTitle.style.textAlign="left";
+		var listGenesContent = document.createElement('div');
+		listGenesContent.className="scroll-box";
+		listGenes.style.color = "white";
+		listGenesContent.style.color = "white";
+		listGenesContent.innerHTML = '<ul style="margin-left:0em;padding-left:1.3em;height:50px;"><li >A</li><li >A</li><li >A</li><li >A</li><li >A</li><li >A</li><li >A</li><li >A</li><li >A</li></ul>';
+		listGenes.style.position = 'absolute';
+		listGenes.style.top = 2000 + 'px';
+		listGenes.style.left = 2000 + 'px';
+		listGenes.appendChild(listGenesTitle);
+		listGenes.appendChild(listGenesContent);
+		document.body.appendChild(listGenes);
+		
+		var listLinks = document.createElement('div');
+		listLinks.id="listLinks";
+		var listLinksTitle = document.createElement('div');
+		listLinksTitle.innerHTML="Linked to:";
+		listLinksTitle.style.color = "white";
+		listLinksTitle.style.textAlign="left";
+		var listLinksContent = document.createElement('div');
+		listLinksContent.className="scroll-box";
+		
+		listLinksContent.style.color = "white";
+		listLinksContent.innerHTML = '<ul style="margin-left:0em;padding-left:1.3em;height:150px;"><li >A</li><li >A</li><li >A</li><li >A</li><li >A</li><li >A</li><li >A</li><li >A</li><li >A</li></ul>';
+		listLinks.style.position = 'absolute';
+		listLinks.style.top = 2000 + 'px';
+		listLinks.style.left = 2000 + 'px';
+		listLinks.appendChild(listLinksTitle);
+		listLinks.appendChild(listLinksContent);
+		document.body.appendChild(listLinks);
+		
+		for (var i=0;i<maxNbComp;i++){
+			txtComp[i] = document.createElement('div');
+			txtComp[i].style.position = 'absolute';
+			txtComp[i].style.width = 100;
+			txtComp[i].style.height = 100;
+			txtComp[i].style.color = "black";
+			txtComp[i].style.fontSize="xx-small";
+			txtComp[i].id = "txt"+i;
+			//txtComp[i].style.fontWeight="1900";
+			txtComp[i].style.backgroundColor = "#99FFCC";
+			txtComp[i].style.opacity = 0.5;
+			//text1.innerHTML = ' <input type="text" name="first_name" value="" maxlength="100" />';
+			txtComp[i].innerHTML = 'hello ';
+			txtComp[i].style.top = 4000 + 'px';
+			txtComp[i].style.left = 4000 + 'px';
+			txtComp[i].style.zIndex = 1000;
+			txtComp[i].className="disabled";
+			//txtComp[i].style="cursor: none"
+			//txtComp[i].pointer-events:none;
+			document.body.appendChild(txtComp[i]);
+			
+		}
+		var exploded=false;
+		var focus_label=-1;
+		var allDragged=[];
+		for (var i=0;i<nbCompartments;i++){
+			allDragged[i]=[]
+		}
+		
+		
+		var txtReactionActivation=[]
+		var nbActivation=1000;
+		var tokenIDStackCount={};
+		for (var i=0;i<nbActivation;i++){
+			txtReactionActivation[i] = document.createElement('div');
+			txtReactionActivation[i].style.position = 'absolute';
+			txtReactionActivation[i].style.width = 100;
+			txtReactionActivation[i].style.height = 100;
+			txtReactionActivation[i].style.color = "white";
+			//txtComp[i].style.fontWeight="1900";
+			//txtReactionActivation[i].style.backgroundColor = "#99FFCC";
+			//text1.innerHTML = ' <input type="text" name="first_name" value="" maxlength="100" />';
+			txtReactionActivation[i].innerHTML = 'hello ';
+			txtReactionActivation[i].style.top = 2000 + 'px';
+			txtReactionActivation[i].style.left = 2000 + 'px';
+			//text1.style.zIndex = -1;
+			document.body.appendChild(txtReactionActivation[i]);
+			
+		}
+		var positionContainer;
+		
+		
+		
+		function updateSlider(slideAmount){
+			console.log(slideAmount/100);
+			for (var i=0;i<segmentPts;i++){
+				for (var i=0;i<b2lopacity.length;i++){
+					
+					b2lopacity[i]=(parseFloat(slideAmount)/100);
+				}	
+			}
+			scene.children[7].geometry.attributes.op.needsUpdate = true;
+		}
+		
+		init();
+		
+		
+		
+		var data;
+			/*for (el0 in listMTNs ){
+				if (listMTNs.hasOwnProperty(el0)) {
+					data = [];
+					for (var j = 0, jl =detailListMTNs[listMTNs[el0][0]].length; j < jl; j += 1) {
+						var tmpdata = [];
+						for (var k = 0, kl = Object.keys(listMTNs[el0][1]).length; k < kl; k += 1) {
+							if (listMTNs[el0][1][Object.keys(listMTNs[el0][1])[k]].indexOf(detailListMTNs[listMTNs[el0][0]][j])>-1){
+							tmpdata.push(1);
+							}
+							else{
+							tmpdata.push(0);
+							}
+						}
+						data.push(tmpdata);
+					}
+					results[el0]=data;
+				}
+			}*/
+			
+			
+			var width = 450,//900/3,
+			height = 273.5,//547/3,
+			mdiv = d3.select('#democ0'),
+			msvg = mdiv.append('svg')
+				.attr('width', width)
+				.attr('height', height),
+			rw = 3;//width/2,
+			rh = 3;//height/2;
+
+			var data = [];			
+			//msvg.append("image")
+			//  .attr("xlink:href", "/images/kegg-xsmall.png")
+			//  .attr("x", "0px")
+			//  .attr("y", "0px")
+			//  .attr("width", width+"px")
+			//  .attr("height", height+"px");
+			msvg.selectAll('rect')
+				.data(data)
+				.enter()
+				//.data(function(d) { console.log(d);return d; })
+				//.enter()
+				.append('rect')
+				.attr('x', function(d, i) { console.log(d);return d[0] })
+				.attr('y', function(d, i) { console.log(d);return d[1] })
+				//.attr('x', function(d, i) { return (rw*1.2 )* i; })
+				//.attr('y', function(d, i) { return (rh*1.2 )* i; })
+				.attr('width', rw)
+				.attr('height', rh)
+				.style("fill", function(d, i) { return "rgb(255,0,0)"})//if (d==1) {return "rgb("+(parseInt(255*d))+",0,0)"} else return "transparent"})
+
+			document.getElementById("democ0").style.top=$("#container").position().top+($("#container").height()*0.5)+ 'px';
+			document.getElementById("democ0").style.left=window.innerWidth*0.01+ 'px';	
+			document.getElementById("democ0").style.visibility="hidden";	
+			
+			
+			/*var MiniKeggMapTexture = new THREE.ImageUtils.loadTexture( '/images/kegg-xsmall.png' );
+			var MiniKeggMapMaterial = new THREE.MeshBasicMaterial( { map: MiniKeggMapTexture ,side: THREE.DoubleSide}  );
+			var MiniKeggMapGeometry = new THREE.PlaneGeometry( 900/10, 547/10, 0, 0 ) // size image 2587 1575
+			MiniKeggMapPlan = new THREE.Mesh( MiniKeggMapGeometry, MiniKeggMapMaterial );
+			MiniKeggMapPlan.doubleSided = true;
+			MiniKeggMapPlan.position.set(0, 0, -0 );
+			MiniKeggMapPlan.rotation.x -= (90*(Math.PI / 180));
+			MiniKeggMapPlan.rotation.z += (90*(Math.PI / 180));
+			MiniKeggMapPlan.name="minimapkegg";
+			scene.add( MiniKeggMapPlan );*/
+			
+			
+		
+		animate();
+		
+		
+		function init() {
+		
+		
+			//localStorage.selection=[];
+			//localStorage.;
+
+			camera = new THREE.PerspectiveCamera( 45, WIDTH / HEIGHT, 1, 40000 );
+			//camera.position.z = 800;
+			camera.position.y = 1100+1.1*yStartDisplacement;
+			//camera2 = new THREE.PerspectiveCamera( 45, WIDTH / HEIGHT, 1, 10000 );
+			//camera2.position.z = 250;
+			
+			
+
+			scene = new THREE.Scene();
+			scene2 = new THREE.Scene();
+			//////////////////////////////////////////////////
+			// define shader attributes for group of particles dna
+			particleP1Attributes = {
+
+				size: {	type: 'f', value: [] },
+				ca:   {	type: 'c', value: [] }
+				
+			};
+
+			particleP1Uniforms = {
+
+				//amplitude: { type: "f", value: 1.0 },
+				color:     { type: "c", value: new THREE.Color( 0xffffff ) },
+				texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "/images/dna8-green.png" ) }
+				
+
+			};
+
+			particleP1Uniforms.texture.value.wrapS = particleP1Uniforms.texture.value.wrapT = THREE.RepeatWrapping;
+			
+			
+			//////////////////////////////////////////////////
+			// define shader attributes for group of particles rna
+			particleP2Attributes = {
+
+				size: {	type: 'f', value: [] },
+				ca:   {	type: 'c', value: [] }
+				
+			};
+
+			particleP2Uniforms = {
+
+				//amplitude: { type: "f", value: 1.0 },
+				color:     { type: "c", value: new THREE.Color( 0xffffff ) },
+				texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "/images/rna8.png" ) }
+				
+
+			};
+
+			particleP2Uniforms.texture.value.wrapS = particleP1Uniforms.texture.value.wrapT = THREE.RepeatWrapping;
+			
+			//////////////////////////////////////////////////
+			// define shader attributes for group of particles proteins
+			particleP3Attributes = {
+
+				size: {	type: 'f', value: [] },
+				ca:   {	type: 'c', value: [] }
+				
+			};
+
+			particleP3Uniforms = {
+
+				//amplitude: { type: "f", value: 1.0 },
+				color:     { type: "c", value: new THREE.Color( 0xffffff ) },
+				texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "/images/disc.png" ) }
+				
+
+			};
+
+			particleP3Uniforms.texture.value.wrapS = particleP1Uniforms.texture.value.wrapT = THREE.RepeatWrapping;
+			
+			//////////////////////////////////////////////////
+			// define shader attributes for group of particles degradation product
+			particleP4Attributes = {
+
+				size: {	type: 'f', value: [] },
+				ca:   {	type: 'c', value: [] }
+				
+			};
+
+			particleP4Uniforms = {
+
+				//amplitude: { type: "f", value: 1.0 },
+				color:     { type: "c", value: new THREE.Color( 0xffffff ) },
+				texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "/images/disc.png" ) }
+				
+
+			};
+
+			particleP4Uniforms.texture.value.wrapS = particleP1Uniforms.texture.value.wrapT = THREE.RepeatWrapping;
+			
+			//////////////////////////////////////////////////
+			// define shader attributes for group of particles standard pn
+			particleP5Attributes = {
+
+				size: {	type: 'f', value: [] },
+				ca:   {	type: 'c', value: [] }
+				
+			};
+
+			particleP5Uniforms = {
+
+				//amplitude: { type: "f", value: 1.0 },
+				color:     { type: "c", value: new THREE.Color( 0xffffff ) },
+				texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "/images/PN1.png" ) }
+				
+
+			};
+
+			particleP5Uniforms.texture.value.wrapS = particleP1Uniforms.texture.value.wrapT = THREE.RepeatWrapping;
+			
+			//////////////////////////////////////////////////
+			// define shader attributes for group of particles pn logical
+			particleP6Attributes = {
+
+				size: {	type: 'f', value: [] },
+				ca:   {	type: 'c', value: [] }
+				
+			};
+
+			particleP6Uniforms = {
+
+				//amplitude: { type: "f", value: 1.0 },
+				color:     { type: "c", value: new THREE.Color( 0xffffff ) },
+				texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "/images/PNLogical1.png" ) }
+				
+
+			};
+
+			particleP6Uniforms.texture.value.wrapS = particleP1Uniforms.texture.value.wrapT = THREE.RepeatWrapping;
+			
+			//////////////////////////////////////////////////
+			// define shader attributes for group of particles pn coarse
+			particleP7Attributes = {
+
+				size: {	type: 'f', value: [] },
+				ca:   {	type: 'c', value: [] }
+				
+			};
+
+			particleP7Uniforms = {
+
+				//amplitude: { type: "f", value: 1.0 },
+				color:     { type: "c", value: new THREE.Color( 0xffffff ) },
+				texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "/images/PNCoarse1.png" ) }
+				
+
+			};
+
+			particleP7Uniforms.texture.value.wrapS = particleP1Uniforms.texture.value.wrapT = THREE.RepeatWrapping;
+			
+			// define shader material for group of particles dna
+			particle1ShaderMaterial = new THREE.ShaderMaterial( {
+
+				uniforms: 		particleP1Uniforms,
+				attributes:     particleP1Attributes,
+				vertexShader:   document.getElementById( 'vertexshaderP1' ).textContent,
+				fragmentShader: document.getElementById( 'fragmentshaderP1' ).textContent,
+				depthTest: 		false,
+				transparent:	true
+
+			});
+			
+			// define shader material for group of particles rna
+			particle2ShaderMaterial = new THREE.ShaderMaterial( {
+
+				uniforms: 		particleP2Uniforms,
+				attributes:     particleP2Attributes,
+				vertexShader:   document.getElementById( 'vertexshaderP2' ).textContent,
+				fragmentShader: document.getElementById( 'fragmentshaderP2' ).textContent,
+				depthTest: 		false,
+				transparent:	true
+
+			});
+			
+			// define shader material for group of particles rna
+			particle3ShaderMaterial = new THREE.ShaderMaterial( {
+
+				uniforms: 		particleP3Uniforms,
+				attributes:     particleP3Attributes,
+				vertexShader:   document.getElementById( 'vertexshaderP3' ).textContent,
+				fragmentShader: document.getElementById( 'fragmentshaderP3' ).textContent,
+				depthTest: 		false,
+				transparent:	true
+
+			});
+			
+			// define shader material for group of particles rna
+			particle4ShaderMaterial = new THREE.ShaderMaterial( {
+
+				uniforms: 		particleP4Uniforms,
+				attributes:     particleP4Attributes,
+				vertexShader:   document.getElementById( 'vertexshaderP4' ).textContent,
+				fragmentShader: document.getElementById( 'fragmentshaderP4' ).textContent,
+				depthTest: 		false,
+				transparent:	true
+
+			});
+			
+			// define shader material for group of particles rna
+			particle5ShaderMaterial = new THREE.ShaderMaterial( {
+
+				uniforms: 		particleP5Uniforms,
+				attributes:     particleP5Attributes,
+				vertexShader:   document.getElementById( 'vertexshaderP5' ).textContent,
+				fragmentShader: document.getElementById( 'fragmentshaderP5' ).textContent,
+				depthTest: 		false,
+				transparent:	true
+
+			});
+			
+			// define shader material for group of particles rna
+			particle6ShaderMaterial = new THREE.ShaderMaterial( {
+
+				uniforms: 		particleP6Uniforms,
+				attributes:     particleP6Attributes,
+				vertexShader:   document.getElementById( 'vertexshaderP6' ).textContent,
+				fragmentShader: document.getElementById( 'fragmentshaderP6' ).textContent,
+				depthTest: 		false,
+				transparent:	true
+
+			});
+			
+			// define shader material for group of particles rna
+			particle7ShaderMaterial = new THREE.ShaderMaterial( {
+
+				uniforms: 		particleP7Uniforms,
+				attributes:     particleP7Attributes,
+				vertexShader:   document.getElementById( 'vertexshaderP7' ).textContent,
+				fragmentShader: document.getElementById( 'fragmentshaderP7' ).textContent,
+				depthTest: 		false,
+				transparent:	true
+
+			});
+			
+			//////////////////////////////////////////////
+			// define shader attributes for group of lines
+			linesAttributes = {
+
+				//displacement: {	type: 'v3', value: [] },
+				ca: {	type: 'c', value: [] },
+				op:{ type: "f", value: [] }
+
+			};
+
+			linesUniforms = {
+
+				//amplitude: { type: "f", value: 1.0 },
+				opacity:   { type: "f", value: 0.7 },
+				color:     { type: "c", value: new THREE.Color( 0xffffff ) }
+
+			};
+			// define shader material for group of lines
+			linesShaderMaterial = new THREE.ShaderMaterial( {
+
+				uniforms:       linesUniforms,
+				attributes:     linesAttributes,
+				vertexShader:   document.getElementById( 'vertexshader2' ).textContent,
+				fragmentShader: document.getElementById( 'fragmentshader2' ).textContent,
+				blending:       THREE.AdditiveBlending,
+				depthTest:      false,
+				transparent:    true
+
+			});
+
+			linesShaderMaterial.linewidth = 1.0;
+			//linesShaderMaterial.attributes.op.value=0.7;
+			
+			
+			
+			
+			
+			/////////////////////////////////////////////////////////////////
+			// define shader attributes for group of animated token particles
+			tokenAttributes = {
+
+				size: {	type: 'f', value: [] },
+				ca:   {	type: 'c', value: [] },
+				endPosition: { type: "v3", value: [] }
+				//mixAmount: 	 { type: 'f', value: [] }
+			};
+
+			tokenUniforms = {
+
+				//amplitude: { type: "f", value: 1.0 },
+				color:     { type: "c", value: new THREE.Color( 0xffffff ) },
+				texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "/images/small-spark.png" ) },
+				mixAmount: 	 { type: "f", value: 0.0 }
+
+			};
+
+			//uniforms.texture.value.wrapS = uniforms.texture.value.wrapT = THREE.RepeatWrapping;
+
+			tokenShaderMaterial = new THREE.ShaderMaterial( {
+
+				uniforms: 		tokenUniforms,
+				attributes:     tokenAttributes,
+				vertexShader:   document.getElementById( 'vertexshader3' ).textContent,
+				fragmentShader: document.getElementById( 'fragmentshader3' ).textContent,
+				depthTest: 		false,
+				transparent:	true,
+				opacity: 1.0,
+				blending:	true
+
+			});
+			
+			
+			//particles = nbDNAParticles // nb of DNA elements
+			//+ nbRNAParticles // nb of RNA elements
+			//+ nbProtParticles // nb of proteins
+			//+ nbDegradParticles // nb of degradation products
+			//+ nbPNParticles // nb of PN standard places
+			//+ nbLogParticles // nb of logical PN places
+			//+ nbCoarseParticles; // nb of PN coarse transitions
+			
+			
+			/////////////////////////////////////////////
+			// defines first buffergeometry for dna particles
+			bgeometryP1 = new THREE.BufferGeometry();
+			
+			bgeometryP1.dynamic = true;
+			var positionsP1 = new Float32Array( nbDNAParticles * 3 );
+			var values_colorP1 = new Float32Array( nbDNAParticles * 3 );
+			var values_sizeP1 = new Float32Array( nbDNAParticles );
+			var compartmentP1 = new Float32Array( nbDNAParticles );
+			
+			
+			var color = new THREE.Color( 0xffffff );
+			var radius =400;
+			for( var bv = 0; bv < nbDNAParticles; bv++ ) {
+			
+
+				values_sizeP1[ bv ] = 10;
+				compartmentP1[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+
+				positionsP1[ (bv * 3) + 0 ] = (Math.random() * 2 - 1) * radius;
+				//b1positions[ (bv * 3) + 1 ] = (Math.random() * 2 - 1) * radius;
+				positionsP1[ (bv * 3) + 1 ] = yStartDisplacement;
+				positionsP1[ (bv * 3) + 2 ] = (Math.random() * 2 - 1) * radius;
+				
+				
+				//if ( positions[ bv * 3 + 0 ] < 0 )
+				//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
+				//else
+				//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
+				values_colorP1[ (bv * 3) + 0 ] = color.r;
+				values_colorP1[ (bv * 3) + 1 ] = color.g;
+				values_colorP1[ (bv * 3) + 2 ] = color.b;
+
+			}
+			bgeometryP1.addAttribute( 'position', new THREE.BufferAttribute( positionsP1, 3 ) );
+			bgeometryP1.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP1, 3 ) );
+			bgeometryP1.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP1, 1 ) );
+			bgeometryP1.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP1, 1 ) );
+			
+			b1values_size = bgeometryP1.attributes.size.array;
+			b1positions = bgeometryP1.attributes.position.array;
+			b1values_color = bgeometryP1.attributes.ca.array;
+			b1values_compartment = bgeometryP1.attributes.compartment.array;
+			
+			
+			
+			// associate first particle system with bufferGeometry
+			PointCloud1 = new THREE.PointCloud( bgeometryP1, particle1ShaderMaterial );
+
+			PointCloud1.dynamic = true;
+			PointCloud1.sortParticles = true;
+			PointCloud1.geometry.__dirtyVertices = true;
+			
+			scene.add( PointCloud1 );
+			
+			
+			
+			/////////////////////////////////////////////
+			// defines first buffergeometry for rna particles
+			bgeometryP2 = new THREE.BufferGeometry();
+			
+			bgeometryP2.dynamic = true;
+			var positionsP2 = new Float32Array( nbRNAParticles * 3 );
+			var values_colorP2 = new Float32Array( nbRNAParticles * 3 );
+			var values_sizeP2 = new Float32Array( nbRNAParticles );
+			var compartmentP2 = new Float32Array( nbRNAParticles );
+									
+			//bgeometryP2.attributes.size.needsUpdate = true;
+			//bgeometryP2.attributes.position.needsUpdate = true;
+			//bgeometryP2.attributes.ca.needsUpdate = true;
+			//bgeometryP2.attributes.compartment.needsUpdate = true;
+			
+			var color = new THREE.Color( 0xffffff );
+			var radius =400;
+			for( var bv = 0; bv < nbRNAParticles; bv++ ) {
+			
+
+				values_sizeP2[ bv ] = 10;
+				compartmentP2[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+				
+				positionsP2[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
+				//b2positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
+				positionsP2[ bv * 3 + 1 ] = yStartDisplacement;
+				
+				positionsP2[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
+				
+				
+				//if ( positions[ bv * 3 + 0 ] < 0 )
+				//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
+				//else
+				//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
+				values_colorP2[ bv * 3 + 0 ] = color.r;
+				values_colorP2[ bv * 3 + 1 ] = color.g;
+				values_colorP2[ bv * 3 + 2 ] = color.b;
+
+			}
+			
+			
+			
+			
+			
+			bgeometryP2.addAttribute( 'position', new THREE.BufferAttribute( positionsP2, 3 ) );
+			bgeometryP2.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP2, 3 ) );
+			bgeometryP2.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP2, 1 ) );
+			bgeometryP2.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP2, 1 ) );
+			
+			b2values_size = bgeometryP2.attributes.size.array;
+			b2positions = bgeometryP2.attributes.position.array;
+			b2values_color = bgeometryP2.attributes.ca.array;
+			b2values_compartment = bgeometryP2.attributes.compartment.array;
+			// associate first particle system with bufferGeometry
+			PointCloud2 = new THREE.PointCloud( bgeometryP2, particle2ShaderMaterial );
+
+			PointCloud2.dynamic = true;
+			PointCloud2.sortParticles = true;
+			PointCloud2.geometry.__dirtyVertices = true;
+			
+			scene.add( PointCloud2 );
+			
+			
+			/////////////////////////////////////////////
+			// defines first buffergeometry for protein particles
+			bgeometryP3 = new THREE.BufferGeometry();
+			
+			bgeometryP3.dynamic = true;
+			var positionsP3 = new Float32Array( nbProtParticles * 3 );
+			var values_colorP3 = new Float32Array( nbProtParticles * 3 );
+			var values_sizeP3 = new Float32Array( nbProtParticles );
+			var compartmentP3 = new Float32Array( nbProtParticles );
+			
+			/*bgeometryP3.attributes = {
+
+				position: {
+					itemSize: 3,
+					array: new Float32Array( nbProtParticles * 3 )
+				},
+				ca: {
+					itemSize: 3,
+					array: new Float32Array( nbProtParticles * 3 )
+				},
+				size: {
+					itemSize: 1,
+					array: new Float32Array( nbProtParticles ),
+					dynamic: true
+				},
+				compartment: {
+					itemSize: 1,
+					array: new Float32Array( nbProtParticles ),
+					dynamic: true
+				}
+
+			}*/
+			//bgeometryP3.attributes.size.needsUpdate = true;
+			//bgeometryP3.attributes.position.needsUpdate = true;
+			//bgeometryP3.attributes.ca.needsUpdate = true;
+			//bgeometryP3.attributes.compartment.needsUpdate = true;
+			
+			// populates first buffer geometry for particles with coordinates, colors, and size
+			var color = new THREE.Color( 0xff9900 );;
+			var color2 = new THREE.Color( 0x55ff55 );
+			var radius =400;
+			var bv=0;
+			//for( var bv = 0; bv < nbProtParticles; bv++ ) {
+				for( var bw = 0 , bww= jsonObj1.length; bw < bww; bw++ ) {
+					if (jsonObj1[bw][6]==2){
+						values_sizeP3[ bv ] = nodeSize;
+						//b3values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+						compartmentP3[ bv ] = mapComp[jsonObj1[bw][3]];
+						idMap[bw]=[2,bv];
+						typesMap[2][bv]=bw;
+						
+						var rm;
+						var rr;
+						
+						if (nameModel=="hepatonet1-msb201062-s5" || nameModel=="msb201062-s5"){
+							rm=bv*0.078*2*Math.PI;
+							rr = ((bv*0.02)+0.35*radius)
+							positionsP3[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							positionsP3[ bv * 3 + 1 ] = yStartDisplacement+0+(bv*0.05);
+						}
+						else if (nameModel=="Ec_iAF1260_flux2"){
+							rm=bv*0.004*2*Math.PI;
+							rr = ((radius*1.08)-(bv*0.03)+1)
+							positionsP3[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							positionsP3[ bv * 3 + 1 ] = yStartDisplacement+0-(bv*0.03);
+
+						}
+						
+						else if (nameModel=="iTO977_v1.00_cobra"){
+							rm=bv*0.004*2*Math.PI;
+							rr = ((radius*1.08)-(bv*0.03)+1)
+							positionsP3[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							positionsP3[ bv * 3 + 1 ] = yStartDisplacement+0-(bv*0.03);
+
+						}
+						else{
+							rm=bv*0.008*2*Math.PI;
+							rr = ((bv*0.02)+0.05*radius);
+							positionsP3[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							positionsP3[ bv * 3 + 1 ] = yStartDisplacement+0+(bv*0.02);
+						}
+						
+						positionsP3[ bv * 3 + 2 ] = Math.sin(rm) *rr;
+						
+						values_colorP3[ bv * 3 + 0 ] = color.r;
+						values_colorP3[ bv * 3 + 1 ] = color.g;
+						values_colorP3[ bv * 3 + 2 ] = color.b;
+						bv++;
+					}
+				}
+				// startModelPlaces=bv;
+				// for( var bw = jsonObj1.length , bww= jsonObj1.length+5000; bw < bww; bw++ ) {
+						
+		
+					// //if (jsonObj1[bw][6]==2){
+						// values_sizeP3[ bv ] = nodeSize;
+						// //b3values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+						// compartmentP3[ bv ] = -1;
+						// //idMap[bw]=[2,bv];
+						// //typesMap[2][bv]=bw;
+						// idMap[bw]=[2,bv];
+						// typesMap[2][bv]=bw;
+						// //var rm=(bw-jsonObj1.length)*0.078*2*Math.PI;
+						// //var	rr = (((bw-jsonObj1.length)*0.02)+0.95*radius)
+						// //radius=900;
+						// var rm=(bw-jsonObj1.length)*0.008*2*Math.PI;
+						// var rr = ((radius*1.08)-((bw-jsonObj1.length)*0.3)+1)
+						// positionsP3[ bv * 3 + 0 ] = (Math.cos(rm) *rr)+900;
+						// //b3positions[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius+900;
+						// //b3positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
+						// positionsP3[ bv * 3 + 1 ] = yStartDisplacement+80;
+						// positionsP3[ bv * 3 + 2 ] = ((Math.random() * 2 - 1) * radius)+50000;
+						// //b3positions[ bv * 3 + 2 ] = (Math.sin(rm) *rr)+50000;
+						
+						// //if ( positions[ bv * 3 + 0 ] < 0 )
+						// //	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
+						// //else
+						// //	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
+						// values_colorP3[ bv * 3 + 0 ] = color2.r;
+						// values_colorP3[ bv * 3 + 1 ] = color2.g;
+						// values_colorP3[ bv * 3 + 2 ] = color2.b;
+						// bv++;
+					// //}
+				// }
+				// endModelPlaces=bv;
+			
+			
+
+			bgeometryP3.addAttribute( 'position', new THREE.BufferAttribute( positionsP3, 3 ) );
+			bgeometryP3.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP3, 3 ) );
+			bgeometryP3.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP3, 1 ) );
+			bgeometryP3.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP3, 1 ) );
+			
+			b3values_size = bgeometryP3.attributes.size.array;
+			b3positions = bgeometryP3.attributes.position.array;
+			b3values_color = bgeometryP3.attributes.ca.array;
+			b3values_compartment = bgeometryP3.attributes.compartment.array;
+			
+			bgeometryP3.computeBoundingSphere();
+			// associate first particle system with bufferGeometry
+			PointCloud3 = new THREE.PointCloud( bgeometryP3, particle3ShaderMaterial );
+
+			PointCloud3.dynamic = true;
+			PointCloud3.sortParticles = true;
+			PointCloud3.geometry.__dirtyVertices = true;
+			
+			scene.add( PointCloud3 );
+			
+			
+			
+			/////////////////////////////////////////////
+			// defines first buffergeometry for degradable product particles
+			bgeometryP4 = new THREE.BufferGeometry();
+			
+			bgeometryP4.dynamic = true;
+			var positionsP4 = new Float32Array( nbDegradParticles * 3 );
+			var values_colorP4 = new Float32Array( nbDegradParticles * 3 );
+			var values_sizeP4 = new Float32Array( nbDegradParticles );
+			var compartmentP4 = new Float32Array( nbDegradParticles );
+			
+			
+
+			// populates first buffer geometry for particles with coordinates, colors, and size
+			var color = new THREE.Color( 0xff66ff );;
+			var radius =400;
+			for( var bv = 0; bv < nbDegradParticles; bv++ ) {
+			
+
+				values_sizeP4[ bv ] = 10;
+				compartmentP4[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+
+				positionsP4[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
+				
+				//b4positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
+				positionsP4[ bv * 3 + 1 ] = yStartDisplacement+0;
+				positionsP4[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
+				
+				
+				//if ( positions[ bv * 3 + 0 ] < 0 )
+				//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
+				//else
+				//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
+				values_colorP4[ bv * 3 + 0 ] = color.r;
+				values_colorP4[ bv * 3 + 1 ] = color.g;
+				values_colorP4[ bv * 3 + 2 ] = color.b;
+
+			}
+			bgeometryP4.addAttribute( 'position', new THREE.BufferAttribute( positionsP4, 3 ) );
+			bgeometryP4.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP4, 3 ) );
+			bgeometryP4.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP4, 1 ) );
+			bgeometryP4.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP4, 1 ) );
+			
+			b4values_size = bgeometryP4.attributes.size.array;
+			b4positions = bgeometryP4.attributes.position.array;
+			b4values_color = bgeometryP4.attributes.ca.array;
+			b4values_compartment = bgeometryP4.attributes.compartment.array;
+			
+			
+			
+			
+			// associate first particle system with bufferGeometry
+			PointCloud4 = new THREE.PointCloud( bgeometryP4, particle4ShaderMaterial );
+
+			PointCloud4.dynamic = true;
+			PointCloud4.sortParticles = true;
+			PointCloud4.geometry.__dirtyVertices = true;
+			
+			scene.add( PointCloud4 );
+			
+			
+			/////////////////////////////////////////////
+			// defines first buffergeometry for PN particles
+			bgeometryP5 = new THREE.BufferGeometry();
+			
+			var positionsP5 = new Float32Array( nbPNParticles * 3 );
+			var values_colorP5 = new Float32Array( nbPNParticles * 3 );
+			var values_sizeP5 = new Float32Array( nbPNParticles );
+			var compartmentP5 = new Float32Array( nbPNParticles );
+			
+			bgeometryP5.dynamic = true;
+			
+			
+			
+			var color = new THREE.Color( 0xffffff );
+					
+					var color2 = new THREE.Color( 0x55ffff );
+					var radius =400;
+					var bv=0;
+					
+					// now allocate a nb of nodes by sub systems
+					subSystems={};
+					totalSubSystems=0;
+					
+					totalNbreactions=0;
+					for( var bs = 0 , bww= jsonObj1.length; bs < bww; bs++ ) {
+						if (jsonObj1[bs][6]==4){
+							if (jsonObj1[bs][4][1] && jsonObj1[bs][4][1][0]){
+								if (subSystems[jsonObj1[bs][4][1][0]]=== undefined){
+									subSystems[jsonObj1[bs][4][1][0]]=1;
+									totalSubSystems++;
+								}
+								else{
+									subSystems[jsonObj1[bs][4][1][0]]++;
+									totalSubSystems++;
+								}
+								
+							}
+							totalNbreactions++;
+						}
+					}
+					totalOutsideSubSystems=totalNbreactions-totalSubSystems;
+					nbSubSystems=Object.keys(subSystems).length
+					if (totalOutsideSubSystems>0){
+						nbAreas=nbSubSystems+1;
+						subSystems["Not present"]=totalOutsideSubSystems;
+					}
+					else{
+						nbAreas=nbSubSystems;
+					}
+					
+					// if there is no subsystem identified just use standard spiral layout
+					
+					// if there are n subsystems then display circular region of width proportional to the nb of nodes in each subsystem
+					// first make a list of widths
+					// total nb of reactions will dictate the overall nb of points that must be displayed on the ring.
+					// depth of the ring is 30 points. there are for 0.004 *2Pi=1.44 degrees = 250 graduations on a circle 
+					var listWidthSubSystems={};
+					var nbCircleGraduations=250;
+					var minCircleFraction=1/nbCircleGraduations;
+					var nbNodesDepth=40;
+					var totalWidth=0;
+					for (var key in subSystems) {
+						if (subSystems.hasOwnProperty(key)) {
+							var width= Math.ceil(subSystems[key]/nbNodesDepth);
+							listWidthSubSystems[key]=[subSystems[key]/*nb of nodes*/,width,/*counter value*/0];
+							totalWidth+=width;
+						}
+					}
+					nbNodesDepth=Math.ceil((40*totalWidth)/244);
+					listWidthSubSystems={};
+					var totalWidth=0;
+					var cumulativeWidth=0;
+					var colorswap=1.0;
+					for (var key in subSystems) {
+						if (subSystems.hasOwnProperty(key)) {
+							var width= Math.ceil(subSystems[key]/nbNodesDepth);
+							listWidthSubSystems[key]=[subSystems[key]/*nb of nodes*/,width,cumulativeWidth,/*counter value*/0,colorswap];
+							totalWidth+=width;
+							cumulativeWidth+=width;
+							if (colorswap==1.0){
+							colorswap=0.7;
+							}
+							else{colorswap=1.0}
+						}
+					}
+					
+					
+					var localRSeparator=0;
+					for( var bw = 0 , bww= jsonObj1.length; bw < bww; bw++ ) {
+						
+						if (jsonObj1[bw][6]==4){
+
+							values_sizeP5[ bv ] = nodeSize;
+							//b5values_compartment[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+							
+							// try to assign the compartment of the majority of the products the reaction is linked to 
+							// if there is no product, assign the compartment of the majority of modifiers
+							// if there is no modifier, assign the compartment of the majority of reactants
+							var listProducts= jsonObj1[bw][11][1];
+							var listModifiers= jsonObj1[bw][11][2];
+							var listReactants= jsonObj1[bw][11][0];
+							
+							if (listProducts.length>0){
+								var votes=[];
+								for (var ncc=0;ncc<nbCompartments;ncc++){
+									votes[ncc]=0;
+								}
+								for(var lp=0;lp<listProducts.length;lp++){
+									if (mapComp[jsonObj1[listProducts[lp]][3]]>=0)
+										votes[mapComp[jsonObj1[listProducts[lp]][3]]]++;
+								}
+								var winner= votes.indexOf(Math.max.apply( Math, votes ));
+								compartmentP5[ bv ] = winner;
+								if (winner==-1){
+									compartmentP5[ bv ] = mapComp[jsonObj1[bw][3]];
+								}
+							} 
+							else if (listModifiers.length>0){
+								var votes=[];
+								for (var ncc=0;ncc<nbCompartments;ncc++){
+									votes[ncc]=0;
+								}
+								for(var lp=0;lp<listModifiers.length;lp++){
+									if (mapComp[jsonObj1[listModifiers[lp]][3]]>=0)
+										votes[mapComp[jsonObj1[listModifiers[lp]][3]]]++;
+								}
+								var winner= votes.indexOf(Math.max.apply( Math, votes ));
+								compartmentP5[ bv ] = winner;
+								if (winner==-1){
+									compartmentP5[ bv ] = mapComp[jsonObj1[bw][3]];
+								}
+							}
+							else if (listReactants.length>0){
+								var votes=[];
+								for (var ncc=0;ncc<nbCompartments;ncc++){
+									votes[ncc]=0;
+								}
+								for(var lp=0;lp<listReactants.length;lp++){
+									if (mapComp[jsonObj1[listReactants[lp]][3]]>=0)
+										votes[mapComp[jsonObj1[listReactants[lp]][3]]]++;
+								}
+								var winner= votes.indexOf(Math.max.apply( Math, votes ));
+								compartmentP5[ bv ] = winner;
+								if (winner==-1){
+									compartmentP5[ bv ] = mapComp[jsonObj1[bw][3]];
+								}
+							}
+							else {
+								// if no species linked, put reaction in the center
+								compartmentP5[ bv ] = mapComp[jsonObj1[bw][3]];
+							}
+							
+							idMap[bw]=[4,bv];
+							typesMap[4][bv]=bw;
+							
+							var rm;
+							var rr; 
+							
+							
+							
+							
+							if (nameModel=="Ec_iAF1260_flux2" || nameModel=="iTO977_v1.00_cobra"){
+								rm=bv*0.078*2*Math.PI;
+								rr = ((bv*0.02)+0.35*radius)
+								//b5positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+								positionsP5[ bv * 3 + 1 ] = (yStartDisplacement/2)+(bv*0.04);
+							}
+							else{
+								var yModifier=0;
+								var mDepth=0;
+								//rr= ((radius*1.08)-(0*0.03)+1);
+								if (jsonObj1[bw][4][1] && jsonObj1[bw][4][1][0]){
+									
+									//console.log("increment node")
+									//console.log(jsonObj1[bw][4][1][0]);
+									if (listWidthSubSystems.hasOwnProperty(jsonObj1[bw][4][1][0])) {
+									
+										var startingW=listWidthSubSystems[jsonObj1[bw][4][1][0]][2];
+										var maxWidth=listWidthSubSystems[jsonObj1[bw][4][1][0]][1];
+										var maxDepth=nbNodesDepth;
+										var maxNbNodes=listWidthSubSystems[jsonObj1[bw][4][1][0]][0];
+										var presentIndex= listWidthSubSystems[jsonObj1[bw][4][1][0]][3];
+										if (presentIndex<maxNbNodes){
+										//cnt1++;
+											var localWPos=0;
+											
+											var localRR=0;
+											localWPos=Math.floor(presentIndex/maxDepth);
+											//if (presentIndex>=maxDepth){
+											
+												localRR=presentIndex%maxDepth;
+											yModifier=	localRR;
+											mDepth=maxDepth;
+											
+											rm=((startingW+localRSeparator+localWPos)*0.004*(2*Math.PI));
+											
+											rr= ((radius-maxDepth*5)+(localRR*5));
+											listWidthSubSystems[jsonObj1[bw][4][1][0]][3]++;
+											color.r=listWidthSubSystems[jsonObj1[bw][4][1][0]][4];
+											if (color.r==1.0){
+											color.g=1.0;
+											color.b=1.0;
+											}
+											else{
+											color.g=0.4;
+											color.b=1.0;
+											}
+										}
+									}
+								}
+								else{
+									
+									//subSystems["Not present"]=totalOutsideSubSystems;
+									if (listWidthSubSystems.hasOwnProperty("Not present")) {
+									
+									//console.log("increment not present")
+										var startingW=listWidthSubSystems["Not present"][2];
+										var maxWidth=listWidthSubSystems["Not present"][1];
+										var maxDepth=nbNodesDepth;
+										var maxNbNodes=listWidthSubSystems["Not present"][0];
+										var presentIndex= listWidthSubSystems["Not present"][3];
+										if (presentIndex<maxNbNodes){
+										//cnt2++;
+											var localWPos=0;
+											var localRR=0;
+											localWPos=Math.floor(presentIndex/maxDepth);
+											//if (presentIndex>=maxDepth){
+											
+												localRR=presentIndex%maxDepth;
+												yModifier=	localRR;	
+												mDepth=maxDepth;
+											
+											rm=((startingW+localRSeparator+localWPos)*0.004*(2*Math.PI));
+											rr= ((radius-maxDepth*5)+(localRR*5));
+											listWidthSubSystems["Not present"][3]++;
+											color = new THREE.Color( 0xff0000 );
+										}
+									}
+								}
+								
+								positionsP5[ bv * 3 + 1 ] = yStartDisplacement-(mDepth*4)+(yModifier*4);
+								//console.log(jsonObj1[bw][4][1][0])
+							}
+							positionsP5[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							positionsP5[ bv * 3 + 2 ] = Math.sin(rm) *rr;
+							
+							
+							values_colorP5[ bv * 3 + 0 ] = color.r;
+							values_colorP5[ bv * 3 + 1 ] = color.g;
+							values_colorP5[ bv * 3 + 2 ] = color.b;
+							bv++;
+						}
+					}
+					//console.log("increment"+cnt1 + "  " +cnt2)
+					// startModelReactions=bv;
+					// for( var bw = jsonObj1.length , bww= jsonObj1.length+5000; bw < bww; bw++ ) {
+						
+						// values_sizeP5[ bv ] = nodeSize;
+						
+						// compartmentP5[ bv ] = -1;
+						// idMap[bw]=[4,bv];
+						// typesMap[4][bv]=bw;
+						
+						
+						
+						// //radius=900;
+						// var rm=(bw-jsonObj1.length)*0.008*2*Math.PI;
+						// var rr = ((radius*0.78)-((bw-jsonObj1.length)*0.3)+1)
+						// //b5positions[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius+900;
+						// positionsP5[ bv * 3 + 0 ] = (Math.cos(rm) *rr)+1800;
+						// //b5positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
+						// positionsP5[ bv * 3 + 1 ] = yStartDisplacement+180;
+						
+						// positionsP5[ bv * 3 + 2 ] = ((Math.random() * 2 - 1) * radius)+50000;
+						
+						
+						// //if ( positions[ bv * 3 + 0 ] < 0 )
+						// //	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
+						// //else
+						// //	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
+						// values_colorP5[ bv * 3 + 0 ] = color2.r;
+						// values_colorP5[ bv * 3 + 1 ] = color2.g;
+						// values_colorP5[ bv * 3 + 2 ] = color2.b;
+						// bv++;
+					// }
+					// endModelReactions=bv;
+			
+			
+			
+			
+			
+			bgeometryP5.addAttribute( 'position', new THREE.BufferAttribute( positionsP5, 3 ) );
+			bgeometryP5.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP5, 3 ) );
+			bgeometryP5.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP5, 1 ) );
+			bgeometryP5.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP5, 1 ) );
+			
+			
+			b5values_size = bgeometryP5.attributes.size.array;
+			b5positions = bgeometryP5.attributes.position.array;
+			b5values_color = bgeometryP5.attributes.ca.array;
+			b5values_compartment = bgeometryP5.attributes.compartment.array;
+									
+			// associate first particle system with bufferGeometry
+			PointCloud5 = new THREE.PointCloud( bgeometryP5, particle5ShaderMaterial );
+
+			PointCloud5.dynamic = true;
+			PointCloud5.sortParticles = true;
+			PointCloud5.geometry.__dirtyVertices = true;
+			
+			scene.add( PointCloud5 );
+			
+			
+			/////////////////////////////////////////////
+			// defines first buffergeometry for PN particles
+			bgeometryP6 = new THREE.BufferGeometry();
+			
+			bgeometryP6.dynamic = true;
+			
+			var positionsP6 = new Float32Array( nbLogParticles * 3 );
+			var values_colorP6 = new Float32Array( nbLogParticles * 3 );
+			var values_sizeP6 = new Float32Array( nbLogParticles );
+			var compartmentP6 = new Float32Array( nbLogParticles );
+			
+			// populates first buffer geometry for particles with coordinates, colors, and size
+			var color = new THREE.Color( 0xffffff );;
+			var radius =400;
+			for( var bv = 0; bv < nbLogParticles; bv++ ) {
+			
+
+				values_sizeP6[ bv ] = 10;
+				compartmentP6[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+
+				positionsP6[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
+				//b6positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
+				positionsP6[ bv * 3 + 1 ] = yStartDisplacement;
+				
+				positionsP6[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
+				
+				
+				//if ( positions[ bv * 3 + 0 ] < 0 )
+				//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
+				//else
+				//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
+				values_colorP6[ bv * 3 + 0 ] = color.r;
+				values_colorP6[ bv * 3 + 1 ] = color.g;
+				values_colorP6[ bv * 3 + 2 ] = color.b;
+
+			}
+
+			bgeometryP6.addAttribute( 'position', new THREE.BufferAttribute( positionsP6, 3 ) );
+			bgeometryP6.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP6, 3 ) );
+			bgeometryP6.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP6, 1 ) );
+			bgeometryP6.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP6, 1 ) );
+			
+			b6values_size = bgeometryP6.attributes.size.array;
+			b6positions = bgeometryP6.attributes.position.array;
+			b6values_color = bgeometryP6.attributes.ca.array;
+			b6values_compartment = bgeometryP6.attributes.compartment.array;
+			
+			
+			
+			
+			// associate first particle system with bufferGeometry
+			PointCloud6 = new THREE.PointCloud( bgeometryP6, particle6ShaderMaterial );
+
+			PointCloud6.dynamic = true;
+			PointCloud6.sortParticles = true;
+			PointCloud6.geometry.__dirtyVertices = true;
+			
+			scene.add( PointCloud6 );
+			
+			
+			/////////////////////////////////////////////
+			// defines first buffergeometry for PN particles
+			bgeometryP7 = new THREE.BufferGeometry();
+			
+			bgeometryP7.dynamic = true;
+			
+			var positionsP7 = new Float32Array( nbCoarseParticles * 3 );
+			var values_colorP7 = new Float32Array( nbCoarseParticles * 3 );
+			var values_sizeP7 = new Float32Array( nbCoarseParticles );
+			var compartmentP7 = new Float32Array( nbCoarseParticles );
+			
+			// populates first buffer geometry for particles with coordinates, colors, and size
+			var color = new THREE.Color( 0xffffff );;
+			var radius =400;
+			for( var bv = 0; bv < nbCoarseParticles; bv++ ) {
+			
+
+				values_sizeP7[ bv ] = 10;
+				compartmentP7[ bv ] = Math.floor(Math.random()*nbCompartments) + 0;
+
+				positionsP7[ bv * 3 + 0 ] = (Math.random() * 2 - 1) * radius;
+				//b7positions[ bv * 3 + 1 ] = (Math.random() * 2 - 1) * radius;
+				positionsP7[ bv * 3 + 1 ] = yStartDisplacement;
+				
+				positionsP7[ bv * 3 + 2 ] = (Math.random() * 2 - 1) * radius;
+				
+				
+				//if ( positions[ bv * 3 + 0 ] < 0 )
+				//	color.setHSL( 0.5 + 0.1 * ( bv / particles ), 0.7, 0.1 );
+				//else
+				//	color.setHSL( 0.0 + 0.1 * ( bv / particles ), 0.9, 0.1 );
+				values_colorP7[ bv * 3 + 0 ] = color.r;
+				values_colorP7[ bv * 3 + 1 ] = color.g;
+				values_colorP7[ bv * 3 + 2 ] = color.b;
+
+			}
+
+			bgeometryP7.addAttribute( 'position', new THREE.BufferAttribute( positionsP7, 3 ) );
+			bgeometryP7.addAttribute( 'ca', new THREE.BufferAttribute( values_colorP7, 3 ) );
+			bgeometryP7.addAttribute( 'size', new THREE.BufferAttribute( values_sizeP7, 1 ) );
+			bgeometryP7.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentP7, 1 ) );
+			
+			b7values_size = bgeometryP7.attributes.size.array;
+			b7positions = bgeometryP7.attributes.position.array;
+			b7values_color = bgeometryP7.attributes.ca.array;
+			b7values_compartment = bgeometryP7.attributes.compartment.array;
+			
+			
+			
+			
+			// associate first particle system with bufferGeometry
+			PointCloud7 = new THREE.PointCloud( bgeometryP7, particle7ShaderMaterial );
+
+			PointCloud7.dynamic = true;
+			PointCloud7.sortParticles = true;
+			PointCloud7.geometry.__dirtyVertices = true;
+			
+			scene.add( PointCloud7 );
+			
+			// populates second buffer geometry for lines  with coordinates, colors, and size
+			//segmentPts = 20000;
+			bgeometry2 = new THREE.BufferGeometry();
+			
+			var positionsL1 = new Float32Array( (segmentPts+5000) * 3 );
+			var colorsL1 = new Float32Array( (segmentPts+5000) * 3 );
+			var opL1 = new Float32Array((segmentPts+5000));
+			var compartmentL1 = new Float32Array( (segments+2500)*2 );
+			var fluxL1 = new Float32Array( (segments+2500) );
+			var boundsL1= new Float32Array( (segments+2500) * 2 );
+			
+			
+			var r = 800;
+			var col = new THREE.Color( 0x00ffff );
+			var col2 = new THREE.Color( 0x55ff55 );
+			
+			var iv=0;
+			for ( var i = 0; i < segments; i ++ ) {
+			
+				var t1 = jsonObj1[jsonObj2[i][0]][6]
+				var t2 = jsonObj1[jsonObj2[i][1]][6]
+				
+				
+				
+				var ivList=[]
+				
+				if (t1==2){
+					positionsL1[ (iv * 3)+0 ] = b3positions[ (idMap[jsonObj2[i][0]][1] * 3) + 0 ]+0.0;
+					positionsL1[ (iv * 3) + 1 ] = b3positions[ (idMap[jsonObj2[i][0]][1] * 3) + 1 ]+0.0;
+					positionsL1[ (iv * 3) + 2 ] = b3positions[ (idMap[jsonObj2[i][0]][1] * 3) + 2 ]+0.0;
+					compartmentL1[ (i*2)+0 ] = b3values_compartment[ (idMap[jsonObj2[i][0]][1]) ];
+					opL1[iv]=0.25;
+					if(jsonObj2[i][2]==1){
+						colorsL1[ iv * 3 ] = 0.2;
+						colorsL1[ iv * 3 + 1 ] = 1.0;
+						colorsL1[ iv * 3 + 2 ] = 1.0;
+					}
+					else if(jsonObj2[i][2]==0){
+						
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.5;
+						colorsL1[ iv * 3 + 2 ] = 0.0;
+					}
+					else{
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.0;
+						colorsL1[ iv * 3 + 2 ] = 0.1;
+					}
+					ivList.push(iv)
+					//linesMap[i]=iv
+					
+					iv++;
+				}
+				else if (t1==4){
+					positionsL1[ (iv * 3)+0 ] = b5positions[ (idMap[jsonObj2[i][0]][1] * 3) + 0 ]+0.0;
+					positionsL1[ (iv * 3) + 1 ] = b5positions[ (idMap[jsonObj2[i][0]][1] * 3) + 1 ]+0.0;
+					positionsL1[ (iv * 3) + 2 ] = b5positions[ (idMap[jsonObj2[i][0]][1] * 3) + 2 ]+0.0;
+					compartmentL1[ (i*2)+0 ] = b5values_compartment[ (idMap[jsonObj2[i][0]][1]) ];
+					opL1[iv]=0.25;
+					if(jsonObj2[i][2]==1){
+						colorsL1[ iv * 3 ] = 0.2;
+						colorsL1[ iv * 3 + 1 ] = 1.0;
+						colorsL1[ iv * 3 + 2 ] = 1.0;
+					}
+					else if(jsonObj2[i][2]==0){
+						
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.5;
+						colorsL1[ iv * 3 + 2 ] = 0.0;
+					}
+					else{
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.0;
+						colorsL1[ iv * 3 + 2 ] = 0.1;
+					}
+					
+					
+					//linesMap[i]=iv
+					ivList.push(iv)
+					iv++;
+				}
+				if (t2 ==2){
+					positionsL1[ (iv * 3)+0 ] = b3positions[ (idMap[jsonObj2[i][1]][1] * 3) + 0 ]+0.0;
+					positionsL1[ (iv * 3) + 1 ] = b3positions[ (idMap[jsonObj2[i][1]][1] * 3) + 1 ]+0.0;
+					positionsL1[ (iv * 3) + 2 ] = b3positions[ (idMap[jsonObj2[i][1]][1] * 3) + 2 ]+0.0;
+					compartmentL1[ (i*2)+1 ] = b3values_compartment[ (idMap[jsonObj2[i][1]][1]) ];
+					opL1[iv]=0.25;
+					if(jsonObj2[i][2]==1){
+						colorsL1[ iv * 3 ] = 0.2;
+						colorsL1[ iv * 3 + 1 ] = 1.0;
+						colorsL1[ iv * 3 + 2 ] = 1.0;
+					}
+					else if(jsonObj2[i][2]==0){
+						
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.5;
+						colorsL1[ iv * 3 + 2 ] = 0.0;
+					}
+					else{
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.0;
+						colorsL1[ iv * 3 + 2 ] = 0.1;
+					}
+					//linesMap[i]=iv
+					ivList.push(iv)
+					iv++;
+				}
+				else if (t2 ==4){
+					positionsL1[ (iv * 3)+0 ] = b5positions[ (idMap[jsonObj2[i][1]][1] * 3) + 0 ]+0.0;
+					positionsL1[ (iv * 3) + 1 ] = b5positions[ (idMap[jsonObj2[i][1]][1] * 3) + 1 ]+0.0;
+					positionsL1[ (iv * 3) + 2 ] = b5positions[ (idMap[jsonObj2[i][1]][1] * 3) + 2 ]+0.0;
+					compartmentL1[ (i*2)+1 ] = b5values_compartment[ (idMap[jsonObj2[i][1]][1]) ];
+					opL1[iv]=0.25;
+					if(jsonObj2[i][2]==1){
+						colorsL1[ iv * 3 ] = 0.2;
+						colorsL1[ iv * 3 + 1 ] = 1.0;
+						colorsL1[ iv * 3 + 2 ] = 1.0;
+					}
+					else if(jsonObj2[i][2]==0){
+						
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.5;
+						colorsL1[ iv * 3 + 2 ] = 0.0;
+					}
+					else{
+						colorsL1[ iv * 3 ] = 1.0;
+						colorsL1[ iv * 3 + 1 ] = 0.0;
+						colorsL1[ iv * 3 + 2 ] = 0.1;
+					}
+					//linesMap[i]=iv
+					ivList.push(iv)
+					iv++;
+				}
+				linesMap[i]=ivList
+			}
+			// var radius=400;
+			// extraLinesCnt=iv;
+			// for ( var i = segments; i < segments+maxNbTokenModel; i ++ ) {
+				
+					// positionsL1[ (iv * 3)+0 ] = (Math.random() * 2 - 1) * radius;
+					// positionsL1[ (iv * 3) + 1 ] = 80;
+					// positionsL1[ (iv * 3) + 2 ] = ((Math.random() * 2 - 1) * radius)+50000;
+					// compartmentL1[ (i*2)+0 ] = -1;
+					// opL1[iv]=0.25;
+					// colorsL1[ iv * 3 ] = 0.33;
+					// colorsL1[ iv * 3 + 1 ] = 1.0;
+					// colorsL1[ iv * 3 + 2 ] = 0.33;
+					// ivList.push(iv)
+					// //linesMap[i]=iv
+					
+					// iv++;
+				
+				
+				
+			// }
+
+			bgeometry2.addAttribute( 'position', new THREE.BufferAttribute( positionsL1, 3 ) );	
+			bgeometry2.addAttribute( 'ca', new THREE.BufferAttribute( colorsL1, 3 ) );
+			bgeometry2.addAttribute( 'op', new THREE.BufferAttribute( opL1, 1 ) );
+			bgeometry2.addAttribute( 'compartment', new THREE.BufferAttribute( compartmentL1, 2 ) );
+
+			
+			
+			bgeometry2.computeBoundingSphere();
+		//console.log(bgeometry2);
+			linesShaderMaterial.blending = false;
+			mesh = new THREE.Line( bgeometry2, linesShaderMaterial,THREE.LinePieces );
+			scene.add( mesh );
+			b2lpositions = bgeometry2.attributes.position.array;
+				//var colors = bgeometry.attributes.color.array;
+			b2lcolors = bgeometry2.attributes.ca.array;
+			b2lcompartments=bgeometry2.attributes.compartment.array;
+			b2lopacity = bgeometry2.attributes.op.array;
+			// create and populate geometry with token particles coordinates, colors, and size
+			var radius = 300;
+			//tokenGeometry = new THREE.CubeGeometry( 0.8 * radius, 0.8 * radius, 0.8 * radius, 150, 100, 1 );
+			// populate token geometry with "start" extremities of line segmentPts
+			tokenGeometry = new THREE.Geometry();
+			for ( var i = 0, j= fbaData.length-1; i < j; i++ ) {
+				//tokenGeometry.vertices.push(new THREE.Vector3(b2lpositions[ (i * 3) ]+0,b2lpositions[ (i * 3) + 1 ]+0,b2lpositions[ (i * 3) + 2 ]+0));
+				tokenGeometry.vertices.push(new THREE.Vector3(0,0,0))
+			}
+			// add models tokens
+			//for ( var i = segmentPts; i < segmentPts+maxNbTokenModel; i +=2 ) {
+			//	tokenGeometry.vertices.push(new THREE.Vector3(b2lpositions[ (i * 3) ]+0,b2lpositions[ (i * 3) + 1 ]+0,b2lpositions[ (i * 3) + 2 ]+0));
+			//}
+			//var v1 = new THREE.Vector3(0,0,0);
+			//var v2 = new THREE.Vector3(0,500,0);
+			//var v3 = new THREE.Vector3(0,500,500);
+
+			
+			//tokenShaderMaterial.blending = THREE.AdditiveBlending; // "glowing" particles
+			tokenPS = new THREE.PointCloud( tokenGeometry, tokenShaderMaterial );
+			//tokenPS = new THREE.PointCloud( tokenGeometry, spriteMaterial );
+			tokenPS.dynamic = true;
+			//sphere.sortParticles = true;
+
+			tvertices = tokenPS.geometry.vertices;
+			tvalues_size = tokenAttributes.size.value;
+			tvalues_color = tokenAttributes.ca.value;
+			tvalues_p = tokenAttributes.endPosition.value;
+			for( var v = 0, vv= tvertices.length; v < vv; v++ ) {
+
+				tvalues_size[ v ] = 20;
+				tvalues_color[ v ] = new THREE.Color( 0x0077ff );
+			}
+			//fbaData.length
+			for ( var i = 0, j= fbaData.length-1; i < j; i++ ) {
+				//tvalues_p.push(new THREE.Vector3(b2lpositions[ i * 3 ],b2lpositions[ i * 3 + 1 ],b2lpositions[ i * 3 + 2 ]));
+				tvalues_p.push(new THREE.Vector3(-999999,-999999,-999999));
+			}
+			//for ( var i = segmentPts+1; i < segmentPts+maxNbTokenModel; i +=2 ) {
+			//	tvalues_p.push(new THREE.Vector3(b2lpositions[ i * 3 ],b2lpositions[ i * 3 + 1 ],b2lpositions[ i * 3 + 2 ]));
+			//}
+			
+			//sphere.geometry.__dirtyVertices = true;
+			scene.add( tokenPS );
+			
+			// outline mesh for lines
+			
+			lineGeometry = new THREE.Geometry();
+			lineGeometry.vertices.push(new THREE.Vector3(-10000, -10000, -50000));
+			lineGeometry.vertices.push(new THREE.Vector3(-10000, -10000, -51000));
+			lineGeometry.verticesNeedUpdate = true;
+			
+			outlineMaterial1 = new THREE.MeshBasicMaterial( { color: 0xff0000} );			
+			outlineMesh1 = new THREE.Line( lineGeometry, outlineMaterial1 );	
+			//outlineMesh1.scale.multiplyScalar(1.002);
+			scene.add( outlineMesh1 );
+			
+			
+			
+			var spriteMaterial = new THREE.SpriteMaterial( { 
+				map: new THREE.ImageUtils.loadTexture( '/images/glow.png' ), 
+				useScreenCoordinates: false, //alignment: THREE.SpriteAlignment.center,
+				color: 0xff0000, transparent: false, blending: THREE.AdditiveBlending
+			});
+			sprite = new THREE.Sprite( spriteMaterial );
+			sprite.scale.set(8, 8, 8);
+			//crateGlow.add(sprite); // this centers the glow at the mesh
+			if (marker==0){
+			sprite.position.set(-50000,-10000,10000);
+			//sprite.transparent=true;
+			}		
+			scene.add( sprite );
+			
+			
+			var spriteMaterial2 = new THREE.SpriteMaterial( { 
+				map: new THREE.ImageUtils.loadTexture( '/images/tg1.png' ), 
+				useScreenCoordinates: false, //alignment: THREE.SpriteAlignment.center,
+				color: 0xff0000, transparent: false//, blending: THREE.AdditiveBlending
+			});
+			for (var i=0;i<nbSpritesSelected;i++){
+				spritesSelected[i] = new THREE.Sprite( spriteMaterial2 );
+				spritesSelected[i].scale.set(100, 100, 100);
+				//crateGlow.add(sprite); // this centers the glow at the mesh
+				
+				spritesSelected[i].position.set(-50000,-10000,10000);
+				
+					
+				scene.add( spritesSelected[i] );
+			}
+			
+			
+			
+			var spriteMaterial3 = new THREE.SpriteMaterial( { 
+				map: new THREE.ImageUtils.loadTexture( '/images/square_canvas.png' ), 
+				useScreenCoordinates: false, //alignment: THREE.SpriteAlignment.center,
+				color: 0xff0000, transparent: false
+			});
+			for (var i=0;i<nbModelReactionLocators;i++){
+				modelReactionLocators[i] = new THREE.Sprite( spriteMaterial3 );
+				modelReactionLocators[i].scale.set(40, 40, 40);
+				//crateGlow.add(sprite); // this centers the glow at the mesh
+				
+				modelReactionLocators[i].position.set(-50000,-10000,10000);
+				//modelReactionLocators[i].position.set(400,400,200*i);
+					
+				scene.add( modelReactionLocators[i] );
+			}
+			
+			var spriteMaterial4 = new THREE.SpriteMaterial( { 
+				map: new THREE.ImageUtils.loadTexture( '/images/product.png' ), 
+				useScreenCoordinates: false, //alignment: THREE.SpriteAlignment.center,
+				color: 0xff0000, transparent: false
+			});
+			for (var i=0;i<nbModelReactionLocators;i++){
+				modelProductLocators[i] = new THREE.Sprite( spriteMaterial4 );
+				modelProductLocators[i].scale.set(40, 40, 40);
+				//crateGlow.add(sprite); // this centers the glow at the mesh
+				
+				modelProductLocators[i].position.set(-50000,-10000,10000);
+				//modelProductLocators[i].position.set(400,400,200*i);
+					
+				scene.add( modelProductLocators[i] );
+			}
+			
+			var spriteMaterial5 = new THREE.SpriteMaterial( { 
+				map: new THREE.ImageUtils.loadTexture( '/images/reactant2.png' ), 
+				useScreenCoordinates: false, //alignment: THREE.SpriteAlignment.center,
+				color: 0xff0000, transparent: false
+			});
+			for (var i=0;i<nbModelReactionLocators;i++){
+				modelReactantLocators[i] = new THREE.Sprite( spriteMaterial5 );
+				modelReactantLocators[i].scale.set(40, 40, 40);
+				//crateGlow.add(sprite); // this centers the glow at the mesh
+				
+				modelReactantLocators[i].position.set(-50000,-10000,10000);
+				//modelProductLocators[i].position.set(400,400,200*i);
+					
+				scene.add( modelReactantLocators[i] );
+			}
+			
+			var spriteMaterial6 = new THREE.SpriteMaterial( { 
+				map: new THREE.ImageUtils.loadTexture( '/images/modifier2.png' ), 
+				useScreenCoordinates: false, //alignment: THREE.SpriteAlignment.center,
+				color: 0xff0000, transparent: false
+			});
+			for (var i=0;i<nbModelReactionLocators;i++){
+				modelModifierLocators[i] = new THREE.Sprite( spriteMaterial6 );
+				modelModifierLocators[i].scale.set(40, 40, 40);
+				//crateGlow.add(sprite); // this centers the glow at the mesh
+				
+				modelModifierLocators[i].position.set(-50000,-10000,10000);
+				//modelProductLocators[i].position.set(400,400,200*i);
+					
+				scene.add( modelModifierLocators[i] );
+			}
+			
+			
+			
+			
+			
+			
+			// create skybox
+			var mimagePrefix = "/images/";
+			var mdirections  = ["p2", "p2", "p2", "p2", "p2", "p2"];
+			var mimageSuffix = ".png";
+			var mskyGeometry = new THREE.BoxGeometry( 29000, 29000, 29000 );	
+			//var cubePath = "/rsi/static/tex/cube/Grid3/";
+            //var cubeFormat = ".png";
+            //var cubeFaces = [cubePath + 'px' + cubeFormat, cubePath + 'nx' + cubeFormat, cubePath + 'py' + cubeFormat, cubePath + 'ny' + cubeFormat, cubePath + 'pz' + cubeFormat, cubePath + 'nz' + cubeFormat];
+            //this.gridCubeTex = THREE.ImageUtils.loadTextureCube(cubeFaces);
+			var mmaterialArray = [];
+			for (var i = 0; i < 6; i++)
+				mmaterialArray.push( new THREE.MeshBasicMaterial({
+					map: THREE.ImageUtils.loadTexture( mimagePrefix + mdirections[i] + mimageSuffix ),
+					side: THREE.BackSide
+				}));
+			var mskyMaterial = new THREE.MeshFaceMaterial( mmaterialArray );
+			var mskyBox = new THREE.Mesh( mskyGeometry, mskyMaterial );
+			mskyBox.name="skybox"
+			scene.add( mskyBox );
+			
+			
+			// add planar stuff for demonstration
+			var KeggMapTexture = new THREE.ImageUtils.loadTexture( '/images/keggmap-big.png' );
+			var KeggMapMaterial = new THREE.MeshBasicMaterial( { map: KeggMapTexture ,side: THREE.DoubleSide}  );
+			var KeggMapGeometry = new THREE.PlaneGeometry( 900/2.5, 547/2.5, 0, 0 ) // size image 2587 1575
+			KeggMapPlan = new THREE.Mesh( KeggMapGeometry, KeggMapMaterial );
+			KeggMapPlan.doubleSided = true;
+			KeggMapPlan.position.set(9999999, 9999999, -9999999 );
+			KeggMapPlan.rotation.x -= (90*(Math.PI / 180));
+			KeggMapPlan.rotation.z += (90*(Math.PI / 180));
+			KeggMapPlan.name="mapkegg";
+			scene.add( KeggMapPlan );
+			
+			
+			
+			
+			var geometry = new THREE.SphereGeometry( radiusComp, 50, 15 );
+
+			for ( var i = 0; i < maxNbComp; i ++ ) {
+				var object = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial( { color: 0x000099, ambient: 0x000099, // should generally match color
+				specular: 0x020202,
+				shininess: 50,side: THREE.BackSide, transparent: true, opacity: 0.1}));//THREE.BackSide}));//, transparent: true, opacity: 0.5} ) );
+				//var object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: (1.0-((i/maxNbComp)*0.5)) * 0xffffff, side: THREE.BackSide}));
+				object.material.ambient = object.material.color;
+				object.position.x = -99999999;
+				object.position.y = -99999999;
+				object.position.z = -99999999;
+				object.scale.y = 0.5;
+				
+				scene.add( object );
+				objects.push( object );
+			}
+			
+			//mtnlLayout["compartments_layout"]["name-position-scale"]=[];
+			//for (var i=0; i<listCompartments.length;i++ ){
+			//	mtnlLayout["compartments_layout"]["name-position-scale"][i]=[objects[i].name, objects[i].position , objects[i].scale];
+			//}
+			for ( var i = 0; i < listCompartments.length; i ++ ) {
+				objects[i].position.x = 0;
+				objects[i].position.y = 0;
+				objects[i].position.z = 0;
+				objects[i].name=listCompartments[i][0]+" "+listCompartments[i][1];
+				//objects[i].visible=false;
+				//stackCompInitialPos[objects[i].name]= new THREE.Vector3(objects[i].position.x,objects[i].position.y,objects[i].position.z);
+				//objects[i].castShadow = true;
+				//objects[i].receiveShadow = true;	
+			}
+			if (mtnlLayout["compartments_layout"] && mtnlLayout["compartments_layout"].hasOwnProperty("name-position-scale")){
+				if (mtnlLayout["compartments_layout"]["name-position-scale"].length>0){
+					for ( var i = 0; i < mtnlLayout["compartments_layout"]["name-position-scale"].length; i ++ ) {
+						objects[i].position.x = mtnlLayout["compartments_layout"]["name-position-scale"][i][1].x;
+						objects[i].position.y = mtnlLayout["compartments_layout"]["name-position-scale"][i][1].y;
+						objects[i].position.z = mtnlLayout["compartments_layout"]["name-position-scale"][i][1].z;
+						objects[i].name = mtnlLayout["compartments_layout"]["name-position-scale"][i][0];
+						//stackCompInitialPos[objects[i].name]= new THREE.Vector3(objects[i].position.x,objects[i].position.y,objects[i].position.z);
+						objects[i].scale.x = mtnlLayout["compartments_layout"]["name-position-scale"][i][2].x;
+						objects[i].scale.y = mtnlLayout["compartments_layout"]["name-position-scale"][i][2].y;
+						objects[i].scale.z = mtnlLayout["compartments_layout"]["name-position-scale"][i][2].z;
+					}
+				}
+			}
+			
+			if (mtnlLayout["compartments_layout"] && mtnlLayout["compartments_layout"].hasOwnProperty("relations")){
+				generalLayout=mtnlLayout["compartments_layout"]["relations"];
+			}
+			
+			
+			
+			
+			
+			// add subtle blue ambient lighting
+			var ambientLight = new THREE.AmbientLight(0x000027);
+			  
+			scene.add(ambientLight);
+			  
+			// directional lighting
+			directionalLight = new THREE.DirectionalLight(0x55ffff); 
+			directionalLight.position.set(13, 1, 1).normalize();
+			ambientLight.name="dlight"
+			scene.add(directionalLight);
+			
+			
+			projector = new THREE.Projector();
+			raycaster = new THREE.Raycaster();
+			
+			
+			renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+			//renderer.sortObjects = false;
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			
+			
+			pip = document.createElement('div');
+			pip.style.width = window.innerWidth*0.6;
+			pip.style.height = window.innerHeight*0.15;
+			pip.style.position = 'absolute';
+			pip.style.backgroundColor = 'black';
+			pip.style.borderRadius = "5px";
+			pip.style.border = '2px solid white';
+			pip.style.padding = "0px 20px";
+			pip.style.left = "2000px";
+			pip.style.top = "2000px";
+			document.body.appendChild(pip);
+			
+			//renderer2 = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+			//renderer.sortObjects = false;
+			//renderer2.setSize( window.innerWidth*0.6, window.innerHeight*0.15 );
+			//pip.appendChild(renderer2.domElement);
+			
+			var container = document.getElementById( 'container' );
+			container.appendChild( renderer.domElement );
+			positionContainer = $("#container").position();
+			var menu = document.getElementById( 'menu' )
+			menu.style.position="absolute";
+			menu.style.right="0px";
+			menu.style.bottom=(0-positionContainer.top)+"px";//(positionContainer.top-positionContainer.height-30)+"px";
+			
+			controls = new THREE.OrbitControls( camera, container  );
+				controls.rotateSpeed = 1.0;
+				controls.zoomSpeed = 1.2;
+				controls.panSpeed = 0.8;
+				controls.noZoom = false;
+				controls.noPan = false;
+				controls.staticMoving = true;
+				controls.dynamicDampingFactor = 0.3;
+				
+			
+			stats = new Stats();
+			stats.domElement.style.position = 'absolute';
+			
+			container.appendChild( stats.domElement );
+			stats.domElement.style.top = ($("#container").height()-60)+'px';
+			
+			
+			function stopEvents(){
+				stopThreeJsMouseEvent=true;
+			}
+			function resumeEvents(){
+				stopThreeJsMouseEvent=false;
+			}
+			
+			window.addEventListener( 'resize', onWindowResize, false );
+			document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+			document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+			document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+			
+		}	
+			
+		
+		function onWindowResize() {
+
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+
+			renderer.setSize( window.innerWidth, window.innerHeight );
+
+		}
+		
+		function onDocumentMouseMove( event ) {
+		
+			//event.preventDefault();
+			//position = window.pageYOffset+$("#container").position();//+;
+			
+			mouse.x = ( (event.clientX+window.pageXOffset) / window.innerWidth ) * 2 - 1;
+			mouse.y = - ( (event.clientY-$("#container").position().top+window.pageYOffset) / window.innerHeight ) * 2 + 1;
+
+		}
+		
+		function unique(a){
+			var arr = [];
+			for (var i=0;i<a.length;i++){
+				if ( arr.indexOf(a[i]) == -1){
+					arr.push(a[i]);
+				}
+			}
+			return arr
+		}
+		
+		function onDocumentMouseDown( event ) {
+
+				//event.preventDefault();
+				var nbS=0
+				switch ( event.button ) {
+					case 0: // left 
+					
+						if	((isOnParticle==1) && (hoveredType>=0) && (stopThreeJsMouseEvent==false) ){
+										
+							
+							closestid =closest;
+							closestType=hoveredType;
+							
+							try{
+								text0.innerHTML = ""+jsonObj1[typesMap[closestType][closestid]][2];
+								text0.style.top = positionContainer.top +10+ 'px';
+								text0.style.left = 20 + 'px';
+								
+								
+								var txtListGenes = '<ul style="margin-left:0em;padding-left:1.3em;height:50px;">';
+								for (var ln =0; ln<jsonObj1[typesMap[closestType][closestid]][4][0].length;ln++){
+									myLink[ln]=jsonObj1[typesMap[closestType][closestid]][4][0][ln]
+									//ml[ln].innerHTML=myLink[ln].substring(myLink[ln].lastIndexOf("/")+1);;
+									txtListGenes += '<li ><a href="'+myLink[ln]+'" target="_blank" class="default-link">'+myLink[ln].substring(myLink[ln].lastIndexOf("/")+1);+'</a></li>';
+									//ml[ln].href=myLink[ln]
+								}
+								txtListGenes += '</ul>';
+								listGenesContent.innerHTML = txtListGenes;
+								if (jsonObj1[typesMap[closestType][closestid]][4][0].length<=0){
+									listGenes.style.top = 2000 + 'px';
+									listGenes.style.left = 2000 + 'px';
+								}else{
+									listGenes.style.top = (text0.clientHeight+positionContainer.top) +40+ 'px';
+									listGenes.style.left = 20 + 'px';
+									
+									//text0.style.top = (listGenes.clientHeight+positionContainer.top) + 'px';
+								}
+							}
+							catch(e){}
+							
+							
+							var txtListLinks = '<ul style="margin-left:0em;padding-left:1.3em;height:150px;">';
+							var identifier=typesMap[closestType][closestid]
+							//if (selectedNodesPaths.indexOf(identifier)!=-1){
+								//selectedNodesPaths.splice(selectedNodesPaths.indexOf(identifier),1)
+								//for (var i=0; i<jsonObj2.length;i++){
+									//if (jsonObj2[i][0]==identifier){
+									//	selectedLinesPaths.splice(selectedLinesPaths.indexOf(i),1)
+									//}
+									//if (jsonObj2[i][1]==identifier){
+									//	selectedLinesPaths.splice(selectedLinesPaths.indexOf(i),1)
+									//}
+								//}
+							//} else{
+							//	selectedNodesPaths.push(identifier)
+								for (var i=0; i<jsonObj2.length;i++){
+									if (jsonObj2[i][0]==identifier){
+										//selectedLinesPaths.push(i)
+										txtListLinks += '<li >'+jsonObj1[jsonObj2[i][1]][2]+'</li>';
+										nbS+=1;
+									}
+									if (jsonObj2[i][1]==identifier){
+										//selectedLinesPaths.push(i)
+										txtListLinks += '<li >'+jsonObj1[jsonObj2[i][0]][2]+'</li>';
+										nbS+=1;
+									}
+								}
+					
+							//}
+							//for (var i=0; i<selectedLinesPathsIds.length;i++){
+							//	scene.children[7].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] -=5000000;
+							//}
+							//selectedLinesPathsIds=[]
+							//for (var i=0; i<selectedLinesPaths.length;i++){
+							//	for (var j=0;j<linesMap[selectedLinesPaths[i]].length;j+=1){
+							//		selectedLinesPathsIds.push(linesMap[selectedLinesPaths[i]][j])
+							//	}
+							//}
+							//selectedLinesPathsIds = unique(selectedLinesPathsIds)
+							//for (var i=0;i<selectedLinesPathsIds.length;i+=1){
+							//	scene.children[7].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] +=5000000;
+							//}
+							//scene.children[7].geometry.attributes.position.needsUpdate = true;
+							txtListLinks += '</ul>';
+							listLinksContent.innerHTML =txtListLinks;
+							if (nbS==0){
+								listLinks.style.top = 2000 + 'px';
+								listLinks.style.left = 2000 + 'px';
+							}else{
+								
+								listLinks.style.overflow="auto";
+								listLinks.style.top = (listGenes.clientHeight+positionContainer.top)+40 + 'px';
+								listLinks.style.left = 20 + 'px';
+							}
+							//console.log(selectedLinesPathsIds)
+						}
+						else if (isOnLine==1 && isOnParticle==0 && stopThreeJsMouseEvent==false){
+							parameters.name="line";
+							closestType=hoveredType;
+							closestid =closestLine;
+							parameters.size=0;
+							
+							colorParticleGui.r=scene.children[closestType].geometry.attributes.ca.array[closestid*3+0];
+							colorParticleGui.g=scene.children[closestType].geometry.attributes.ca.array[closestid*3+1];
+							colorParticleGui.b=scene.children[closestType].geometry.attributes.ca.array[closestid*3+2];
+							parameters.color='#' +('000000'+colorParticleGui.getHex().toString(16)).slice(-6);
+							
+						}
+						else{
+							var onDraggableNb = 0;
+							//listLinksContent.innerHTML="";
+							//text0.innerHTML ="";
+							//listGenesContent.innerHTML="";
+							//if (nbS==0){
+							//	listLinks.style.top = 6000 + 'px';
+							//	listLinks.style.left = 6000 + 'px';
+							//	listGenes.style.top = 6000 + 'px';
+							//	listGenes.style.left = 6000 + 'px';
+							//}
+						}
+							//parameters.name="";
+						break;
+					case 1: // middle
+						break;
+					case 2: // right
+						break;
+				}
+				
+					
+				
+
+				
+			}
+		function onDocumentMouseUp( event ) {
+			switch ( event.button ) {
+			
+				case 0:				
+					break;
+				case 1: // middle
+					break;
+				case 2: // right
+					break;
+			}
+		}
+		//function onMouseMove( e ) {
+
+		//		mouse.x = e.clientX;
+		//		mouse.y = e.clientY;
+
+		//	}
+		function animate() {
+
+			requestAnimationFrame( animate );
+
+			render();
+			
+			
+			
+			stats.update();
+
+		}
+		
+		function toXYCoords (pos) {
+			
+			var vector = pos.clone().project(camera);//projector.projectVector(pos.clone(), camera);
+			vector.x = (vector.x + 1)/2 * window.innerWidth;
+			vector.y = -(vector.y - 1)/2 * window.innerHeight;
+			return vector;
+		}
+
+		function render() {
+			
+			controls.update();
+			keyboard.update();
+			
+			
+			if ( keyboard.pressed("A") ) {
+			
+				controls.panLeft(5* controls.zoomScale());
+			}
+			if ( keyboard.pressed("D") ) {
+				controls.panLeft(-5* controls.zoomScale());
+			}
+				
+			if ( keyboard.pressed("W") ) {
+				controls.panUp(5* controls.zoomScale());
+			}
+				
+			if ( keyboard.pressed("S") ){
+				controls.panUp(-5* controls.zoomScale());
+			} 
+			
+			if ( keyboard.pressed("X") ) {
+				controls.dollyIn();
+			}
+				
+			if ( keyboard.pressed("Z") ){
+				//controls.pan(-5* controls.zoomScale(),0);
+				controls.dollyOut();
+			} 
+			// if ( keyboard.down("1") ){
+				// if (linesShaderMaterial.depthTest){
+					// linesShaderMaterial.depthTest = false;
+				// }
+				// else{
+					// linesShaderMaterial.depthTest = true;
+				// }
+			// } 
+			// if ( keyboard.down("2") ){
+				// if (linesShaderMaterial.blending){
+					// linesShaderMaterial.blending = false;
+				// }
+				// else{
+					// linesShaderMaterial.blending = THREE.AdditiveBlending;
+				// }
+			// } 
+			// if ( keyboard.down("3") ){
+				// if (linesShaderMaterial.transparent){
+					// linesShaderMaterial.transparent = false;
+				// }
+				// else{
+					// linesShaderMaterial.transparent = true;
+				// }
+			// } 
+			// if ( keyboard.down("]") ){
+				// for (var i=0;i<segmentPts;i++){
+				// //for (var i=0;i<b2lopacity.length;i++){
+					// if (b2lopacity[i]<1.0){
+					// b2lopacity[i]+=0.05;
+					// }
+				// }
+				// scene.children[7].geometry.attributes.op.needsUpdate = true;
+				
+			// } 
+			// if ( keyboard.down("[")){//linesShaderMaterial.opacity-=0.1;
+				// //if (linesUniforms.opacity.value>0.0){
+				// //	linesUniforms.opacity.value-=0.05;
+				// //}
+				// for (var i=0;i<segmentPts;i++){
+				// //for (var i=0;i<b2lopacity.length;i++){
+					// if (b2lopacity[i]>0.0){
+					// b2lopacity[i]-=0.05;
+					// }
+				// }
+				// scene.children[7].geometry.attributes.op.needsUpdate = true;
+				
+			// } 
+				
+			
+				
+			
+			//
+			
+			
+			
+			//if (mtween)
+				//camTween.update();
+			TWEEN.update();
+			//var time = Date.now() * 0.005;
+
+			//PointCloud1.rotation.z = 0.01 * time;
+			if (stopThreeJsMouseEvent==false){
+			if (flagPick==1){
+				var vector = new THREE.Vector3( mouse.x, mouse.y, 1 );
+				//projector.unprojectVector( vector, camera );
+				vector.unproject(camera);
+				raycaster.set( camera.position, vector.sub( camera.position ).normalize() );
+				var distance=99999999;
+				var listretPointsIndexes=[];
+				var listretPointsDistances=[];	
+				var listretPointsTypes=[];	
+				var listretPointsIndexesL=[];
+				var listretPointsDistancesL=[];	
+				var listretPointsTypesL=[];	
+				var point = new THREE.Vector3(0,0,0);		
+				var myray=raycaster.ray;
+				var point1 = new THREE.Vector3(0,0,0);	
+				var point2 = new THREE.Vector3(0,0,0);
+				
+				
+				for(var i=0, ii=scene.children.length;i<ii;i++){
+					
+					for (var partT=0;partT<7;partT++){
+					// mouse hover detect particle
+					if (scene.children[i] instanceof THREE.PointCloud && (i==partT)){
+						var a1 = scene.children[i].geometry.attributes.position.array;
+						var a2 = scene.children[i].geometry.attributes.size.array;
+						particles = a2.length;
+						var a3 = scene.children[i].geometry.attributes.ca.array;
+						
+						for(var j=0;j<particles;j++){
+							point.x = (a1[j*3]);
+							point.y = (a1[j*3+1]);
+							point.z = (a1[j*3+2]);
+							distance = myray.distanceToPoint(point);
+							if ( distance <=2 ) {
+								listretPointsIndexes.push(j);
+								listretPointsDistances.push(distance);	
+								listretPointsTypes.push(i);	
+							}
+						}
+						
+					}
+					/*if (scene.children[i] instanceof THREE.Mesh ){
+						for (var nc=0;nc<nbCompartments;nc++){
+							if (scene.children[i] instanceof THREE.Mesh && scene.children[i].name=="c"+nc){
+								//console.log(scene.children[i])
+								var ptMesh = scene.children[i].position;
+								var meshdistance = myray.distanceToPoint(point);
+								if (meshdistance)<=2
+								console.log(ptMesh)
+							}
+						}
+					}*/
+					
+					
+					}
+					var h1 = listretPointsDistances.length;
+					var myr;
+					var mymin = Math.min.apply(Math, listretPointsDistances);
+					var v1=0;
+					while(h1--){
+						if (listretPointsDistances[h1]==mymin){
+							myr=h1;
+								}
+								if (myr==h1)
+									break;
+								
+					}						
+					closest = listretPointsIndexes[myr];
+					if (closest>=0){
+						//console.log(listretPointsTypes[myr]);
+						if (listretPointsTypes[myr]>=0)
+							sprite.position.set(scene.children[listretPointsTypes[myr]].geometry.attributes.position.array[closest*3],scene.children[listretPointsTypes[myr]].geometry.attributes.position.array[closest*3+1],scene.children[listretPointsTypes[myr]].geometry.attributes.position.array[closest*3+2]);	
+						//console.log(closest);
+						//console.log(i);
+						isOnParticle=1;
+							//cssObject.element.children[1].textContent=""+closest;//.element.symbol.textContent=closest;
+							
+							if (listretPointsTypes[myr]>=0){
+								
+								var pp = toXYCoords(sprite.position);
+								
+								if ((text1PreviousPos.x != pp.x) && (text1PreviousPos.y != pp.y)){
+									//console.log(text1PreviousPos)
+									//console.log(listretPointsTypes[myr])
+									// display 2d text in html in screen 2s coordinate corresponding to near the 3d position... 
+									//camera.updateMatrixWorld() ;
+									//text1.firstChild.value=""+jsonObj1[typesMap[listretPointsTypes[myr]][closest]][2];
+									text1.style.top = (pp.y+positionContainer.top )+ 'px';								
+									text1.style.left = (pp.x -(text1.firstChild.length*8))-18+ 'px';
+									text1PreviousPos = pp;
+									var stringTxt="";
+									var dat =typesMap[listretPointsTypes[myr]][closest];
+									if(jsonObj1[dat]){
+										//MiniKeggMapPlan.position.set(camera.position.x, camera.position.y-200, camera.position.z );
+										
+										document.getElementById("democ0").style.visibility="visible";
+										var ptdata=[]
+										if (jsonObj1[dat][4][1][2] && Array.isArray(jsonObj1[dat][4][1][2])){
+											//console.log(jsonObj1[dat][4][1][2])
+											
+											for (var nbpts=0, l_nbpts=jsonObj1[dat][4][1][2].length; nbpts<l_nbpts; nbpts++){
+												ptdata.push([((jsonObj1[dat][4][1][2][nbpts][0]*0.68355)/2)-2.5, ((jsonObj1[dat][4][1][2][nbpts][1]*0.68355)/2)]);
+											}
+										}
+										$("#democ0").html("");
+										var width = 450,//900/3,
+										height = 273,//547/3,
+										mdiv = d3.select('#democ0'),
+										msvg = mdiv.append('svg')
+											.attr('width', width)
+											.attr('height', height),
+										rw = 3;//width/2,
+										rh = 3;//height/2;
+
+										//var data = [];			
+										
+										if (ptdata.length>0){
+										msvg.append("image")
+										  .attr("xlink:href", "/images/kegg-xsmall.png")
+										  .attr("x", "0px")
+										  .attr("y", "0px")
+										  .attr("width", width+"px")
+										  .attr("height", height+"px");
+										msvg.selectAll('rect')
+											.data(ptdata)
+											.enter()
+											//.data(function(d) { console.log(d);return d; })
+											//.enter()
+											.append('rect')
+											.attr('x', function(d, i) { return d[0] })
+											.attr('y', function(d, i) { return d[1] })
+											//.attr('x', function(d, i) { return (rw*1.2 )* i; })
+											//.attr('y', function(d, i) { return (rh*1.2 )* i; })
+											.attr('width', rw)
+											.attr('height', rh)
+											.style("fill", function(d, i) { return "rgb(255,0,0)"})
+										}
+									
+									
+									
+										stringTxt = jsonObj1[dat][0]+" "+jsonObj1[dat][2];
+										if (jsonObj1[dat][4][1] && jsonObj1[dat][4][1][0]){
+											stringTxt = jsonObj1[dat][0]+" "+jsonObj1[dat][2]+" ("+jsonObj1[dat][4][1][0]+")";
+											if (fbaData && fbaData[0] && fbaData[0].length==3){
+												for (var f =0; f< fbaData.length; f++){
+													if (jsonObj1[dat][1]==fbaData[f][0]){
+														stringTxt = jsonObj1[dat][0]+" "+jsonObj1[dat][2]+" ("+jsonObj1[dat][4][1][0]+")"+" Flux: "+fbaData[f][1];
+													}
+												}
+											}
+											
+										}
+										
+									}
+									// else{
+										// if (listretPointsTypes[myr]==2){																
+											// stringTxt = " "+selectedModelNodes[dat-jsonObj1.length][1];//selectedModelNodes[typesMap[listretPointsTypes[myr]][closest]-jsonObj1.length][1];
+										// }
+										// else if (listretPointsTypes[myr]==4){											
+												// stringTxt = " "+selectedModelNodes[nbPlacesModel+dat-jsonObj1.length][1];
+										// }
+										// //else{stringTxt = " ";}
+									// }
+									if (text1PreviousString!=stringTxt){
+										text1.innerHTML=stringTxt;
+										text1PreviousString=stringTxt;
+										text1.style.zIndex = "1000";
+									}
+									//text1.innerHTML=stringTxt;
+									/*else{
+										//text1.innerHTML = " ";
+										if (listretPointsTypes[myr]==2){												
+											text1.innerHTML = " "+selectedModelNodes[typesMap[listretPointsTypes[myr]][closest]-jsonObj1.length];//selectedModelNodes[typesMap[listretPointsTypes[myr]][closest]-jsonObj1.length][1];
+										}
+										if (listretPointsTypes[myr]==4){
+											text1.innerHTML = " "+selectedModelNodes[nbPlacesModel+typesMap[listretPointsTypes[myr]][closest]-jsonObj1.length];
+										}
+									}*/
+									/*try{
+										
+									text1.innerHTML = ""+jsonObj1[typesMap[listretPointsTypes[myr]][closest]][2];		
+																		
+									
+									}
+									catch(e){
+										text1.innerHTML = " ";
+										try{
+											//var ln1 = startModelPlaces;
+											//var ln2 = startModelReactions;
+											//selectedModelNodes[i][5]==2
+											//var Ptype= idMap[closest][0];
+											//var Pindex= idMap[closest][1];
+											//text1.innerHTML = " "+idMap[closest];
+											if (listretPointsTypes[myr]==2){
+												
+												text1.innerHTML = " "+selectedModelNodes[typesMap[listretPointsTypes[myr]][closest]-jsonObj1.length];//selectedModelNodes[typesMap[listretPointsTypes[myr]][closest]-jsonObj1.length][1];
+												//console.log(selectedModelNodes[typesMap[listretPointsTypes[myr]][closest]-jsonObj1.length]);
+												//console.log(selectedModelNodes);
+											}
+											if (listretPointsTypes[myr]==4){
+												text1.innerHTML = " "+selectedModelNodes[nbPlacesModel+typesMap[listretPointsTypes[myr]][closest]-jsonObj1.length];
+											//	text1.innerHTML = " "+selectedModelNodes[nbPlacesModel+typesMap[listretPointsTypes[myr]][closest]-jsonObj1.length][1];
+											}
+											
+											//typesMap[listretPointsTypes[myr]][closest]-jsonObj1.length;
+											//+selectedModelNodes[typesMap[listretPointsTypes[myr]][closest]-jsonObj1.length][1];
+										}
+										catch(e1){
+											
+										}
+									
+									}*/
+								}
+								else{
+								document.getElementById("democ0").style.visibility="visible";
+									text1.style.top =  (text1PreviousPos.y+positionContainer.top )+ 'px';
+									
+									text1.style.left = text1PreviousPos.x -(text1.firstChild.length*8)-18+ 'px';
+								}
+							}
+							
+							//try{
+							//cssObject.element.children[1].textContent=""+jsonObj1[typesMap[listretPointsTypes[myr]][closest]][2];
+							//	cssObject.element.children[2].textContent=particleClass[listretPointsTypes[myr]];
+								hoveredType=listretPointsTypes[myr];
+								//}
+							//catch(err){
+							//}
+					}
+					else{
+					
+						sprite.position.set(-10000,-10000,-50000);
+						//if (text1.style.top == (2000 + 'px')){
+						//else{
+						//	text1.style.top = 2000 + 'px';
+						//	text1.style.left = 2000 + 'px';
+						//}
+						//text1.style.top = 2000 + 'px';
+						//text1.style.left = 2000 + 'px';
+						
+						isOnParticle=0;		
+						if (isOnLine==0 && noKeggCube){
+						
+						textk.style.top = 2000 + 'px';
+						textk.style.left = 2000 + 'px';
+						//cssObject.element.children[1].textContent="";
+						//cssObject.element.children[2].textContent="";
+						hoveredType=-1
+						}
+					}
+					
+					
+					// mouse hover detect line
+					//if (scene.children[i] instanceof THREE.Line && i==7){
+					//		var a1 = scene.children[i].geometry.attributes.position.array;
+					//		var a2 = scene.children[i].geometry.attributes.ca.array;
+					//		var interSegment = new THREE.Vector3();
+					//		var interRay = new THREE.Vector3();
+							
+					//		for(var j=0, jj= segmentPts;j<jj;j+=2){
+					//			point1.x = (a1[j*3]); point1.y = (a1[(j*3)+1]); point1.z = (a1[(j*3)+2]);
+					//			point2.x = (a1[(j+1)*3]); point2.y = (a1[((j+1)*3)+1]); point2.z = (a1[((j+1)*3)+2]);
+					//			distance = myray.distanceSqToSegment( point1, point2, interRay, interSegment );
+					//			if ( distance <=4 ) {
+					//				listretPointsIndexesL.push(j);
+					//				listretPointsDistancesL.push(distance);	
+					//			}
+					//		}
+					//		var h1 = listretPointsDistancesL.length;
+					//		var myr;
+					//		var mymin = Math.min.apply(Math, listretPointsDistancesL);
+					//		var v1=0;
+					//		while(h1--){
+					//			if (listretPointsDistancesL[h1]==mymin){
+					//				myr=h1;
+					//			}
+					//			if (myr==h1)
+					//				break;
+									
+					//			}						
+					//		closestLine = listretPointsIndexesL[myr];
+					//		if (closestLine>=0){
+					//			isOnLine=1;
+					//			if (isOnParticle==0){
+					//				cssObject.element.children[1].textContent=""+closestLine;//.element.symbol.textContent=closest;
+					//				cssObject.element.children[2].textContent="Line";
+									
+								// set position of outline mesh
+					//			outlineMesh1.geometry.vertices[0].x=a1[closestLine*3]; outlineMesh1.geometry.vertices[0].y=a1[closestLine*3+1]; outlineMesh1.geometry.vertices[0].z=a1[closestLine*3+2];
+					//			outlineMesh1.geometry.vertices[1].x=a1[(closestLine+1)*3]; outlineMesh1.geometry.vertices[1].y=a1[(closestLine+1)*3+1]; outlineMesh1.geometry.vertices[1].z=a1[(closestLine+1)*3+2];
+					//			lineGeometry.verticesNeedUpdate = true;
+					//			hoveredType=7;
+					//			}
+								//
+					//		}
+					//		else{//sprite.position.set(-10000,-10000,10000);	
+					//			//cssObject.element.children[1].textContent="e";
+					//			outlineMesh1.geometry.vertices[0].x=-10000; outlineMesh1.geometry.vertices[0].y=-10000; outlineMesh1.geometry.vertices[0].z=-50000;
+					//			outlineMesh1.geometry.vertices[1].x=-10000; outlineMesh1.geometry.vertices[1].y=-10000; outlineMesh1.geometry.vertices[1].z=-51000;
+					//			lineGeometry.verticesNeedUpdate = true;isOnLine=0;
+					//		}
+							
+							
+					//}
+				}
+				if (isOnParticle==0 ){
+					text1.style.top = 2000 + 'px';
+					text1.style.left = 2000 + 'px';
+					document.getElementById("democ0").style.visibility="hidden";
+					//pip.style.top = 2000 + 'px';
+					//pip.style.left = 2000 + 'px';
+				}
+				//else{
+				//pip.style.top = 50 + 'px';
+				//	pip.style.left = 25 + 'px';
+				//}
+				var intersects = raycaster.intersectObjects( scene.children );
+				if ( intersects.length > 0 ) {
+
+					if ( INTERSECTED != intersects[ 0 ].object ) {
+
+						//if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+
+						INTERSECTED = intersects[ 0 ].object;
+						if (INTERSECTED instanceof THREE.Mesh ){
+							
+							//
+							if (INTERSECTED.name.charAt(0)=="k"){
+								noKeggCube=false;
+								INTERSECTED.material.color.setHex( 0xffdd33 );
+								var pp = toXYCoords(INTERSECTED.position);
+								if (textkPreviousPos != pp){
+									
+									textk.innerHTML = ""+keggCubesProperties[INTERSECTED.name][0]+"  - value:" + keggCubesProperties[INTERSECTED.name][1];		
+									textk.style.top = pp.y + 'px';								
+									textk.style.left = (pp.x -(text1.firstChild.length*8))+20+ 'px';
+									textkPreviousPos = pp;
+									
+									
+								}
+								//console.log(keggCubesProperties[INTERSECTED.name])
+							}
+							else if(INTERSECTED.name=="skybox"){
+								noKeggCube=true;
+								INTERSECTED = null;
+								container.style.cursor = 'auto';
+								
+								
+							}
+							else{container.style.cursor = 'auto';
+							noKeggCube=true;
+							for ( var k = 0; k < previousKeggLength; k ++ ) {
+								cubesGeometry[k].material.color.setHex( 0xff0000 );
+							}
+							}
+						
+						}
+						
+					}
+
+				} else {
+					noKeggCube=true;
+					INTERSECTED = null;
+					container.style.cursor = 'auto';
+					
+					for ( var k = 0; k < previousKeggLength; k ++ ) {
+						cubesGeometry[k].material.color.setHex( 0xff0000 );
+					}
+					
+				}
+				
+				flagPick=0;
+				
+				
+			}
+			else
+				flagPick++;
+			}	
+					
+			//var t = clock.getElapsedTime();			
+			//tokenUniforms.mixAmount.value = 0.5 * (1.0 + Math.sin(t));			
+			renderer.render( scene, camera );
+			//renderer2.render( scene2, camera2 );
+			
+			if (idsOfSelectedRows.length>0){
+				for (var i =0;i<spritesSelected.length;i++){		
+					spritesSelected[i].position.set(-50000,-10000,10000);
+					spritesSelected[i].scale.set(100, 100, 100);
+				}
+				
+				for (var i =0;i<idsOfSelectedRows.length;i++){
+					if (i<spritesSelected.length){
+						var a1 = scene.children[idMap[idsOfSelectedRows[i]][0]].geometry.attributes.position.array;
+						spritesSelected[i].position.set(a1[idMap[idsOfSelectedRows[i]][1]*3],a1[idMap[idsOfSelectedRows[i]][1]*3+1],a1[idMap[idsOfSelectedRows[i]][1]*3+2]);			
+					}
+				}
+				for (var i =0;i<idsOfSelectedRows.length;i++){
+					//for (var j =0;j<spritesSelected.length;j++){
+					if (i<spritesSelected.length){
+						var dx= camera.position.x-spritesSelected[i].position.x
+						var dy= camera.position.y-spritesSelected[i].position.y
+						var dz= camera.position.z-spritesSelected[i].position.z
+						var dc = Math.sqrt(((dx*dx) + (dy*dy)))
+						var ds = Math.sqrt((dc*dc) + (dz*dz))
+						var mult = ((ds/100)*5)+20
+						spritesSelected[i].scale.set(mult, mult, mult);
+					}
+				}
+			}
+			else{
+				for (var i =0;i<spritesSelected.length;i++){		
+					spritesSelected[i].position.set(-50000,-10000,10000);
+					spritesSelected[i].scale.set(100, 100, 100);
+				}
+			}
+		
+		
+		
+		if 	(resetSpreadsheet==true){
+		resetSpreadsheet=false;
+		}
+		
+		var tokenIDStackCountSize=Object.keys(tokenIDStackCount).length
+		if( reactionIsDone && (simModeValue==1)){
+			for (var tkNb=0; tkNb< tokenIDStackCountSize;tkNb++){
+				
+				var tmp=tokenIDStackCount[Object.keys(tokenIDStackCount)[tkNb]];
+				
+				//console.log(tokenIDStackCount[tkNb])
+				txtReactionActivation[tkNb].innerHTML = ''+tmp[0];
+				var vectorp = new THREE.Vector3( tmp[1],tmp[2],tmp[3]);
+				vectorp.x +=10;
+				var ppv = toXYCoords(vectorp	);
+				txtReactionActivation[tkNb].style.top = (ppv.y+positionContainer.top) + 'px';
+				txtReactionActivation[tkNb].style.left = ppv.x + 'px';
+									//txtReactionActivation[cntLabels].innerHTML = ''+tokenIDStackCount[simRow[rw][2]];
+				
+				
+				
+			}
+		}
+		else if( simModeValue==0){
+			for (var tkNb=0; tkNb< tokenIDStackCountSize;tkNb++){
+				
+				var tmp=tokenIDStackCount[Object.keys(tokenIDStackCount)[tkNb]];
+				
+				//console.log(tokenIDStackCount[tkNb])
+				txtReactionActivation[tkNb].innerHTML = ''+tmp[0];
+				var vectorp = new THREE.Vector3( tmp[1],tmp[2],tmp[3]);
+				vectorp.x +=10;
+				var ppv = toXYCoords(vectorp	);
+				txtReactionActivation[tkNb].style.top = (ppv.y+positionContainer.top) + 'px';
+				txtReactionActivation[tkNb].style.left = ppv.x + 'px';
+									//txtReactionActivation[cntLabels].innerHTML = ''+tokenIDStackCount[simRow[rw][2]];
+				//planeMesh[tkNb].position.set(0,0,50000);
+				
+				
+			}
+		}
+		else{
+			for (var tkNb=0; tkNb< tokenIDStackCountSize;tkNb++){
+				
+				
+				txtReactionActivation[tkNb].innerHTML = '';
+				
+			}
+		}
+			
+			
+			// place labels for compartments
+			var poscont = $("#container");
+			var cnt_merged_comp={};
+			for ( var i = 0; i < listCompartments.length; i ++ ) {
+				//cnt_merged=0;
+				var vector = new THREE.Vector3( objects[i].position.x+(radiusComp*objects[i].scale.x),objects[i].position.y,objects[i].position.z);
+				var pp = toXYCoords(vector	);
+				
+				if (pp.x >=0 && pp.y >=0 && pp.x <=poscont.width()-10 && pp.y <=poscont.height()-10){
+					document.getElementById("txt"+i).style.top = (pp.y+poscont.position().top+(0*12)) + 'px';
+					document.getElementById("txt"+i).style.left = (pp.x +20)+ 'px';
+				}
+				else{
+					document.getElementById("txt"+i).style.top = 4000 + 'px';
+					document.getElementById("txt"+i).style.left = 4000+ 'px';
+				}
+				for (var ref in generalLayout["merged"]){
+					if (generalLayout["merged"].hasOwnProperty(ref)){
+						if (objects[i].name==ref){
+							document.getElementById("txt"+i).style.top = (pp.y+poscont.position().top+(0*12)) + 'px';
+							document.getElementById("txt"+i).style.left = (pp.x +20)+ 'px';
+						}
+						for (var j=0;j<generalLayout["merged"][ref].length;j++){
+							if (objects[i].name==generalLayout["merged"][ref][j]){
+								 document.getElementById("txt"+i).style.top = (pp.y+poscont.position().top+((j+1)*12)) + 'px';
+								 document.getElementById("txt"+i).style.left = (pp.x +20)+ 'px';
+							}
+						}
+					}
+				}
+				// for (el in list_merged_chains){
+					// if (list_merged_chains.hasOwnProperty(el)){
+						// if (objects[i].name==el){
+							// document.getElementById("txt"+i).style.top = (pp.y+poscont.position().top+(0*12)) + 'px';
+							// document.getElementById("txt"+i).style.left = (pp.x +20)+ 'px';
+						// }
+						// for (var j=0;j<list_merged_chains[el].length;j++){
+							// if (objects[i].name==list_merged_chains[el][j]){
+								// document.getElementById("txt"+i).style.top = (pp.y+poscont.position().top+((j+1)*12)) + 'px';
+								// document.getElementById("txt"+i).style.left = (pp.x +20)+ 'px';
+							// }
+							
+						// }
+					// }
+				// }					
+				document.getElementById("txt"+i).innerHTML = objects[i].name;			
+			}
+		
+
+		}
+var mydata = [];
+
+var dictData = {};
+
+var sz=selectedMetabolicData[1].length  
+for (var i=0;i<sz;i++){
+	mydata.push({chkBoxState:false,"id":selectedMetabolicData[1][i][0], "name":selectedMetabolicData[1][i][1], "description":selectedMetabolicData[1][i][2], "comp":selectedMetabolicData[1][i][3],"type":(selectedMetabolicData[1][i][6]==4) ? "Reaction":"Metabolite", "sub-system":(selectedMetabolicData[1][i][6]==4 && selectedMetabolicData[1][i][4][1][0]) ? selectedMetabolicData[1][i][4][1][0]:"" });
+	dictData[selectedMetabolicData[1][i][1]]=selectedMetabolicData[1][i][0];
+}
+
+
+$("#dataTable").css({top:  $("#container").height()+$("#container").position().top+40, left:10, width:$("#container").width()});
+
+
+jQuery("#list4").jqGrid({
+	datatype: "local",
+	data: mydata,
+	height: 250,
+	width: ($("#container").width()*0.9),
+   	colNames:["id", "name","description","comp","type","sub-system","mute"],
+   	colModel:[
+		
+   		{name:'id',index:'id', width:30, sorttype:"int",searchoptions:{sopt:['eq','cn']}},
+   		{name:'name',index:'name', width:60,sorttype:'string', searchoptions:{sopt:['eq','cn','bw',]},editable:true},
+		{name:'description',index:'description', width:100,sorttype:'string', searchoptions:{sopt:['cn','nc','bw']},editable:true},
+   		{name:'comp',index:'comp', width:20,sorttype:'string', searchoptions:{sopt:['eq']},editable:true},
+   		{name:'type',index:'type', width:25,sorttype:'string', searchoptions:{sopt:['eq','cn']},editable:true},
+   		{name:'sub-system',index:'sub-system', width:100,sorttype:'string', searchoptions:{sopt:['cn']},editable:true},
+		{name:'mute',index:'mute', width:25,sorttype:'boolean',editable:true, searchoptions:{sopt:['eq']},edittype:'checkbox', editoptions: { value:"True:False"}, formatter: "checkbox", formatoptions: {disabled : false}},
+	],
+   	recordpos: 'left',
+	scroll: 1,
+  //enable npage request parameter
+  //prmNames: { npage: 'npage' },
+	scrollrows: true, 
+	rowNum: 12,
+	rowList:[],
+    viewrecords: true,
+    sortorder: "desc",
+	
+	multiselect: true,
+	onSelectRow: function (id, isSelected) {
+		var p = this.p, item = p.data[p._index[id]], i = $.inArray(id, idsOfSelectedRows);
+		item.cb = isSelected;
+		if (!isSelected && i >= 0) {
+			idsOfSelectedRows.splice(i,1); // remove id from the list
+		} else if (i < 0) {
+			idsOfSelectedRows.push(id);
+		}
+	},
+	loadComplete: function () {
+		//console.log(selectedNodesPaths)
+		//console.log(idsOfSelectedRows)
+		var p = this.p, data = p.data, item, $this = $(this), index = p._index, rowid, i, selCount;
+		for (i = 0, selCount = idsOfSelectedRows.length; i < selCount; i++) {
+			rowid = idsOfSelectedRows[i];
+			item = data[index[rowid]];
+			if ('cb' in item && item.cb) {
+				$this.jqGrid('setSelection', rowid, false);
+			}
+		}
+		for (i = 0, selCount = selectedNodesPaths.length; i < selCount; i++) {
+			rowid = parseInt(selectedNodesPaths[i]);
+			$this.jqGrid('setCell', index[rowid],7, "True");
+		}
+	},
+	ignoreCase: true,
+	gridview: true,
+	//cellEdit: true,
+	loadonce: true,
+   	caption: "Metabolic network: list of nodes (metabolites and reactions)"
+});
+jQuery("#list4").jqGrid('filterToolbar',{searchOperators : true});
+var checkboxFix = [];
+jQuery(document).delegate('#list4 .jqgrow td input', 'click', function () { 
+	//console.log("a")
+	var iCol = $(this).parent('td').parent('tr').find('td').index($(this).parent('td'));
+	if (iCol==7){
+		//console.log(iCol)
+		var iRow = $(this).parent('td').parent('tr').attr('id');
+		
+		
+		var identifier=iRow;
+		if (selectedNodesPaths.indexOf(identifier)!=-1){
+			selectedNodesPaths.splice(selectedNodesPaths.indexOf(identifier),1)
+			for (var i=0; i<jsonObj2.length;i++){
+				if (jsonObj2[i][0]==identifier){
+					selectedLinesPaths.splice(selectedLinesPaths.indexOf(i),1)
+				}
+				if (jsonObj2[i][1]==identifier){
+					selectedLinesPaths.splice(selectedLinesPaths.indexOf(i),1)
+				}
+			}
+		} else{
+			selectedNodesPaths.push(identifier)
+			for (var i=0; i<jsonObj2.length;i++){
+				if (jsonObj2[i][0]==identifier){
+					selectedLinesPaths.push(i)
+					//txtListLinks += '<li >'+jsonObj1[jsonObj2[i][1]][2]+'</li>';
+					//nbS+=1;
+				}
+				if (jsonObj2[i][1]==identifier){
+					selectedLinesPaths.push(i)
+					//txtListLinks += '<li >'+jsonObj1[jsonObj2[i][0]][2]+'</li>';
+					//nbS+=1;
+				}
+			}
+
+		}
+		for (var i=0; i<selectedLinesPathsIds.length;i++){
+			scene.children[7].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] -=5000000;
+		}
+		selectedLinesPathsIds=[]
+		for (var i=0; i<selectedLinesPaths.length;i++){
+			for (var j=0;j<linesMap[selectedLinesPaths[i]].length;j+=1){
+				selectedLinesPathsIds.push(linesMap[selectedLinesPaths[i]][j])
+			}
+		}
+		selectedLinesPathsIds = unique(selectedLinesPathsIds)
+		for (var i=0;i<selectedLinesPathsIds.length;i+=1){
+			scene.children[7].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] +=5000000;
+		}
+		scene.children[7].geometry.attributes.position.needsUpdate = true;
+		
+		
+		//console.log(iRow)
+		//console.log($(this)[0].checked)
+	}
+	//console.log(iCol)
+});
+//for(var i=0;i<=mydata.length;i++)
+//	jQuery("#list4").jqGrid('addRowData',i+1,mydata);
+
+function degrees(radians) {
+  return radians / Math.PI * 180 - 90;
+}
+
+function selectValue(el){
+		if (el.value=='default'){
+			console.log("default layout");
+		}
+		if (el.value=='kegg map'){
+			console.log("kegg map layout");
+			
+			var mymaxdepth=0;
+			var maxreached=true;
+			var bv=0;
+			var radius =8400;
+			for (var i= 0; i<jsonObj1.length;i++){
+			if (jsonObj1[i][4][1][2] && jsonObj1[i][4][1][2].length>0){			
+				if (jsonObj1[i][6]==2){
+					
+						
+						
+						var rm;
+						var rr;
+						
+						if (nameModel=="hepatonet1-msb201062-s5" || nameModel=="msb201062-s5"){
+							rm=bv*0.078*2*Math.PI*0.25;
+							rr = ((bv*0.02)+0.35*radius)
+							b3positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							b3positions[ bv * 3 + 1 ] = yStartDisplacement+0+(bv*0.05);
+						}
+						else if (nameModel=="Ec_iAF1260_flux2"){
+							rm=bv*0.004*2*Math.PI*0.25;
+							rr = ((radius*1.08)-(bv*0.03)+1)
+							b3positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							b3positions[ bv * 3 + 1 ] = yStartDisplacement+0-(bv*0.03);
+
+						}
+						
+						else if (nameModel=="iTO977_v1.00_cobra"){
+							rm=bv*0.004*2*Math.PI*0.25;
+							rr = ((radius*1.08)-(bv*0.03)+1)
+							b3positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							b3positions[ bv * 3 + 1 ] = yStartDisplacement+0-(bv*0.03);
+
+						}
+						else{
+							rm=bv*0.008*2*Math.PI*0.25;
+							rr = ((bv*0.02)+0.05*radius);
+							b3positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							b3positions[ bv * 3 + 1 ] = yStartDisplacement+0+(bv*0.02);
+						}
+						
+						b3positions[ bv * 3 + 2 ] = Math.sin(rm) *rr;
+						
+						
+						bv++;
+					
+				}
+				else if (jsonObj1[i][6]==4){
+					if (maxreached){
+						mymaxdepth=scene.children[4].geometry.attributes.position.array[idMap[i][1]*3+1];
+						maxreached=false;
+					}
+					scene.children[4].geometry.attributes.position.array[idMap[i][1]*3+0]=((jsonObj1[i][4][1][2][0][1]*0.69605)-273)/2.5;
+					scene.children[4].geometry.attributes.position.array[idMap[i][1]*3+2]= (-(jsonObj1[i][4][1][2][0][0]*0.69605)+450)/2.5;
+					
+				}
+			}
+			else {
+				if (jsonObj1[i][6]==2){
+					
+						
+						
+						var rm;
+						var rr;
+						
+						if (nameModel=="hepatonet1-msb201062-s5" || nameModel=="msb201062-s5"){
+							rm=bv*0.078*2*Math.PI*0.25;
+							rr = ((bv*0.02)+0.35*radius)
+							b3positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							b3positions[ bv * 3 + 1 ] = yStartDisplacement+0+(bv*0.05);
+						}
+						else if (nameModel=="Ec_iAF1260_flux2"){
+							rm=bv*0.004*2*Math.PI*0.25;
+							rr = ((radius*1.08)-(bv*0.03)+1)
+							b3positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							b3positions[ bv * 3 + 1 ] = yStartDisplacement+0-(bv*0.03);
+
+						}
+						
+						else if (nameModel=="iTO977_v1.00_cobra"){
+							rm=bv*0.004*2*Math.PI*0.25;
+							rr = ((radius*1.08)-(bv*0.03)+1)
+							b3positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							b3positions[ bv * 3 + 1 ] = yStartDisplacement+0-(bv*0.03);
+
+						}
+						else{
+							rm=bv*0.008*2*Math.PI*0.25;
+							rr = ((bv*0.02)+0.05*radius);
+							b3positions[ bv * 3 + 0 ] = Math.cos(rm) *rr;
+							b3positions[ bv * 3 + 1 ] = yStartDisplacement+0+(bv*0.02);
+						}
+						
+						b3positions[ bv * 3 + 2 ] = Math.sin(rm) *rr;
+						
+						
+						bv++;
+					
+				}
+				else if (jsonObj1[i][6]==4){
+				
+				}
+			}			
+			
+				/*if (jsonObj1[selectedModelEdges[ed][1]]==2 ){
+					//scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]=((Math.random() * 2 - 1) * 400);
+					var rm=cnt1*0.008*2*Math.PI;
+					//radius=900;
+					var rr = ((radius*1.08)-(cnt1*0.2)+1)
+					scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+2]= (Math.sin(rm) *rr);
+					//scene.children[2].geometry.attributes.position.array[(ln2+cnt2)*3+0]= (Math.cos(rm) *rr)+1800;
+					scene.children[2].geometry.attributes.position.array[(ln1+cnt1)*3+0]=(Math.cos(rm) *rr)+900;
+					cnt1++;
+					cnt++;
+				}
+				else if (selectedModelNodes[i][5]==4 ){
+					//scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]=((Math.random() * 2 - 1) * 400);
+					var rm=cnt2*0.008*2*Math.PI;
+					//radius=600;
+					var rr = ((radius*1.08)-(cnt2*0.2)+1)
+					scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+2]=(Math.sin(rm) *rr);
+					scene.children[4].geometry.attributes.position.array[(ln2+cnt2)*3+0]= (Math.cos(rm) *rr)+1800;
+					
+					cnt2++;
+					cnt++;
+				}*/
+			}
+			KeggMapPlan.position.set(0, mymaxdepth, 0 );
+			
+			scene.children[2].geometry.attributes.position.needsUpdate = true;
+			scene.children[4].geometry.attributes.position.needsUpdate = true;
+			var iv=0;
+				for ( var i = 0; i < segments; i ++ ) {
+					var t1 = jsonObj1[jsonObj2[i][0]][6]
+					var t2 = jsonObj1[jsonObj2[i][1]][6]
+					//console.log(t1)
+					//console.log(t2)
+					//var ivList=[]
+					var doIt=0
+					if (t1==2){
+						//console.log(idMap[jsonObj2[i][0]][1])
+						scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 0 ]+0.0;
+						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 1 ]+0.0;					
+						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 2 ]+0.0;
+						
+						iv++;
+					}
+					else if (t1==4){
+						//console.log(idMap[jsonObj2[i][0]][1])
+						scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 0 ]+0.0;
+						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 1 ]+0.0;
+						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][0]][1] * 3) + 2 ]+0.0;
+						iv++;
+					}
+					if (t2 ==2){
+						scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 0 ]+0.0;
+						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 1 ]+0.0;						
+						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[2].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 2 ]+0.0;	
+						iv++;
+					}
+					else if (t2 ==4){
+						scene.children[7].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 0 ]+0.0;
+						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 1 ]+0.0;
+						scene.children[7].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[4].geometry.attributes.position.array[ (idMap[jsonObj2[i][1]][1] * 3) + 2 ]+0.0;				
+						iv++;
+					}
+					
+				}
+				scene.children[7].geometry.attributes.position.needsUpdate = true;
+			
+		}	
+			/*var count=0;
+			for ( var iv = extraLinesCnt; iv <extraLinesCnt+nbEdgesModel; iv +=1) {
+				var t1;
+				var t2;
+				var pt1;
+				var pt2;
+				var sim1=1;
+				var sim2=1;
+				pt1 = selectedModelEdges[iv-extraLinesCnt][0]+jsonObj1.length;
+				sim1 = idMap[pt1][0]
+				t1 = selectedModelNodes[selectedModelEdges[iv-extraLinesCnt][0]][5];
+				if (selectedModelEdges[iv-extraLinesCnt][3]==2){
+					//console.log("link between model and metabolic nodes")
+					
+					if (typeof selectedModelEdges[iv-extraLinesCnt][1] == "number"){
+						pt2=selectedModelEdges[iv-extraLinesCnt][1];
+					}
+					else{
+						pt2=selectedModelEdges[iv-extraLinesCnt][1][0];
+					}
+					t2 = jsonObj1[pt2][6]
+					sim2=2;
+				}
+				else{
+					//console.log("link between model nodes")
+					if (typeof selectedModelEdges[iv-extraLinesCnt][1] == "number"){
+						pt2=selectedModelEdges[iv-extraLinesCnt][1];
+					}
+					else{
+						pt2=selectedModelEdges[iv-extraLinesCnt][1][0];
+					}
+					t2 = selectedModelNodes[pt2][5];
+				}
+				if (sim2!=2){
+					pt2+=jsonObj1.length;
+					//console.log(idMap[pt2]);
+				}
+				scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 0 ] =scene.children[idMap[pt1][0]].geometry.attributes.position.array[ (idMap[pt1][1] * 3) + 0 ]+0.0;
+				scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 1 ] =scene.children[idMap[pt1][0]].geometry.attributes.position.array[ (idMap[pt1][1] * 3) + 1 ]+0.0;
+				scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 2 ] =scene.children[idMap[pt1][0]].geometry.attributes.position.array[ (idMap[pt1][1] * 3) + 2 ]+0.0;
+				startPositionTokenMap[selectedModelEdges[iv-extraLinesCnt][0]]=count+extraLinesCnt;
+				
+				count+=1;
+				scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 0 ] =scene.children[idMap[pt2][0]].geometry.attributes.position.array[ (idMap[pt2][1] * 3) + 0 ]+0.0;
+				scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 1 ] =scene.children[idMap[pt2][0]].geometry.attributes.position.array[ (idMap[pt2][1] * 3) + 1 ]+0.0;
+				scene.children[7].geometry.attributes.position.array[ ((count+extraLinesCnt) * 3) + 2 ] =scene.children[idMap[pt2][0]].geometry.attributes.position.array[ (idMap[pt2][1] * 3) + 2 ]+0.0;
+				endPositionTokenMap[selectedModelEdges[iv-extraLinesCnt][1]]=count+extraLinesCnt;
+				
+				count+=1;
+			}
+			scene.children[7].geometry.attributes.position.needsUpdate = true;
+			scene.children[7].geometry.attributes.ca.needsUpdate = true;
+			
+			
+			var ii=0;
+			for ( var i = 0; i <segmentPts+maxNbTokenModel ; i +=2 ) {
+			
+				scene.children[8].geometry.vertices[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
+				scene.children[8].geometry.vertices[ii].y=scene.children[7].geometry.attributes.position.array[ (i * 3) + 1 ]+0;
+				scene.children[8].geometry.vertices[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
+				ii++;
+			}
+			//console.log(tokenAttributes.endPosition.value[0]);
+			var ii=0;
+			for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
+				tokenAttributes.endPosition.value[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
+				tokenAttributes.endPosition.value[ii].y=scene.children[7].geometry.attributes.position.array[ (i * 3) + 1 ]+0;
+				tokenAttributes.endPosition.value[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
+				ii++;
+			}
+			//console.log(tokenAttributes.endPosition.value[0]);
+			scene.children[8].geometry.verticesNeedUpdate = true;
+			tokenAttributes.endPosition.needsUpdate = true;
+			tokenUniforms.mixAmount.value = 0.0;
+		}*/
+}	
+	
+	
+	
+	function selectLayout(el){
+		//console.log(el.value)
+		document.getElementById("mtnl-id").value=el.value;
+	}
+	
+	
+	var listChildrenPoints=[2,4];
+	
+	for (var i =0;i< listChildrenPoints.length;i++){
+			var c = listChildrenPoints[i];
+			for (var h=0, hh=scene.children[c].geometry.attributes.size.array.length;h<hh;h++){
+				for (var g=0;g<nbCompartments;g++){
+					//if (objects[g].scale<1.0){
+					//	scene.children[c].geometry
+					//}
+					if (scene.children[c].geometry.attributes.compartment.array[h]==g){
+						//console.log(scene.children[c].geometry)
+						
+							scene.children[c].geometry.attributes.position.array[h*3+0]+=objects[g].position.x;//-stackCompInitialPos[cRef].x-stackCompInitialPos[cRef].x;
+							scene.children[c].geometry.attributes.position.array[h*3+1]+=objects[g].position.y;//-stackCompInitialPos[cRef].y-stackCompInitialPos[cRef].y;
+							scene.children[c].geometry.attributes.position.array[h*3+2]+=objects[g].position.z;//-stackCompInitialPos[cRef].z-stackCompInitialPos[cRef].z;
+							
+							var displacement = new THREE.Vector3(scene.children[c].geometry.attributes.position.array[h*3+0]- objects[g].position.x,
+																 scene.children[c].geometry.attributes.position.array[h*3+1]- objects[g].position.y,
+																 scene.children[c].geometry.attributes.position.array[h*3+2]- objects[g].position.z)
+							if (objects[g].scale.x<1.0){
+								scene.children[c].geometry.attributes.position.array[h*3+0]-=(displacement.x*(1-objects[g].scale.x));
+								scene.children[c].geometry.attributes.position.array[h*3+1]-=(displacement.y*(1-objects[g].scale.y));
+								scene.children[c].geometry.attributes.position.array[h*3+2]-=(displacement.z*(1-objects[g].scale.z));
+								scene.children[c].geometry.attributes.size.array[h]*=0.417777;
+							}
+							if (objects[g].scale.x>1.0){
+								var indLayer=-1;
+								for (var ref in generalLayout["outer"]){
+									if (generalLayout["outer"].hasOwnProperty(ref)){
+										indLayer =generalLayout["outer"][ref].indexOf(objects[g].name);
+										//if (indLayer!=-1){}
+									}
+								}
+								if (indLayer>-1){
+									var lengthV = displacement.length();
+									displacement.setLength(lengthV+((indLayer+0.5)*radiusComp));
+									scene.children[c].geometry.attributes.position.array[h*3+0]+=(displacement.x);
+									scene.children[c].geometry.attributes.position.array[h*3+1]+=(displacement.y+radiusComp/2);
+									scene.children[c].geometry.attributes.position.array[h*3+2]+=(displacement.z);
+									scene.children[c].geometry.attributes.size.array[h]/=0.417777;
+								}
+								
+								
+							}
+						
+						
+					}
+				}
+			}
+			scene.children[c].geometry.attributes.position.needsUpdate = true;
+			scene.children[c].geometry.attributes.size.needsUpdate = true;
+		}
+		
+		if (mtnlLayout["nodes_layout"]){
+			var listDisplacedNodes = Object.keys(mtnlLayout["nodes_layout"]);
+			if (listDisplacedNodes.length>0){
+				//console.log(mtnlLayout["nodes_layout"])
+				for(var i=0, ii= listDisplacedNodes.length;i<ii;i++){
+					var typeNode=idMap[listDisplacedNodes[i]][0];
+					var indexNode=idMap[listDisplacedNodes[i]][1];
+					if (typeNode==2){
+						scene.children[listChildrenPoints[0]].geometry.attributes.position.array[indexNode*3+0]=mtnlLayout["nodes_layout"][listDisplacedNodes[i]].x;
+						scene.children[listChildrenPoints[0]].geometry.attributes.position.array[indexNode*3+1]=mtnlLayout["nodes_layout"][listDisplacedNodes[i]].y;
+						scene.children[listChildrenPoints[0]].geometry.attributes.position.array[indexNode*3+2]=mtnlLayout["nodes_layout"][listDisplacedNodes[i]].z;
+						
+					}
+					if (typeNode==4){
+						scene.children[listChildrenPoints[1]].geometry.attributes.position.array[indexNode*3+0]=mtnlLayout["nodes_layout"][listDisplacedNodes[i]].x;
+						scene.children[listChildrenPoints[1]].geometry.attributes.position.array[indexNode*3+1]=mtnlLayout["nodes_layout"][listDisplacedNodes[i]].y;
+						scene.children[listChildrenPoints[1]].geometry.attributes.position.array[indexNode*3+2]=mtnlLayout["nodes_layout"][listDisplacedNodes[i]].z;
+					}
+				}
+				scene.children[listChildrenPoints[0]].geometry.attributes.position.needsUpdate = true;
+				scene.children[listChildrenPoints[1]].geometry.attributes.position.needsUpdate = true;
+				//
+				//
+				//if (typeNode==2){console.log(""+2)}
+				//if (typeNode==4){console.log(""+4)}
+				//
+				
+			}
+			//console.log("nodes layout")
+			//
+		}
+		
+		//console.log(metabolicNodes[9802])
+		
+		var indexChildrenLines=7;
+		var iv=0;
+		for ( var i = 0; i < segments; i ++ ) {
+			var t1 = metabolicNodes[metabolicEdges[i][0]][6]
+			var t2 = metabolicNodes[metabolicEdges[i][1]][6]
+			//console.log(t1)
+			//console.log(t2)
+			//var ivList=[]
+			var doIt=0
+			if (t1==2){
+				//console.log(idMap[jsonObj2[i][0]][1])
+				scene.children[indexChildrenLines].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[listChildrenPoints[0]].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+				scene.children[indexChildrenLines].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[listChildrenPoints[0]].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;					
+				scene.children[indexChildrenLines].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[listChildrenPoints[0]].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+				
+				iv++;
+			}
+			else if (t1==4){
+				//console.log(idMap[jsonObj2[i][0]][1])
+				scene.children[indexChildrenLines].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[listChildrenPoints[1]].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
+				scene.children[indexChildrenLines].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[listChildrenPoints[1]].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
+				scene.children[indexChildrenLines].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[listChildrenPoints[1]].geometry.attributes.position.array[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
+				iv++;
+			}
+			if (t2 ==2){
+				scene.children[indexChildrenLines].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[listChildrenPoints[0]].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+				scene.children[indexChildrenLines].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[listChildrenPoints[0]].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;						
+				scene.children[indexChildrenLines].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[listChildrenPoints[0]].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;	
+				iv++;
+			}
+			else if (t2 ==4){
+				scene.children[indexChildrenLines].geometry.attributes.position.array[ (iv * 3)+0 ] = scene.children[listChildrenPoints[1]].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
+				scene.children[indexChildrenLines].geometry.attributes.position.array[ (iv * 3) + 1 ] = scene.children[listChildrenPoints[1]].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;
+				scene.children[indexChildrenLines].geometry.attributes.position.array[ (iv * 3) + 2 ] = scene.children[listChildrenPoints[1]].geometry.attributes.position.array[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;				
+				iv++;
+			}
+			
+		}
+		scene.children[indexChildrenLines].geometry.attributes.position.needsUpdate = true;
+	
+		//for dictData
+		//var ii=0;
+		//console.log(scene.children[8])
+		// tvalues_size = tokenAttributes.size.value;
+			// tvalues_color = tokenAttributes.ca.value;
+			// tvalues_p = tokenAttributes.endPosition.value;
+			// for( var v = 0, vv= tvertices.length; v < vv; v++ ) {
+
+				// tvalues_size[ v ] = 5;
+				// tvalues_color[ v ] = new THREE.Color( 0x0077ff );
+			// }
+		//var listReac =Object.keys(dictData);
+		//console.log(scene.children[8])
+		for ( var i = 0, j= fbaData.length ; i<j; i++ ) {
+			if (fbaData[i] && fbaData[i][0]){
+				var compindex = idMap[dictData[fbaData[i][0]]];
+				//console.log(scene.children[8].geometry.vertices[i])
+				scene.children[8].geometry.vertices[i].x=scene.children[compindex[0]].geometry.attributes.position.array[ (compindex[1] * 3) ]+0;
+				scene.children[8].geometry.vertices[i].y=scene.children[compindex[0]].geometry.attributes.position.array[ (compindex[1] * 3) + 1 ]+0;
+				scene.children[8].geometry.vertices[i].z=scene.children[compindex[0]].geometry.attributes.position.array[ (compindex[1] * 3) + 2 ]+0;
+				//console.log(scene.children[8].geometry.vertices[i])
+				scene.children[8].material.attributes.endPosition.value[i].x=scene.children[8].geometry.vertices[i].x;
+				scene.children[8].material.attributes.endPosition.value[i].y=scene.children[8].geometry.vertices[i].y;
+				scene.children[8].material.attributes.endPosition.value[i].z=scene.children[8].geometry.vertices[i].z;
+				if (fbaData[i].length=3){
+					var flux =fbaData[i][1];
+					if (flux ==0){
+						scene.children[8].material.attributes.size.value[i]=0;
+						//scene.children[8].material.attributes.ca.value[i]=new THREE.Color( 0x00aaff );
+					} 
+					if (flux >0){
+						scene.children[8].material.attributes.size.value[i]=5+Math.log(1+fbaData[i][1])*3;
+						scene.children[8].material.attributes.ca.value[i]=new THREE.Color( 0xff0000 );
+					} 
+					if (flux <0){
+						scene.children[8].material.attributes.size.value[i]=5+Math.log(1+(-fbaData[i][1]))*3;
+						scene.children[8].material.attributes.ca.value[i]=new THREE.Color( 0x00aaff );
+					}
+					
+				}
+				//tokenAttributes.size.value[i]=20;
+				//scene.children[8].geometry
+				// 
+				//console.log(compindex)
+			}
+			// if (compindex[0]==4){
+			// scene.children[8].geometry.vertices[i].x=scene.children[compindex[0]].geometry.attributes.position.array[ (compindex[1] * 3) ]+0;
+			// scene.children[8].geometry.vertices[i].y=scene.children[compindex[0]].geometry.attributes.position.array[ (compindex[1] * 3) + 1 ]+0;
+			// scene.children[8].geometry.vertices[i].z=scene.children[compindex[0]].geometry.attributes.position.array[ (compindex[1] * 3) + 2 ]+0;
+			// tokenAttributes.size.value[i]=20;
+			// }
+			// //tokenAttributes.
+			// //scene.children[8].material.attributes.ca.array[i];
+			// //scene.children[8].material.attributes.size.array[i]=20;
+		}
+		
+		
+		// for ( var i = 0; i <segmentPts+maxNbTokenModel ; i +=2 ) {
+		
+			// scene.children[8].geometry.vertices[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
+			// scene.children[8].geometry.vertices[ii].y=scene.children[7].geometry.attributes.position.array[ (i * 3) + 1 ]+0;
+			// scene.children[8].geometry.vertices[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
+			// ii++;
+		// }
+		//console.log(tokenAttributes.endPosition.value[0]);
+		// var ii=0;
+		// for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
+			// tokenAttributes.endPosition.value[ii].x=scene.children[7].geometry.attributes.position.array[ (i * 3) ]+0;
+			// tokenAttributes.endPosition.value[ii].y=scene.children[7].geometry.attributes.position.array[ (i * 3) + 1 ]+0;
+			// tokenAttributes.endPosition.value[ii].z=scene.children[7].geometry.attributes.position.array[ (i * 3) + 2 ]+0;
+			
+			// ii++;
+		// }
+		tokenUniforms.mixAmount.value = 0.0;
+		//var ii=0;
+		//for ( var i = 1; i <segmentPts+maxNbTokenModel ; i +=2 ) {
+		//	tokenAttributes.mixAmount.value[ii] = 0.0;
+		//	ii++;
+		//}
+		//tokenAttributes.mixAmount.needsUpdate = true;
+		//console.log(tokenAttributes.endPosition.value[0]);
+		scene.children[8].geometry.verticesNeedUpdate = true;
+		scene.children[8].material.attributes.size.needsUpdate = true;
+		scene.children[8].material.attributes.ca.needsUpdate = true;			
+		scene.children[8].material.attributes.endPosition.needsUpdate = true;		
+		
+
+
 </script>
 
