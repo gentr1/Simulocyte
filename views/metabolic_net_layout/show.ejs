@@ -29,6 +29,12 @@
 	<br>
 	<div id="mtnTable2" style="position: absolute;left: 20px;height: 300px; overflow: scroll"></div>	
 	<br>
+	<div id="searchfield3" style="position: absolute;left: 20px;">Search Term: <input id="searchgrid3" type="text" /></div>
+	<br>
+	<h3 id="titleCurrency" style="position: absolute;left: 20px;">Identify and hide currency metabolites:</h3>
+	<br>
+	<div id="CurrencyTable" style="position: absolute;left: 20px;height: 300px; overflow: scroll"></div>
+	<br>
 	<h3 id="titleEditor" style="position: absolute;left: 20px;">Layout Editor:  
 	<select id="modeSelector" onchange="runModeSelector()">
   <option value="0">for compartments</option>
@@ -3687,6 +3693,228 @@
 	}
 	
 	
+	
+	
+	var metabolitesDegree={};
+	for (var i=0, j=tempdata3.length; i<j;i++){
+		if (listNodes[tempdata3[i][0]][11]){
+			if (listNodes[tempdata3[i][0]][11][0]){
+				for (var k=0;k<listNodes[tempdata3[i][0]][11][0].length;k++){
+					var idMet = listNodes[tempdata3[i][0]][11][0][k];
+					if (metabolitesDegree.hasOwnProperty(idMet)){
+						metabolitesDegree[idMet]+=1;
+					}
+					else{
+						metabolitesDegree[idMet]=1;
+					}
+				}
+		
+			}
+			if (listNodes[tempdata3[i][0]][11][1]){
+				for (var k=0;k<listNodes[tempdata3[i][0]][11][1].length;k++){
+					var idMet = listNodes[tempdata3[i][0]][11][1][k];
+					if (metabolitesDegree.hasOwnProperty(idMet)){
+						metabolitesDegree[idMet]+=1;
+					}
+					else{
+						metabolitesDegree[idMet]=1;
+					}
+				}
+		
+			}
+			if (listNodes[tempdata3[i][0]][11][2]){
+				for (var k=0;k<listNodes[tempdata3[i][0]][11][2].length;k++){
+					var idMet = listNodes[tempdata3[i][0]][11][2][k];
+					if (metabolitesDegree.hasOwnProperty(idMet)){
+						metabolitesDegree[idMet]+=1;
+					}
+					else{
+						metabolitesDegree[idMet]=1;
+					}
+				}
+		
+			}
+		
+		}
+	
+	}
+	//console.log(metabolitesDegree)
+	var dataCurrency=new Array(tempdata2.length);//=[];
+	var max =0;
+	for (var i=0, j=tempdata2.length; i<j;i++){
+		//if (metabolitesDegree[tempdata2[i][0]]>max){
+		//	dataCurrency.shift([tempdata2[i][0],tempdata2[i][1],metabolitesDegree[tempdata2[i][0]],false])
+		//	max = metabolitesDegree[tempdata2[i][0]];
+		//}
+		//else{
+		//	dataCurrency.push([tempdata2[i][0],tempdata2[i][1],metabolitesDegree[tempdata2[i][0]],false])
+		//}
+		dataCurrency[i]=new Array(5);
+		dataCurrency[i][0]=tempdata2[i][0];
+		dataCurrency[i][1]=tempdata2[i][1];
+		dataCurrency[i][2]=listNodes[tempdata2[i][0]][2];
+		if (metabolitesDegree.hasOwnProperty(tempdata2[i][0])){
+			dataCurrency[i][3]=metabolitesDegree[tempdata2[i][0]];
+		}
+		else{
+			metabolitesDegree[tempdata2[i][0]]=0;
+			dataCurrency[i][3]=metabolitesDegree[tempdata2[i][0]];
+		}
+		
+		dataCurrency[i][4]=false;
+	}
+	
+	
+	dataCurrency.sort(function(a, b){
+		return (b[3] - a[3]) //causes an array to be sorted numerically and ascending
+	})
+	var recordedChanges={};
+	var $containerCurrency = $("#CurrencyTable");
+	$containerCurrency.handsontable({
+		data: dataCurrency,
+		width: 1200,
+		height:200,
+		colWidths: [100, 200,400,200,100],
+		//dataSchema: {n_id:null, n_name: null, n_hide: null},
+		startRows: 1,
+		startCols: 5,
+		
+		colHeaders: ['Node nb','Node unique id','Node name','connections','Hide'],
+		columns: [
+		{},
+		{},
+		{},
+		{type: 'numeric'},
+		{type: 'checkbox'}
+		],
+		beforeChange: function(changes, source) {
+		},
+		afterChange: function(changes, source) {
+			if (changes){
+				var obj = this;
+				
+				for (var i =0; i< changes.length;i++){
+					if (changes[i]){
+						var rowChanged=changes[i][0];
+						var colChanged=changes[i][1];
+							if (colChanged==4){
+								//recordedChanges[]=changes[i][4]);
+								//console.log(changes)
+								//console.log(obj.getDataAtCell (rowChanged,0))
+								recordedChanges[obj.getDataAtCell (rowChanged,0)]=obj.getDataAtCell (rowChanged,colChanged)
+							}
+						
+					}
+				}
+				
+				//obj.setDataAtCell (recordedChanges)
+				
+				//obj.render()
+			}
+		},
+		columnSorting: true,
+		minSpareRows: 1
+	});
+	
+	$('#searchgrid3').on('keyup',function(event){
+		var value = ('' + this.value).toLowerCase(),row,col,r_len,c_len,td;
+		
+		//tempdata2=[];
+		//for (var i=0, j= listNodes.length;i<j;i++){
+		//	tempdata2.push([i,listNodes[i][1],listNodes[i][3]])
+		//}
+		
+		var data = dataCurrency;
+		
+		//var data = $('#tab2id').handsontable('getData');
+		//console.log(data)
+		var searcharray = [];
+		if(value){
+			if( value.length>1){
+				for(row=0,r_len = data.length;row< r_len;row++){
+					for(col=0,c_len = data[row].length;col < c_len-1; col++){
+						//var col = 2;
+						if(data[row][col] == null){
+							continue;
+						}
+						if(('' + data[row][col]).toLowerCase().indexOf(value) > -1){
+							if (recordedChanges.hasOwnProperty(data[row][0])){
+								data[row][4]= recordedChanges[data[row][0]];
+								searcharray.push(data[row]);
+							}
+							//if (recordedChanges.hasOwnProperty(tempdata2[i][0])){
+							//	dataCurrency[i][4]=recordedChanges[tempdata2[i][0]]
+							//}
+							break;
+						}
+						else{
+						}
+					}
+				}
+				
+				//console.log(searcharray.length)
+				var ht = $('#CurrencyTable').handsontable('getInstance');
+				//ht.clear();
+				ht.alter('remove_row', 0, $('#CurrencyTable').handsontable('countRows'));
+				//console.log(searcharray)
+				//dataCurrency=searcharray;
+				if ($.isArray(searcharray) && searcharray[0] && $.isArray(searcharray[0])){
+					ht.populateFromArray (0, 0, searcharray,searcharray.length-1, 4);
+				}
+			}
+		}
+		else{
+			dataCurrency=new Array(tempdata2.length);//=[];
+			var max =0;
+			for (var i=0, j=tempdata2.length; i<j;i++){
+				//if (metabolitesDegree[tempdata2[i][0]]>max){
+				//	dataCurrency.shift([tempdata2[i][0],tempdata2[i][1],metabolitesDegree[tempdata2[i][0]],false])
+				//	max = metabolitesDegree[tempdata2[i][0]];
+				//}
+				//else{
+				//	dataCurrency.push([tempdata2[i][0],tempdata2[i][1],metabolitesDegree[tempdata2[i][0]],false])
+				//}
+				dataCurrency[i]=new Array(5);
+				dataCurrency[i][0]=tempdata2[i][0];
+				dataCurrency[i][1]=tempdata2[i][1];
+				dataCurrency[i][2]=listNodes[tempdata2[i][0]][2];
+				dataCurrency[i][3]=metabolitesDegree[tempdata2[i][0]];
+				dataCurrency[i][4]=false;
+				if (recordedChanges.hasOwnProperty(tempdata2[i][0])){
+					dataCurrency[i][4]=recordedChanges[tempdata2[i][0]]
+				}
+			}
+			//console.log(dataCurrency.length)
+			var ht = $('#CurrencyTable').handsontable('getInstance');
+			ht.alter('remove_row', 0, $('#CurrencyTable').handsontable('countRows'));
+			if ($.isArray(dataCurrency) && dataCurrency[0] && $.isArray(dataCurrency[0])){
+				ht.populateFromArray (0, 0, dataCurrency,dataCurrency.length-1, 4);
+			}
+			
+		//	//dataCurrency=[];
+		//	//for (var i=0, j= listNodes.length;i<j;i++){
+		//	//	dataCurrency.push([i,listNodes[i][1],listNodes[i][3]])
+		//	//}
+		//	var ht = $('#CurrencyTable').handsontable('getInstance');
+		//	ht.alter('remove_row', 0, dataCurrency.length);
+		//	if ($.isArray(dataCurrency) && dataCurrency[0] && $.isArray(dataCurrency[0])){
+		//		ht.populateFromArray (0, 0, dataCurrency,dataCurrency.length-1, 2);
+		//	}
+		}
+		console.log()
+		$('#CurrencyTable').handsontable('deselectCell');
+			
+		
+	});
+	
+	//var hot = $('#CurrencyTable').handsontable('getInstance');
+	//if (hot.sortingEnabled) {
+	//  // will sort table using values from the first column in descending order
+	//  hot.sort(2, false);
+	//}
+	//hot.render()
+	
+	
 	//console.log(ht)
 	//ht.data.columns[0].readOnly=true;
 	//ht.columns[1].readOnly=true;
@@ -3695,7 +3923,10 @@
 	$("#mtnTable").css({top:  $("#searchfield").position().top + $("#searchfield").height()+10});
 	$("#searchfield2").css({top:  $("#mtnTable").position().top + $("#mtnTable").height()+40});
 	$("#mtnTable2").css({top:  $("#searchfield2").position().top + $("#searchfield2").height()+10});
-	$("#titleEditor").css({top:  $("#mtnTable2").position().top + $("#mtnTable2").height()+40});
+	$("#titleCurrency").css({top:  $("#mtnTable2").position().top + $("#mtnTable2").height()+10});
+	$("#searchfield3").css({top:  $("#titleCurrency").position().top + $("#titleCurrency").height()+40});
+	$("#CurrencyTable").css({top:  $("#searchfield3").position().top + $("#searchfield3").height()+10});
+	$("#titleEditor").css({top:  $("#CurrencyTable").position().top + $("#CurrencyTable").height()+40});
 	$("#container").css({top:  $("#titleEditor").position().top + $("#titleEditor").height()+40});
 	$("#editplane").css({top:  $("#container").position().top + $("#container").height()-40});
 	$("#layoutEditor").css({top:  $("#container").position().top + $("#container").height()+40});
