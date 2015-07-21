@@ -272,7 +272,9 @@
 	//if (mtnlLayout["list_compartments"])
 	
 	var listCompartments=[];
-	
+	var selectedLinesPaths=[];
+	var selectedLinesPathsIds=[];
+	var linesMap=[];
 	if (mtnlLayout["list_compartments"] && mtnlLayout["list_compartments"].length==0){
 		listCompartments=selectedMetabolicData[0];
 		
@@ -959,6 +961,7 @@
 				var ivList=[]
 				
 				if (t1==2){
+					
 					positionsL1[ (iv * 3)+0 ] = b1positions[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
 					positionsL1[ (iv * 3) + 1 ] = b1positions[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
 					positionsL1[ (iv * 3) + 2 ] = b1positions[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
@@ -989,6 +992,7 @@
 					iv++;
 				}
 				else if (t1==4){
+					
 					positionsL1[ (iv * 3)+0 ] = b2positions[ (idMap[metabolicEdges[i][0]][1] * 3) + 0 ]+0.0;
 					positionsL1[ (iv * 3) + 1 ] = b2positions[ (idMap[metabolicEdges[i][0]][1] * 3) + 1 ]+0.0;
 					positionsL1[ (iv * 3) + 2 ] = b2positions[ (idMap[metabolicEdges[i][0]][1] * 3) + 2 ]+0.0;
@@ -1015,6 +1019,7 @@
 					iv++;
 				}
 				if (t2 ==2){
+					//console.log(b1positions[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ])
 					positionsL1[ (iv * 3)+0 ] = b1positions[ (idMap[metabolicEdges[i][1]][1] * 3) + 0 ]+0.0;
 					positionsL1[ (iv * 3) + 1 ] = b1positions[ (idMap[metabolicEdges[i][1]][1] * 3) + 1 ]+0.0;
 					positionsL1[ (iv * 3) + 2 ] = b1positions[ (idMap[metabolicEdges[i][1]][1] * 3) + 2 ]+0.0;
@@ -3741,28 +3746,64 @@
 	//console.log(metabolitesDegree)
 	var dataCurrency=new Array(tempdata2.length);//=[];
 	var max =0;
-	for (var i=0, j=tempdata2.length; i<j;i++){
-		//if (metabolitesDegree[tempdata2[i][0]]>max){
-		//	dataCurrency.shift([tempdata2[i][0],tempdata2[i][1],metabolitesDegree[tempdata2[i][0]],false])
-		//	max = metabolitesDegree[tempdata2[i][0]];
-		//}
-		//else{
-		//	dataCurrency.push([tempdata2[i][0],tempdata2[i][1],metabolitesDegree[tempdata2[i][0]],false])
-		//}
-		dataCurrency[i]=new Array(5);
-		dataCurrency[i][0]=tempdata2[i][0];
-		dataCurrency[i][1]=tempdata2[i][1];
-		dataCurrency[i][2]=listNodes[tempdata2[i][0]][2];
-		if (metabolitesDegree.hasOwnProperty(tempdata2[i][0])){
-			dataCurrency[i][3]=metabolitesDegree[tempdata2[i][0]];
-		}
-		else{
-			metabolitesDegree[tempdata2[i][0]]=0;
-			dataCurrency[i][3]=metabolitesDegree[tempdata2[i][0]];
+	if (mtnlLayout["currency_nodes"] && mtnlLayout["currency_nodes"].length>0){
+		//console.log(mtnlLayout["currency_nodes"])
+		for (var i=0, j=tempdata2.length; i<j;i++){
+			//if (metabolitesDegree[tempdata2[i][0]]>max){
+			//	dataCurrency.shift([tempdata2[i][0],tempdata2[i][1],metabolitesDegree[tempdata2[i][0]],false])
+			//	max = metabolitesDegree[tempdata2[i][0]];
+			//}
+			//else{
+			//	dataCurrency.push([tempdata2[i][0],tempdata2[i][1],metabolitesDegree[tempdata2[i][0]],false])
+			//}
+			dataCurrency[i]=new Array(5);
+			dataCurrency[i][0]=tempdata2[i][0];
+			dataCurrency[i][1]=tempdata2[i][1];
+			dataCurrency[i][2]=listNodes[tempdata2[i][0]][2];
+			if (metabolitesDegree.hasOwnProperty(tempdata2[i][0])){
+				dataCurrency[i][3]=metabolitesDegree[tempdata2[i][0]];
+			}
+			else{
+				metabolitesDegree[tempdata2[i][0]]=0;
+				dataCurrency[i][3]=metabolitesDegree[tempdata2[i][0]];
+			}
+			if (mtnlLayout["currency_nodes"].indexOf(dataCurrency[i][0])>-1){
+				dataCurrency[i][4]=true
+			}
+			else{
+				dataCurrency[i][4]=false;
+			}
 		}
 		
-		dataCurrency[i][4]=false;
+		
 	}
+	else{
+		for (var i=0, j=tempdata2.length; i<j;i++){
+			//if (metabolitesDegree[tempdata2[i][0]]>max){
+			//	dataCurrency.shift([tempdata2[i][0],tempdata2[i][1],metabolitesDegree[tempdata2[i][0]],false])
+			//	max = metabolitesDegree[tempdata2[i][0]];
+			//}
+			//else{
+			//	dataCurrency.push([tempdata2[i][0],tempdata2[i][1],metabolitesDegree[tempdata2[i][0]],false])
+			//}
+			dataCurrency[i]=new Array(5);
+			dataCurrency[i][0]=tempdata2[i][0];
+			dataCurrency[i][1]=tempdata2[i][1];
+			dataCurrency[i][2]=listNodes[tempdata2[i][0]][2];
+			if (metabolitesDegree.hasOwnProperty(tempdata2[i][0])){
+				dataCurrency[i][3]=metabolitesDegree[tempdata2[i][0]];
+			}
+			else{
+				metabolitesDegree[tempdata2[i][0]]=0;
+				dataCurrency[i][3]=metabolitesDegree[tempdata2[i][0]];
+			}
+			
+			dataCurrency[i][4]=false;
+		}
+	}
+	
+	
+	
 	
 	
 	dataCurrency.sort(function(a, b){
@@ -3802,10 +3843,115 @@
 								//console.log(changes)
 								//console.log(obj.getDataAtCell (rowChanged,0))
 								recordedChanges[obj.getDataAtCell (rowChanged,0)]=obj.getDataAtCell (rowChanged,colChanged)
+								var index = mtnlLayout["currency_nodes"].indexOf(obj.getDataAtCell (rowChanged,0));
+								//console.log(index)
+								if (recordedChanges[obj.getDataAtCell (rowChanged,0)]==true){
+									
+									if (index ==-1){
+										mtnlLayout["currency_nodes"].push(obj.getDataAtCell (rowChanged,0));
+										var mcy = $("#cy").cytoscape("get");											
+										mcy.$('#'+listNodes[obj.getDataAtCell (rowChanged,0)][1]).style('display','none');
+										// mute 3d and 2d graph nodes and lines corresponding to selected currency nodes
+										var indexStartNodes=maxNbComp+3;
+										
+										var identifier=obj.getDataAtCell (rowChanged,0);
+										var typeNode=idMap[identifier][0];
+										var indexNode=idMap[identifier][1];
+										//console.log(typeNode+' '+indexNode)
+										
+										if (typeNode==2){
+											scene.children[indexStartNodes].geometry.attributes.size.array[indexNode]=0;
+											//scene.children[indexStartNodes].geometry.attributes.position.array[indexNode*3+0]+=5000000;
+											//scene.children[indexStartNodes].geometry.attributes.position.array[indexNode*3+1]+=5000000;
+											//scene.children[indexStartNodes].geometry.attributes.position.array[indexNode*3+2]+=5000000;
+										}
+										//scene.children[indexStartNodes].geometry.attributes.position.needsUpdate = true;
+										scene.children[indexStartNodes].geometry.attributes.size.needsUpdate = true;
+										selectedLinesPaths=[]
+										for (var i=0; i<metabolicEdges.length;i++){
+											if (metabolicEdges[i][0]==identifier){
+												selectedLinesPaths.push(i)
+												//txtListLinks += '<li >'+jsonObj1[jsonObj2[i][1]][2]+'</li>';
+												//nbS+=1;
+											}
+											if (metabolicEdges[i][1]==identifier){
+												selectedLinesPaths.push(i)
+												//txtListLinks += '<li >'+jsonObj1[jsonObj2[i][0]][2]+'</li>';
+												//nbS+=1;
+											}
+										}
+										//for (var i=0; i<selectedLinesPathsIds.length;i++){
+										//	scene.children[indexStartNodes+2].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] -=5000000;
+										//}
+										selectedLinesPathsIds=[]
+										for (var i=0; i<selectedLinesPaths.length;i++){
+											for (var j=0;j<linesMap[selectedLinesPaths[i]].length;j+=1){
+												selectedLinesPathsIds.push(linesMap[selectedLinesPaths[i]][j])
+											}
+										}
+										selectedLinesPathsIds = unique(selectedLinesPathsIds)
+										//console.log(selectedLinesPathsIds)
+										for (var i=0;i<selectedLinesPathsIds.length;i+=1){
+											scene.children[indexStartNodes+2].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] +=5000000;
+										}
+										scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
+										
+										
+									}
+								}
+								else{
+									if (index >-1){
+										mtnlLayout["currency_nodes"].splice(index, 1);
+										var indexStartNodes=maxNbComp+3;
+										var mcy = $("#cy").cytoscape("get");											
+										mcy.$('#'+listNodes[obj.getDataAtCell (rowChanged,0)][1]).style('display','element');
+										var identifier=obj.getDataAtCell (rowChanged,0);
+										var typeNode=idMap[identifier][0];
+										var indexNode=idMap[identifier][1];
+										//console.log(typeNode+' '+indexNode)
+										if (typeNode==2){
+											scene.children[indexStartNodes].geometry.attributes.size.array[indexNode]=nodeSize;
+										//	scene.children[indexStartNodes].geometry.attributes.position.array[indexNode*3+0]-=5000000;
+										//	scene.children[indexStartNodes].geometry.attributes.position.array[indexNode*3+1]-=5000000;
+										//	scene.children[indexStartNodes].geometry.attributes.position.array[indexNode*3+2]-=5000000;
+										}
+										scene.children[indexStartNodes].geometry.attributes.size.needsUpdate = true;
+										selectedLinesPaths=[]
+										for (var i=0; i<metabolicEdges.length;i++){
+											if (metabolicEdges[i][0]==identifier){
+												selectedLinesPaths.push(i)
+												//txtListLinks += '<li >'+jsonObj1[jsonObj2[i][1]][2]+'</li>';
+												//nbS+=1;
+											}
+											if (metabolicEdges[i][1]==identifier){
+												selectedLinesPaths.push(i)
+												//txtListLinks += '<li >'+jsonObj1[jsonObj2[i][0]][2]+'</li>';
+												//nbS+=1;
+											}
+										}
+										//for (var i=0; i<selectedLinesPathsIds.length;i++){
+										//	scene.children[indexStartNodes+2].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] -=5000000;
+										//}
+										selectedLinesPathsIds=[]
+										for (var i=0; i<selectedLinesPaths.length;i++){
+											for (var j=0;j<linesMap[selectedLinesPaths[i]].length;j+=1){
+												selectedLinesPathsIds.push(linesMap[selectedLinesPaths[i]][j])
+											}
+										}
+										selectedLinesPathsIds = unique(selectedLinesPathsIds)
+										//console.log(selectedLinesPathsIds)
+										for (var i=0;i<selectedLinesPathsIds.length;i+=1){
+											scene.children[indexStartNodes+2].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] -=5000000;
+										}
+										scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
+									}
+								}
+								//if (){mtnlLayout["currency_nodes"].push()}
 							}
 						
 					}
 				}
+				//console.log(mtnlLayout["currency_nodes"])
 				
 				//obj.setDataAtCell (recordedChanges)
 				
@@ -5813,6 +5959,13 @@
 			}
 			//console.log(dataTempLayout)
 			changeDataElements(compIds[parseInt(nameComp)]);
+			//var mcy = $("#cy").cytoscape("get");
+			for (var i=0, j=mtnlLayout["currency_nodes"].length; i<j;i++){
+				//console.log(listNodes[mtnlLayout["currency_nodes"][i]][1])
+				cy.$('#'+listNodes[mtnlLayout["currency_nodes"][i]][1]).style('display','none');
+				//console.log(mcy.$('#'+listNodes[mtnlLayout["currency_nodes"][i]][1]))
+				//console.log(mcy.nodes('#'+mtnlLayout["currency_nodes"][i]));
+			}
 			if (parseInt(document.getElementById("selectLayout").value)==0){
 				cy.nodes().positions(function( i, node ){
 					//console.log(node['_private']['data']['nameCp'])
@@ -6099,6 +6252,63 @@
 		cy.on('free', function (e) {
 			cy.boundingBox();
 		});
+		
+		function unique(a){
+			var arr = [];
+			for (var i=0;i<a.length;i++){
+				if ( arr.indexOf(a[i]) == -1){
+					arr.push(a[i]);
+				}
+			}
+			return arr
+		}
+		
+		// mute 3d and 2d graph nodes and lines corresponding to selected currency nodes
+		var indexStartNodes=maxNbComp+3;
+		for (var i=0, j=mtnlLayout["currency_nodes"].length; i<j;i++){
+			var identifier=mtnlLayout["currency_nodes"][i];
+			var typeNode=idMap[identifier][0];
+			var indexNode=idMap[identifier][1];
+			// //console.log(typeNode+' '+indexNode)
+			 if (typeNode==2){
+				scene.children[indexStartNodes].geometry.attributes.size.array[indexNode]=0;					
+				// scene.children[indexStartNodes].geometry.attributes.position.array[indexNode*3+0]+=5000000;
+				// scene.children[indexStartNodes].geometry.attributes.position.array[indexNode*3+1]+=5000000;
+				// scene.children[indexStartNodes].geometry.attributes.position.array[indexNode*3+2]+=5000000;
+			}
+			scene.children[indexStartNodes].geometry.attributes.size.needsUpdate = true;
+			for (var i=0; i<metabolicEdges.length;i++){
+				if (metabolicEdges[i][0]==identifier){
+					selectedLinesPaths.push(i)
+					//txtListLinks += '<li >'+jsonObj1[jsonObj2[i][1]][2]+'</li>';
+					//nbS+=1;
+				}
+				if (metabolicEdges[i][1]==identifier){
+					selectedLinesPaths.push(i)
+					//txtListLinks += '<li >'+jsonObj1[jsonObj2[i][0]][2]+'</li>';
+					//nbS+=1;
+				}
+			}
+		
+			
+		}
+		// //console.log(selectedLinesPaths)
+		// for (var i=0; i<selectedLinesPathsIds.length;i++){
+			// scene.children[indexStartNodes+2].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] -=5000000;
+		// }
+		selectedLinesPathsIds=[]
+		for (var i=0; i<selectedLinesPaths.length;i++){
+			for (var j=0;j<linesMap[selectedLinesPaths[i]].length;j+=1){
+				selectedLinesPathsIds.push(linesMap[selectedLinesPaths[i]][j])
+			}
+		}
+		selectedLinesPathsIds = unique(selectedLinesPathsIds)
+		//console.log(selectedLinesPathsIds)
+		for (var i=0;i<selectedLinesPathsIds.length;i+=1){
+			scene.children[indexStartNodes+2].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] +=5000000;
+		}
+		scene.children[indexStartNodes+2].geometry.attributes.position.needsUpdate = true;
+		
 	
 	</script>	
 	

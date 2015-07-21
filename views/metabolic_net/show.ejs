@@ -3493,7 +3493,27 @@ jQuery(document).delegate('#list4 .jqgrow td input', 'click', function () {
 		
 		
 		var identifier=iRow;
-		if (selectedNodesPaths.indexOf(identifier)!=-1){
+		//console.log(selectedNodesPaths)
+		//console.log(identifier)
+		if (selectedNodesPaths.indexOf(''+identifier)!=-1){
+			
+			var typeNode=idMap[''+identifier][0];
+			var indexNode=idMap[''+identifier][1];
+			if (typeNode==2){
+				scene.children[listChildrenPoints[0]].geometry.attributes.position.array[indexNode*3+0]-=5000000;
+				scene.children[listChildrenPoints[0]].geometry.attributes.position.array[indexNode*3+1]-=5000000;
+				scene.children[listChildrenPoints[0]].geometry.attributes.position.array[indexNode*3+2]-=5000000;
+				//console.log(identifier+' +5000000 :' +scene.children[listChildrenPoints[0]].geometry.attributes.position.array[indexNode*3+0])
+			}
+			if (typeNode==4){
+				scene.children[listChildrenPoints[1]].geometry.attributes.position.array[indexNode*3+0]-=5000000;
+				scene.children[listChildrenPoints[1]].geometry.attributes.position.array[indexNode*3+1]-=5000000;
+				scene.children[listChildrenPoints[1]].geometry.attributes.position.array[indexNode*3+2]-=5000000;
+				//console.log(identifier+' +5000000 :' +scene.children[listChildrenPoints[1]].geometry.attributes.position.array[indexNode*3+0])
+			}
+			
+			scene.children[listChildrenPoints[0]].geometry.attributes.position.needsUpdate = true;
+			scene.children[listChildrenPoints[1]].geometry.attributes.position.needsUpdate = true;
 			selectedNodesPaths.splice(selectedNodesPaths.indexOf(identifier),1)
 			for (var i=0; i<jsonObj2.length;i++){
 				if (jsonObj2[i][0]==identifier){
@@ -3504,6 +3524,22 @@ jQuery(document).delegate('#list4 .jqgrow td input', 'click', function () {
 				}
 			}
 		} else{
+			var typeNode=idMap[identifier][0];
+			var indexNode=idMap[identifier][1];
+			if (typeNode==2){
+				scene.children[listChildrenPoints[0]].geometry.attributes.position.array[indexNode*3+0]+=5000000;
+				scene.children[listChildrenPoints[0]].geometry.attributes.position.array[indexNode*3+1]+=5000000;
+				scene.children[listChildrenPoints[0]].geometry.attributes.position.array[indexNode*3+2]+=5000000;
+				//console.log(identifier+' +5000000 :' +scene.children[listChildrenPoints[0]].geometry.attributes.position.array[indexNode*3+0])
+			}
+			if (typeNode==4){
+				scene.children[listChildrenPoints[1]].geometry.attributes.position.array[indexNode*3+0]+=5000000;
+				scene.children[listChildrenPoints[1]].geometry.attributes.position.array[indexNode*3+1]+=5000000;
+				scene.children[listChildrenPoints[1]].geometry.attributes.position.array[indexNode*3+2]+=5000000;
+				//console.log(identifier+' +5000000 :' +scene.children[listChildrenPoints[1]].geometry.attributes.position.array[indexNode*3+0])
+			}
+			scene.children[listChildrenPoints[0]].geometry.attributes.position.needsUpdate = true;
+			scene.children[listChildrenPoints[1]].geometry.attributes.position.needsUpdate = true;
 			selectedNodesPaths.push(identifier)
 			for (var i=0; i<jsonObj2.length;i++){
 				if (jsonObj2[i][0]==identifier){
@@ -4316,6 +4352,59 @@ function selectValue(el){
 		scene.children[8].geometry.verticesNeedUpdate = true;
 		tokenAttributes.endPosition.needsUpdate = true;
 	
+		if (mtnlLayout["currency_nodes"]){
+			for (var c =0, lc = mtnlLayout["currency_nodes"].length;c<lc;c++){
+				var identifier=mtnlLayout["currency_nodes"][c];
+				jQuery("#list4").jqGrid('setCell', identifier,7, "True");
+				
+					var typeNode=idMap[identifier][0];
+					var indexNode=idMap[identifier][1];
+					if (typeNode==2){
+						scene.children[listChildrenPoints[0]].geometry.attributes.position.array[indexNode*3+0]+=5000000;
+						scene.children[listChildrenPoints[0]].geometry.attributes.position.array[indexNode*3+1]+=5000000;
+						scene.children[listChildrenPoints[0]].geometry.attributes.position.array[indexNode*3+2]+=5000000;
+						//console.log(identifier+' +5000000 :' +scene.children[listChildrenPoints[0]].geometry.attributes.position.array[indexNode*3+0])
+					}
+					if (typeNode==4){
+						scene.children[listChildrenPoints[1]].geometry.attributes.position.array[indexNode*3+0]+=5000000;
+						scene.children[listChildrenPoints[1]].geometry.attributes.position.array[indexNode*3+1]+=5000000;
+						scene.children[listChildrenPoints[1]].geometry.attributes.position.array[indexNode*3+2]+=5000000;
+						//console.log(identifier+' +5000000 :' +scene.children[listChildrenPoints[1]].geometry.attributes.position.array[indexNode*3+0])
+					}
+					
+					scene.children[listChildrenPoints[0]].geometry.attributes.position.needsUpdate = true;
+					scene.children[listChildrenPoints[1]].geometry.attributes.position.needsUpdate = true;
+					selectedNodesPaths.push(''+identifier)
+					for (var i=0; i<jsonObj2.length;i++){
+						if (jsonObj2[i][0]==identifier){
+							selectedLinesPaths.push(i)
+							//txtListLinks += '<li >'+jsonObj1[jsonObj2[i][1]][2]+'</li>';
+							//nbS+=1;
+						}
+						if (jsonObj2[i][1]==identifier){
+							selectedLinesPaths.push(i)
+							//txtListLinks += '<li >'+jsonObj1[jsonObj2[i][0]][2]+'</li>';
+							//nbS+=1;
+						}
+					}
+
+				
+				for (var i=0; i<selectedLinesPathsIds.length;i++){
+					scene.children[7].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] -=5000000;
+				}
+				selectedLinesPathsIds=[]
+				for (var i=0; i<selectedLinesPaths.length;i++){
+					for (var j=0;j<linesMap[selectedLinesPaths[i]].length;j+=1){
+						selectedLinesPathsIds.push(linesMap[selectedLinesPaths[i]][j])
+					}
+				}
+				selectedLinesPathsIds = unique(selectedLinesPathsIds)
+				for (var i=0;i<selectedLinesPathsIds.length;i+=1){
+					scene.children[7].geometry.attributes.position.array[ ((selectedLinesPathsIds[i])* 3) + 2 ] +=5000000;
+				}
+				scene.children[7].geometry.attributes.position.needsUpdate = true;
+			}
+		}
 	
 	
 	</script>	

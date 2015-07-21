@@ -74,7 +74,7 @@ module.exports = {
 				users: JSON.parse(req.param('users')),
 				openpolicy: openp,
 				metabolic_net: req.param('metabolic_net'),
-				layout: JSON.parse('{"list_compartments":[],"compartments_layout":{}, "nodes_layout":{},"nodes_compartments":{}}')
+				layout: JSON.parse('{"list_compartments":[],"compartments_layout":{}, "nodes_layout":{},"nodes_compartments":{}, "currency_nodes":[]}')
 			}
 			Metabolic_net_layout.create(metabolic_net_layoutObj, function mtnlCreated(err, mtnl) {
 				if (err) {
