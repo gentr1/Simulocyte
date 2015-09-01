@@ -13,6 +13,7 @@
 	var resultsMessage=" - No results yet.";
 	var lResults=JSON.stringify([]);
 	var expID=exp.id;
+	var myobjec= exp.objective;
 	%>
 	<input type="text" name="newresults" id ="newresults" style="visibility: hidden;" value=<%=lResults%>>
 	<input type="text" name="expid" id ="expid" style="visibility: hidden;" value=<%=expID%>>
@@ -45,7 +46,9 @@
 	  	<option value="fva">Flux Variability Analysis</option>
 	  </select>
 	  <br>Objective:<br>
-	  <input type="text" name="objective" id="objective" value=<%= exp.objective %>>
+	  <input type="text" name="objective" id="objective" value= <%= myobjec %> ><br>
+	  <input type="button" name="addAll" id="addAll" value="add all reactions" onclick="addReactions()"><br>
+	  <input type="checkbox" name="minimise" id="minimise" onclick="changeMinimise()">minimise objective function (instead of default maximisation)
 	  <br>Externality tag:<br>
 	  <input type="text" name="xt" id="xt" value=<%= exp.externality_tag %>>
      
@@ -62,7 +65,10 @@
      <input type="text"  name="mySfbaSpreadsheet7" id ="mySfbaSpreadsheet7" style="visibility: hidden;" value="">
      <input type="text"  name="mySfbaSpreadsheet8" id ="mySfbaSpreadsheet8" style="visibility: hidden;" value="">
      <input type="text"  name="mySfbaSpreadsheet9" id ="mySfbaSpreadsheet9" style="visibility: hidden;" value="">
-     <div id="sfbaTable"></div>
+	 <input type="text"  name="newminimise" id ="newminimise" style="visibility: hidden;" value="">
+     <div id="searchfield" ><h3>Edit bounds of reactions:</h3><br>Search Term: <input id="searchgrid" type="text" class="form-control input-sm"/></div>
+	<br>
+	 <div id="sfbaTable"></div>
     </p>
 	<input type="submit" value="Proceed" class="btn btn-lg btn-primary"/> <a href="/fbaexperiment/show/<%= exp.id %>" class="btn btn-lg btn-primary">Cancel</a>
 <input type="hidden" name="_csrf" value="<%= _csrf %>" />
@@ -78,34 +84,93 @@
 	}
 
 	
-	var bounds =<%- JSON.stringify(exp.parameters[0])%>
+	var bounds =<%- JSON.stringify(exp.parameters[0])%>;
+	
 	console.log("FBA EXPERIMENT edit.ejs, BOUNDS:" + bounds);
+	
+	var tempdt=<%- JSON.stringify(exp.parameters)%>;	
+	
+	
+	var tempsfba=<%- JSON.stringify(exp.sfba_model_instance)%>;	
+	
 	var dataSfba=[];
 	var $container13 = $("#sfbaTable");
-	$container13.handsontable({
-	  data: [],
-	  width: $("#qsspn-model-sign-up-form").width(),
-	  height:200,
-	  dataSchema: {name: null, lb: null, ub:null, comment:null},
-	  startRows: 5,
-	  startCols: 4,
-	  colHeaders: ['Reaction name','Lower bound','Upper bound','Comment'],
-	  columns: [
-	    {data: "name"},
-	    {data: "lb"},
-	    {data: "ub"},
-		{data: "comment"}
-	  ],
+	// $container13.handsontable({
+	  // data: [],
+	  // width: $("#qsspn-model-sign-up-form").width(),
+	  // height:200,
+	  // dataSchema: {name: null, lb: null, ub:null, comment:null},
+	  // startRows: 5,
+	  // startCols: 4,
+	  // colHeaders: ['Reaction name','Reaction Formula','Lower bound','Upper bound','Gene/Reaction Rule','Comment'],
+	  // columns: [
+	    // {data: "name"},
+    // {data: "formula"},
+    // {data: "lb"},
+    // {data: "ub"},
+	// {data: "command"},
+	// {data: "rule"}
+	  // ],
+	  $container13.handsontable({
+  data: [],
+  width: $("#experiment-edit-form").width(),
+  height:500,
+  dataSchema: {name: null, formula: null, lb: null, ub:null,command:null, rule:null},
+  colWidths: [65, $("#experiment-edit-form").width()/2.7, 60, 60,40, $("#experiment-edit-form").width()/2.7],
+  startRows: 5,
+  startCols: 6,
+  colHeaders: ['Reaction name', 'Reaction Formula', 'Lb','Ub','Com','Gene/Reaction Rule'],
+  columns: [
+    {data: "name"},
+    {data: "formula"},
+    {data: "lb"},
+    {data: "ub"},
+	{data: "command"},
+	{data: "rule"}
+  ],
+  
+	beforeChange: function(changes, source) {
+		if ((Array.isArray(changes[0])) && changes[0][2] ){
+			if (changes[0][1]!="lb" && changes[0][1]!="ub"){
+				changes.length=0;
+				return false;
+			}
+			
+		}
+		
+	},
+  
 	  afterChange: function(changes, source) {
 	    //console.log(this.getData());
 		var dt = this.getData();
-		
-		for (var i=0, j= dt.length;i<j-1;i++){
+		if (changes && changes[0] && changes[0][2] ){
+			//console.log(changes)
+			var columnChanged = changes[0][1];
+			var nameReactionChanged = dt[changes[0][0]].name;
+			var newValue = changes[0][3];
+			for (var i =0,j=tempsfba.length;i<j;i++){
+				if (tempsfba[i][0]==nameReactionChanged){
+					if (columnChanged=='lb'){
+						tempsfba[i][2]=newValue;
+						//console.log(tempsfba[i][2])
+					}
+					if (columnChanged=='ub'){
+						tempsfba[i][3]=newValue;
+						//console.log(tempsfba[i][3])
+					}
+					
+				}
+			}
+			//console.log("a")
+			//console.log(tempsfba)
+			
+		}
+		for (var i=0, j= tempsfba.length;i<j-1;i++){
 			dataSfba[i]=new Array(4);
-			dataSfba[i][0]=dt[i].name;
-			dataSfba[i][1]=dt[i].lb;
-			dataSfba[i][2]=dt[i].ub;
-			dataSfba[i][3]=dt[i].comment;
+			dataSfba[i][0]=tempsfba[i][0];
+			dataSfba[i][1]=tempsfba[i][2];
+			dataSfba[i][2]=tempsfba[i][3];
+			dataSfba[i][3]="";
 		}
 		
 			var mlength=JSON.stringify(dataSfba).length;
@@ -125,7 +190,7 @@
 					stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
 					document.getElementById("mySfbaSpreadsheet"+i).value=stringChunks[i];
 					//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
-					console.log(document.getElementById("mySfbaSpreadsheet"+i).value.length)
+					//console.log(document.getElementById("mySfbaSpreadsheet"+i).value.length)
 				}
 				//console.log(stringChunks)
 			}
@@ -133,14 +198,85 @@
 		//console.log(JSON.stringify(dataSfba));
 		//dataJson.places.push()
 	  },
-	  minSpareRows: 1
+	  //columnSorting: true,
+	  minSpareRows: 1 
 	});
 	
-	var tempdt=<%- JSON.stringify(exp.parameters)%>;	
+	
 	var ht = $('#sfbaTable').handsontable('getInstance');
-	if ($.isArray(tempdt) && tempdt[0] && $.isArray(tempdt[0])){
-		ht.populateFromArray (0, 0, tempdt,tempdt.length-1, 3);
+	if ($.isArray(tempsfba) && tempsfba[0] && $.isArray(tempsfba[0])){
+		ht.populateFromArray (0, 0, tempsfba,tempsfba.length-1, 5);
 	}
+	
+	
+	var listReactions=[];
+	for (elem in tempsfba){
+		listReactions.push(tempsfba[elem][0])
+	}
+	
+	function addReactions(){
+		var objFn= "";
+		for (var i=0; i<listReactions.length;i++){
+			if (i<listReactions.length-2){
+				objFn +=listReactions[i]+" + "
+			}
+			else{
+				objFn += listReactions[i]
+			}
+		}
+		document.getElementById("objective").value=objFn;
+		//console.log(objFn)
+		
+		//console.log(document.getElementById("newminimise").value)
+		
+	}
+	
+	function changeMinimise(){
+		var ischecked =document.getElementById("minimise").checked;
+		document.getElementById("newminimise").value=ischecked;
+		//console.log(document.getElementById("newminimise").value)
+	}
+	//console.log(tempsfba)
+	//var tempdata2=[];
+	$('#searchgrid').on('keyup',function(event){
+		var value = ('' + this.value).toLowerCase();
+		var row,col,r_len,c_len,td;
+		var data =tempsfba;//= $('#sfbaTable').handsontable('getData');
+		var searcharray = [];
+		if(value){
+			if( value.length>1){
+				//console.log(value)
+				for(row=0,r_len = data.length;row< r_len;row++){
+					for(col in data[row]){
+						if (data[row].hasOwnProperty(col)){
+							if(data[row][col] == null){
+								continue;
+							}
+							if(('' + data[row][col]).toLowerCase().indexOf(value) > -1){
+								searcharray.push(data[row])
+								break;
+							}
+							else{
+							}
+						}
+					}
+				}
+				var ht = $('#sfbaTable').handsontable('getInstance');
+				ht.alter('remove_row', 0, data.length);
+				if ($.isArray(searcharray) && searcharray[0] && (searcharray[0] instanceof Object) ){
+					ht.populateFromArray (0, 0, searcharray,searcharray.length-1, 5);
+				}
+			}
+		}
+		else{
+			var ht = $('#sfbaTable').handsontable('getInstance');
+			ht.alter('remove_row', 0, $('#sfbaTable').handsontable('getData').length-1);
+			if ($.isArray(tempsfba) && tempsfba[0] && $.isArray(tempsfba[0])){
+				ht.populateFromArray (0, 0, tempsfba,tempsfba.length-1, 5);
+			}
+		}
+		$('#sfbaTable').handsontable('deselectCell');
+	});
 	
 	
 	

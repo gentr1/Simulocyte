@@ -28,6 +28,7 @@ module.exports = {
 		defaultsTo: false
 	},
   	objective: 'string',
+	minimise: 'string',
     externality_tag: {
       type: 'string',
       defaultsTo: '_xt'

@@ -29,12 +29,17 @@
 		   <option><%= mtb %></option>
 		<% }) %>
 		</select>
+	
 	</div>
+	
     <p>
+	
     <div class="control-group">Type name of reaction or metabolite to be used as an objective function.
 	<input type="text" class="form-control" placeholder="objective function" name="objective"><br>
+	</div>
 	<div class="control-group">Type externality tag - the text tag at the end of external metabolite name.
 	<input type="text" class="form-control" placeholder="externality tag" name="xt">
+	
 	</div>
 
 	<% var InputdataSfba=JSON.stringify([]); %>

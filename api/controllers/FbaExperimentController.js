@@ -105,6 +105,7 @@ module.exports = {
 			openpolicy: openp,
             metabolic_net_name: req.param('metabolic_net'),
             objective: req.param('objective'),
+			minimise: 'false',
             externality_tag: req.param('xt'),
             sfba_model_instance: data3,
             parameters: [],
@@ -288,6 +289,7 @@ module.exports = {
 											  id: exp.id,
 											  comment: exp.comment,
 											  objective: exp.objective,
+											  minimise: exp.minimise,
 											  method: method,
 											  status: status,
 											  mtb: mtb,
@@ -303,6 +305,7 @@ module.exports = {
 											  id: exp.id,
 											  comment: exp.comment,
 											  objective: exp.objective,
+											  minimise: exp.minimise,
 											  method: method,
 											  status: status,
 											  mtb: mtb,
@@ -411,6 +414,7 @@ module.exports = {
 					openpolicy: openp,
 					metabolic_net_name: exp.metabolic_net_name,
 					objective: exp.objective,
+					minimise: exp.minimise,
 					externality_tag: exp.externality_tag,
 					sfba_model_instance: exp.sfba_model_instance,
 					parameters: exp.parameters,
@@ -488,6 +492,8 @@ module.exports = {
 					myres=exp.results;
 				}
 				var obj = req.param('objective');
+				var myminimise = req.param('newminimise');
+				//console.log(minimise)
 				var xt = req.param('xt');
 				var method = req.param('method');
 				var sfba_model_instance_data=exp.sfba_model_instance;
@@ -529,7 +535,8 @@ module.exports = {
 				}
 				//console.log(command);
 				//console.log("PARAMETERS:\n" + parameters);
-			  
+				
+				
 				var ExpObj = {
 					name: exp.name,
 					owner: exp.owner,
@@ -537,7 +544,8 @@ module.exports = {
 					metabolic_net_name: exp.metabolic_net_name,
 					users: exp.users,
 					openpolicy: exp.openpolicy,
-					objective: exp.objective,
+					objective: obj,
+					minimise: myminimise,
 					sfba_model_instance: exp.sfba_model_instance,
 					results: myres,
 					externality_tag: exp.externality_tag,
@@ -601,7 +609,13 @@ module.exports = {
 						}); 
 							  
 						fs.writeFile(fname,sfba_data,function(err){
-							var pfile_data = "!max: " + obj + "\n";
+							var pfile_data;
+							if (myminimise=='true'){
+								pfile_data= "!min: " + obj + "\n";
+							}
+							else{
+								pfile_data= "!max: " + obj + "\n";
+							}
 							for(var i=0;i<parameters.length;i++) {
 							  pfile_data += parameters[i][0] + "\t" + parameters[i][1] + "\t" + parameters[i][2] + "\n";
 							}

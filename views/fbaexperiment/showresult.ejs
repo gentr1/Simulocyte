@@ -26,15 +26,27 @@
 		</tr>
 		<% 
 			var fields = result.split(":"); 
+			var myminimise = minimise;
+			if (fields && fields[0] && fields[1]){
 		%>
-		<tr>
-			<td>Maximal value</td><td><%= fields[0] %></td>
+		<tr><% if (myminimise=='false'){%>
+			<td>Max value</td><td><%= fields[0] %></td>
+		<% } else{%>
+			<td>Min value</td><td><%= fields[0] %></td>
+		<% } %>
 		</tr>
 		<tr>
 			<td>Status</td><td><%= fields[1].split(";")[0] %></td>
 		</tr>
 	</table>
-<% } %>
+			<% }else{%>
+			<tr>
+			<td>Problem:</td><td>Undefined solution...</td>
+		</tr>
+		<tr>
+			<td>Check:</td><td>Constraints that are contradicting or unsolvable</td>
+		</tr>
+			<%}} %>
 <% if(method==="fba") { %>
 	<h1><center>Objective function value and example flux distribution.</center></h1>
 	<table class='table table-bordered' style="text-align:left">
@@ -45,13 +57,20 @@
 			<td>Objective function</td><td><%= objective %></td>
 		</tr>
 		<tr>
-			<td>Maximal value</td><td id='maxValue'></td>
+			<% if (myminimise=='false'){%>
+			<td>Max value</td><td id='maxValue'></td>
+			<% } else{%>
+			<td>Min value</td><td id='maxValue'></td>
+			<% } %>
 		</tr>
 		<tr>
 			<td>Status</td><td id='status'></td>
 		</tr>
 	</table>
-	<br><br><div id="fbaResult"></div>
+	<br><br>
+	<div id="searchfield" >Search Term: <input id="searchgrid" type="text" class="form-control input-sm"/></div>
+	<br>
+	<div id="fbaResult"></div>
 <% } %>
 <% if(method==="fva") { %>
 	<h1><center>Flux Variability Analysis.</center></h1>
@@ -63,13 +82,20 @@
 			<td>Objective function</td><td><%= objective %></td>
 		</tr>
 		<tr>
-			<td>Maximal value</td><td id='maxValue'></td>
+			<% if (myminimise=='false'){%>
+			<td>Max value</td><td id='maxValue'></td>
+			<% } else{%>
+			<td>Min value</td><td id='maxValue'></td>
+			<% } %>
 		</tr>
 		<tr>
 			<td>Status</td><td id='status'></td>
 		</tr>
 	</table>
-	<br><br><div id="fvaResult"></div>
+	<br><br>
+	<div id="searchfield" >Search Term: <input id="searchgrid" type="text" class="form-control input-sm"/></div>
+	<br>
+	<div id="fvaResult"></div>
 <% } %>
 
 <nav>
@@ -429,10 +455,17 @@ if (mtnl.hasOwnProperty("id")){
 	document.getElementById("layout-selector").value=mtnl.id;
 	//console.log(mtnl.id)
 }
+
+var met = <%- JSON.stringify(method) %>
+//console.log(met)
+//var res0 =<%- JSON.stringify(result) %>;
+//console.log(res0)
+
 var fbaData = [];
 if(<%- JSON.stringify(method) %>==="fba") {
 	fbaData = [];
 	var result =<%- JSON.stringify(result) %>;
+	
 	result = result.split(';')[0];
 	var lines = result.split('\n');
 	var firstLine = lines[0].split(' ');
@@ -488,11 +521,13 @@ if(<%- JSON.stringify(method) %>==="fva") {
 	  data: fbaData,
 	  width: ($("#showresult").width()),
 	  height:600,
-	  colWidths: [$("#showresult").width()*0.25, $("#showresult").width()*0.1, $("#showresult").width()*0.1,$("#showresult").width()*0.1, $("#showresult").width()*0.1,$("#showresult").width()*3],
+	  colWidths: [$("#showresult").width()*0.25, $("#showresult").width()*0.1, $("#showresult").width()*0.1,$("#showresult").width()*0.1, $("#showresult").width()*0.1,$("#showresult").width()*0.25],
 	  startRows: 5,
 	  startCols: 6,
 	  colHeaders: ['Reaction name', 'Minimal Flux', 'Status', 'Maximal Flux', 'Status', 'Comment'],
-	  minSpareRows: 1
+	  
+	  minSpareRows: 1//,
+	  //minSpareCols: 1
 	});
 }
 
@@ -3168,18 +3203,21 @@ var cbColModel, idsOfSelectedRows = [];
 									
 									
 										stringTxt = jsonObj1[dat][0]+" "+jsonObj1[dat][2];
-										if (jsonObj1[dat][4][1] && jsonObj1[dat][4][1][0]){
-											stringTxt = jsonObj1[dat][0]+" "+jsonObj1[dat][2]+" ("+jsonObj1[dat][4][1][0]+")";
-											if (fbaData && fbaData[0] && fbaData[0].length==3){
-												for (var f =0; f< fbaData.length; f++){
-													if (jsonObj1[dat][1]==fbaData[f][0]){
-														stringTxt = jsonObj1[dat][0]+" "+jsonObj1[dat][2]+" ("+jsonObj1[dat][4][1][0]+")"+" Flux: "+fbaData[f][1];
-													}
+										//console.log(jsonObj1[dat])
+										if (fbaData && fbaData[0] && fbaData[0].length==3){
+											for (var f =0; f< fbaData.length; f++){
+												if (jsonObj1[dat][1]==fbaData[f][0]){
+													stringTxt = jsonObj1[dat][0]+" "+jsonObj1[dat][2]+" Flux: "+fbaData[f][1];
 												}
 											}
-											
 										}
-										
+										if (fbaData && fbaData[0] && fbaData[0].length>3){
+											for (var f =0; f< fbaData.length; f++){
+												if (jsonObj1[dat][1]==fbaData[f][0]){
+													stringTxt = jsonObj1[dat][0]+" "+jsonObj1[dat][2]+" Flux min: "+fbaData[f][1]+" Flux max: "+fbaData[f][3];
+												}
+											}
+										}
 									}
 									// else{
 										// if (listretPointsTypes[myr]==2){																
@@ -4088,6 +4126,8 @@ function selectValue(el){
 		//console.log(scene.children[8])
 		for ( var i = 0, j= fbaData.length ; i<j; i++ ) {
 			if (fbaData[i] && fbaData[i][0]){
+				
+				if (dictData[fbaData[i][0]]){
 				var compindex = idMap[dictData[fbaData[i][0]]];
 				//console.log(scene.children[8].geometry.vertices[i])
 				scene.children[8].geometry.vertices[i].x=scene.children[compindex[0]].geometry.attributes.position.array[ (compindex[1] * 3) ]+0;
@@ -4097,7 +4137,7 @@ function selectValue(el){
 				scene.children[8].material.attributes.endPosition.value[i].x=scene.children[8].geometry.vertices[i].x;
 				scene.children[8].material.attributes.endPosition.value[i].y=scene.children[8].geometry.vertices[i].y;
 				scene.children[8].material.attributes.endPosition.value[i].z=scene.children[8].geometry.vertices[i].z;
-				if (fbaData[i].length=3){
+				if (fbaData[i].length>=3){
 					var flux =fbaData[i][1];
 					if (flux ==0){
 						scene.children[8].material.attributes.size.value[i]=0;
@@ -4112,6 +4152,7 @@ function selectValue(el){
 						scene.children[8].material.attributes.ca.value[i]=new THREE.Color( 0x00aaff );
 					}
 					
+				}
 				}
 				//tokenAttributes.size.value[i]=20;
 				//scene.children[8].geometry
@@ -4159,7 +4200,59 @@ function selectValue(el){
 		scene.children[8].material.attributes.ca.needsUpdate = true;			
 		scene.children[8].material.attributes.endPosition.needsUpdate = true;		
 		
-
+	if($('#searchgrid').length > 0){
+		$('#searchgrid').on('keyup',function(event){
+			var value = ('' + this.value).toLowerCase();
+			var row,col,r_len,c_len,td;
+			var data =fbaData;//= $('#sfbaTable').handsontable('getData');
+			//console.log(fbaData)
+			var searcharray = [];
+			if(value){
+				if( value.length>1){
+					//console.log(value)
+					for(row=0,r_len = data.length;row< r_len;row++){
+						for(col in data[row]){
+							if (data[row].hasOwnProperty(col)){
+								if(data[row][col] == null){
+									continue;
+								}
+								if(('' + data[row][col]).toLowerCase().indexOf(value) > -1){
+									searcharray.push(data[row])
+									break;
+								}
+								else{
+								}
+							}
+						}
+					}
+					
+					if($("#fbaResult").length > 0){
+						var ht = $('#fbaResult').handsontable('getInstance');
+						if ($.isArray(searcharray) && searcharray[0] ){
+							ht.loadData(searcharray);
+						}
+					}
+					if($("#fvaResult").length > 0){
+						var ht = $('#fvaResult').handsontable('getInstance');
+						if ($.isArray(searcharray) && searcharray[0] ){
+							ht.loadData(searcharray);
+						}
+					}
+				}
+			}
+			else{
+				if($("#fbaResult").length > 0){
+					var ht = $('#fbaResult').handsontable('getInstance');
+					ht.loadData(fbaData);
+				}
+				if($("#fvaResult").length > 0){
+					var ht = $('#fvaResult').handsontable('getInstance');
+					ht.loadData(fbaData);
+				}
+			}
+			
+		});	
+	}	
 
 </script>
 
