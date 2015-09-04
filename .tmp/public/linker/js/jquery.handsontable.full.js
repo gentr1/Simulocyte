@@ -4582,26 +4582,37 @@ Handsontable.SelectionPoint.prototype.arr = function (arr) {
 		  
           for(var row = selStart.row; row <= selEnd.row; row++ ){
             for(var col = selEnd.col; col <= selEnd.col; col++){
-			
-              cell = instance.getCell(row, col);
+				//console.log(instance.getCellMeta(row, col))
+				if (cell){
+					cell = instance.getCell(row, col);
 			  
-              cellProperties = instance.getCellMeta(row, col);
-			  //console.log(cellProperties.type)
-              checkbox = cell.querySelectorAll('input[type=checkbox]');
-				
-              if(checkbox.length > 0 && !cellProperties.readOnly){
+					cellProperties = instance.getCellMeta(row, col);
+					//console.log(cellProperties.type)
+					checkbox = cell.querySelectorAll('input[type=checkbox]');
+					
+					if(checkbox.length > 0 && !cellProperties.readOnly){
 
-                if(!event.isImmediatePropagationStopped()){
-                  event.stopImmediatePropagation();
-                  event.preventDefault();
-                }
+						if(!event.isImmediatePropagationStopped()){
+						  event.stopImmediatePropagation();
+						  event.preventDefault();
+						}
 
-                for(var i = 0, len = checkbox.length; i < len; i++){
-                  checkbox[i].checked = !checkbox[i].checked;
-                  $(checkbox[i]).trigger('change');
-                }
+						for(var i = 0, len = checkbox.length; i < len; i++){
+						  checkbox[i].checked = !checkbox[i].checked;
+						  $(checkbox[i]).trigger('change');
+						}
 
-              }
+					}
+				}
+				else{
+					var status=instance.getDataAtCell (row, col);
+					if (status == true){
+						instance.setDataAtCell (row, col,false);
+					}
+					else{
+						instance.setDataAtCell (row, col,true);
+					}
+				}
 
             }
           }
@@ -5115,11 +5126,13 @@ Handsontable.SelectionPoint.prototype.arr = function (arr) {
   var CheckboxEditor = Handsontable.editors.BaseEditor.prototype.extend();
 
   CheckboxEditor.prototype.beginEditing = function () {
-    var checkbox = this.TD.querySelector('input[type="checkbox"]');
+	if (this.TD){
+		var checkbox = this.TD.querySelector('input[type="checkbox"]');
 
-    if (checkbox) {
-      $(checkbox).trigger('click');
-    }
+		if (checkbox) {
+		  $(checkbox).trigger('click');
+		}
+	}
 
   };
 

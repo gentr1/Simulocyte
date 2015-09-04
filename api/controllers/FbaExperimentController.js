@@ -284,7 +284,8 @@ module.exports = {
 										if (goNextL==true){	
 										  res.view(
 											{
-											  result: data, 
+											  result: data,
+											  sfba_model_instance: exp.sfba_model_instance,											  
 											  name: exp.name, 
 											  id: exp.id,
 											  comment: exp.comment,
@@ -301,6 +302,7 @@ module.exports = {
 											res.view(
 											{
 											  result: data, 
+											  sfba_model_instance: exp.sfba_model_instance,	
 											  name: exp.name, 
 											  id: exp.id,
 											  comment: exp.comment,

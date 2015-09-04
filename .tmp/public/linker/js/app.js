@@ -32,7 +32,7 @@
 	socket.get('/qsspn_model_layout/subscribe');
 	socket.get('/lab/subscribe');
 	socket.get('/fbaexperiment/subscribe');
-
+	socket.get('/fbapathway/subscribe');
     ///////////////////////////////////////////////////////////
     // Here's where you'll want to add any custom logic for
     // when the browser establishes its socket connection to 
@@ -165,6 +165,9 @@ function cometMessageReceivedFromServer(message) {
   if (message.model === 'qsspn_model_layout') {
 	console.log("qsspn model layout update message id: "+message.id)
   }
+  if (message.model === 'fbapathway') {
+	console.log("fbapathway update message id: "+message.id)
+  } 
 }
 
 function displayFlashActivity(message) {

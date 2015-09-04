@@ -88,8 +88,8 @@ nav #menuToggle span:after { top: 250%; }
 nav a:nth-child(n+2) {
   color: white;
   display: block;
-  font-size: 1.3em;
-  margin: 10px 0 10px 10px;
+  font-size: 0.9em;
+  margin: 3px 0 3px 3px;
 }
  
 nav a:nth-child(n+2):after {

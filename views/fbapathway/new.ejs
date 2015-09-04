@@ -1,0 +1,471 @@
+
+<br>
+<br>
+
+<h2 class="form-signin-heading">Create new fba pathway from experimental results</h2>	
+<% if(flash && flash.err) { %>
+		<ul class="alert alert-success">
+	<% Object.keys(flash.err).forEach(function(error) { %>
+		<li><%- JSON.stringify(flash.err[error]) %></li>
+	<% }) %>
+	</ul>
+	<% } %>
+<div class="control-group"> (Please avoid any spaces or exotic characters in the name)
+	<input type="text" class="form-control" placeholder="graph title" name="name">
+</div>
+
+<div class="control-group">
+	<input type="text" class="form-control" placeholder="comments" name="comment">
+</div>
+<div class="control-group">
+	Set users or groups of users (labs)'s privileges ("no access", "read access", or "read-write access") to this metabolic network (labs in orange):
+	<br><input type="checkbox" name="defaultread" id ="defaultread"> Tick here if you want an open policy - future users not defined yet have read access by default<br>
+	<div id="usersTable"></div>
+</div>
+
+<input type="text" name="users" id ="users" style="visibility: hidden;" value="[]">
+<input type="text" name="owner" id ="owner" style="visibility: hidden;" value="<%=session.User.name%>">
+
+<h3>Identify and hide connections to currency metabolites:</h3>
+<br>
+<div id="searchfield1" >Search Term: <input id="searchgrid1" type="text" class="form-control input-sm"/></div>
+<br>
+<div id="CurrencyTable" style="overflow: scroll"></div>
+<br>
+<h3>Select reactions to display (ideally, around a hundred):</h3>
+<br>
+<div id="searchfield2" >Search Term: <input id="searchgrid2" type="text" class="form-control input-sm"/></div>
+<br>
+<div id="fbaResult"></div>
+<br>
+
+<div id="cy"></div>
+
+  <input id="slide1" type="range" min="-100" max="100" value="0" step="10" oninput="showVal(this.value)"/>
+  <input id="slide2" type="range" min="10" max="90" value="50" step="10" oninput="showVal2(this.value)"/>
+  <br>
+  <p id="midGroup" align="left" style="position:absolute"><button id="createMid" onclick="createMiddleNode()" >Add MidPoint</button></p>
+  <br><p id="startGroup" align="left" style="position:absolute">Load Data File: <input type="file" id="loadf" /></p>
+  <br><p id="undoGroup" align="left" style="position:absolute"><input id= "linkC" type="checkbox" name="linkC" onclick="changeLinkCompounds(linkC.checked)" />Link compounds<input id= "hideT" type="checkbox" name="hideT" onclick="changeVisibilityToken(hideT.checked)" />Hide Token compounds<input id= "hideB" type="checkbox" name="hideB" onclick="changeVisibilityBoxes(hideB.checked)" />Hide Boxes <input type="color" value="#ff0000" id="lcolor" name="lcolor" oninput="changeColor()"><button id="undoG" onclick="undo()" >Undo</button>  Layout:  <select id="selectL" name="decision" onchange="changeLayout(this.value)">
+<option selected value="0">Default
+<option value="1">COLA
+<option value="2">DAGRE
+</select><button id="stopL" onclick="stopLayout()" >Stop</button></p>
+  <br><p id="importGroup" align="left" style="position:absolute"><a href = "#" id = "save" download="data.json">Save Canvas as 'data.json'</a>   -  Load Canvas: <input type="file" id="load" /></p>
+  <br><p id="exportGroup" align="left" style="position:absolute"><button id="previewG" onclick="previewG()" >preview mode</button><button id="editG" onclick="editG()" >edit mode</button><button id="export" onclick="exportViewPng()" >Export View Png</button><button id="export2" onclick="exportFullPng()" >Export Full Graph Png</button> <img id ="pngim" style="border:1px solid black;position:absolute" height="250" width="250"></p>
+  
+  <br><p id="svgGroup" align="left" style="position:absolute"><button id="svgExport" onclick="exportSVG()" >create SVG</button></p>
+ <div id="chart" style="position:absolute" align="center"></div>
+ <div id="imagesave" style="position:absolute"></div>
+ <div id="layout1menu" class="btn-group-vertical" role="group" aria-label="..." style="position: absolute;left: 0px;">
+<button class="btn btn-default btn-xs" title="Add under parent" id="b_add_sibling" style="position: relative;left: 20px;">Add under parent</button>
+<button class="btn btn-warning btn-xs" title="Cancel" id="b_cancel" style="position: relative;left: 20px;">Cancel</button>
+	</div>
+<script>
+var gdata = <%- JSON.stringify(graphdata) %>
+//console.log(gdata)
+
+var masterUser=<%-JSON.stringify( session.User.name) %>;
+//console.log(masterUser)
+var sessionAuthenticated=<%-JSON.stringify( session.authenticated)%>;
+if (sessionAuthenticated){
+	var listUsers=<%-JSON.stringify( usrs) %>;
+	var listLabs=<%-JSON.stringify( labs) %>;
+	//console.log(listUsers)
+	//console.log(listLabs)
+
+	var dataUsers=new Array(listUsers.length+listLabs.length);
+
+	for (var i=0, j=listLabs.length; i<j;i++){
+		dataUsers[i]=new Array(3);
+		dataUsers[i][0]=listLabs[i]["name"];
+		dataUsers[i][1]=false;
+		dataUsers[i][2]=true;
+		dataUsers[i][3]=false;
+	}
+	for (var i=listLabs.length, j=listLabs.length+listUsers.length; i<j;i++){
+		dataUsers[i]=new Array(2);
+		dataUsers[i][0]=listUsers[i-listLabs.length]["name"];
+		if (dataUsers[i][0]==masterUser){
+			dataUsers[i][1]=false;
+			dataUsers[i][2]=false;
+			dataUsers[i][3]=true;
+		}
+		else{
+			dataUsers[i][1]=false;
+			dataUsers[i][2]=true;
+			dataUsers[i][3]=false;
+		}
+	}
+	//console.log(dataUsers)
+	greenRenderer = function(instance, td, row, col, prop, value, cellProperties) {
+		if (row<listLabs.length){
+			Handsontable.renderers.TextRenderer.apply(this, arguments);
+			td.style.backgroundColor = 'orange';
+		}
+		else{Handsontable.renderers.TextRenderer.apply(this, arguments);}
+
+	};
+
+	var flagCondition=true;
+	var $container1 = $("#usersTable");
+	$container1.handsontable({
+		data: dataUsers,
+		width: 750,
+		height:300,
+		startRows: 1,
+		startCols: 4,
+		colHeaders: ['User Name', 'No-Access','Read-Only','Read-Write'],
+		columns: [
+			{renderer: greenRenderer},
+			{type: 'checkbox'},
+			{type: 'checkbox'},
+			{type: 'checkbox'}
+		],
+		colWidths: [250, 100,100,100],
+		beforeChange: function(changes, source) {
+			if (changes){
+				for (var i =0; i< changes.length;i++){
+					if (changes[i][3]==false && flagCondition==true){
+						changes[i]=null;
+					}
+				}
+			}
+		},
+		afterChange: function(changes, source) {
+			if (changes){
+				var obj = this;
+				var recordedChanges=[];
+				for (var i =0; i< changes.length;i++){
+					if (changes[i]){
+						var rowChanged=changes[i][0];
+						var colChanged=changes[i][1];
+						for (j=1;j<4;j++){
+							if (colChanged!=j){
+								if (changes[i][3]==true){
+									recordedChanges.push([rowChanged, j, false]);
+								}
+							}
+						}
+					}
+				}
+				flagCondition=false;
+				obj.setDataAtCell (recordedChanges)
+				flagCondition=true;
+				obj.render()
+			}
+			//console.log(dataUsers)
+			document.getElementById("users").value= JSON.stringify(dataUsers);
+		},
+		minSpareRows: 0
+	});
+
+
+	var ht = $('#usersTable').handsontable('getInstance');
+	ht.updateSettings({
+		cells: function (row, col, prop) {
+			var cellProperties = {};
+			if (ht.getData()[row]){
+				if (ht.getData()[row][0]==masterUser){
+					cellProperties.readOnly = true;
+				}
+			}
+			return cellProperties;
+		}
+	});
+	
+	
+	var dataGraph={ 'reactions':[]}
+	var reactionsData=[];
+	
+	var metabolites_degrees={};
+	for (var i =0, j= gdata.length-1;i<j;i++){
+		var parsed = gdata[i][2].split(" ");
+		var reaction_sfba_name=parsed[0].split(":")[0];
+		reactionsData.push([reaction_sfba_name,gdata[i][1], gdata[i][2], false])
+		var direction;
+		var separator=-1;
+		for (var nb =1; nb< parsed.length;nb++){
+			
+			if (parsed[nb].search('<=>')!=-1){
+				direction = 'reversible';
+				separator=nb;
+			}
+			else if(parsed[nb].search('-->')!=-1){
+				direction = 'right';
+				separator=nb;
+			}
+			else if(parsed[nb].search('<--')!=-1){
+				direction = 'left';
+				separator=nb;
+			}
+			else{}
+		}
+		var involved ={};
+		for (var nb =1; nb< separator;nb++){
+			if (parsed[nb]!='+'){
+				involved[parsed[nb]]=-1.0
+				if (metabolites_degrees.hasOwnProperty(parsed[nb])){
+					metabolites_degrees[parsed[nb]]+=1;
+				}
+				else{
+					metabolites_degrees[parsed[nb]]=1;
+				}
+			}
+		}
+		for (var nb =separator+1; nb< parsed.length;nb++){
+			if (parsed[nb]!='+'){
+				involved[parsed[nb]]=1.0
+				if (metabolites_degrees.hasOwnProperty(parsed[nb])){
+					metabolites_degrees[parsed[nb]]+=1;
+				}
+				else{
+					metabolites_degrees[parsed[nb]]=1;
+				}
+			}
+		}
+		//dataGraph['reactions'].push({'name': reaction_sfba_name,'sbmlName': gdata[i][0],'direction':direction, 'involvedWith':involved,'color':'red','style':'solid','width':'1','flux':gdata[i][1]})
+	}
+	
+	var dataCurrency=[];
+	for (elem in metabolites_degrees){
+		if (metabolites_degrees.hasOwnProperty(elem)){		
+			dataCurrency.push([elem,metabolites_degrees[elem],false])			
+		}
+	}
+	dataCurrency.sort(function(a, b){return (b[1] - a[1]) //causes an array to be sorted numerically and ascending
+	});
+	
+	var recordedChanges={};
+	var tokens=[];
+	var $containerCurrency = $("#CurrencyTable");
+	$containerCurrency.handsontable({
+		data: dataCurrency,
+		width: 1200,
+		height:200,
+		colWidths: [350, 100,40],
+		//dataSchema: {n_id:null, n_name: null, n_hide: null},
+		startRows: 1,
+		startCols: 5,
+		
+		colHeaders: ['Metabolite name','connections','Hide'],
+		columns: [
+		{},
+		{type: 'numeric'},
+		{type: 'checkbox'}
+		],
+		beforeChange: function(changes, source) {
+		},
+		afterChange: function(changes, source) {
+			if (changes){
+				var obj = this;	
+				for (var i =0; i< changes.length;i++){
+					if (changes[i]){
+						var rowChanged=changes[i][0];
+						var colChanged=changes[i][1];
+							if (colChanged==2){
+								recordedChanges[obj.getDataAtCell (rowChanged,0)]=obj.getDataAtCell (rowChanged,colChanged)
+								if (recordedChanges[obj.getDataAtCell (rowChanged,0)]==true){
+									
+								}
+								else{
+									delete recordedChanges[obj.getDataAtCell (rowChanged,0)];
+								}							
+							}
+					}
+				}
+				
+				tokens= Object.keys(recordedChanges)
+				//console.log(tokens)
+			}
+		},
+		columnSorting: true,
+		minSpareRows: 1
+	});
+	
+	var recordedChangesReactions={};
+	
+	var $containerf = $("#fbaResult");
+	$containerf.handsontable({
+	  data: reactionsData,
+	  columns: [
+		{},
+		{},
+		{},
+		{type: 'checkbox'}
+		],
+	  width: 800,
+	  height:500,
+	  colWidths: [200, 155, 350,50],
+	  startRows: 5,
+	  startCols: 4,
+	  colHeaders: ['Reaction name', 'Flux', 'Comment','Select'],
+	  afterChange: function(changes, source) {
+		if (changes){
+			var obj = this;	
+			for (var i =0; i< changes.length;i++){
+				if (changes[i]){
+					var rowChanged=changes[i][0];
+					var colChanged=changes[i][1];
+						if (colChanged==3){
+							recordedChangesReactions[obj.getDataAtCell (rowChanged,0)]=obj.getDataAtCell (rowChanged,colChanged)
+							if (recordedChangesReactions[obj.getDataAtCell (rowChanged,0)]==true){
+								
+							}
+							else{
+								delete recordedChangesReactions[obj.getDataAtCell (rowChanged,0)];
+							}							
+						}
+				}
+			}
+			//console.log(recordedChangesReactions)
+			dataGraph={ 'reactions':[]}
+			
+			
+			
+			for (var i =0, j= gdata.length-1;i<j;i++){
+				
+				var parsed = gdata[i][2].split(" ");
+				var reaction_sfba_name=parsed[0].split(":")[0];
+				if (recordedChangesReactions.hasOwnProperty(reaction_sfba_name) ){
+					var direction;
+					var separator=-1;
+					for (var nb =1; nb< parsed.length;nb++){
+						
+						if (parsed[nb].search('<=>')!=-1){
+							direction = 'reversible';
+							separator=nb;
+						}
+						else if(parsed[nb].search('-->')!=-1){
+							direction = 'right';
+							separator=nb;
+						}
+						else if(parsed[nb].search('<--')!=-1){
+							direction = 'left';
+							separator=nb;
+						}
+						else{}
+					}
+					var involved ={};
+					for (var nb =1; nb< separator;nb++){
+						if (parsed[nb]!='+'){
+							involved[parsed[nb]]=-1.0
+							
+						}
+					}
+					for (var nb =separator+1; nb< parsed.length;nb++){
+						if (parsed[nb]!='+'){
+							involved[parsed[nb]]=1.0
+						}
+					}
+					dataGraph['reactions'].push({'name': reaction_sfba_name,'sbmlName': gdata[i][0],'direction':direction, 'involvedWith':involved,'color':'red','style':'solid','width':'1','flux':gdata[i][1]})
+				}
+			}
+			//console.log(dataGraph)
+		}
+	  },
+	  minSpareRows: 1
+	});
+	
+	$('#searchgrid1').on('keyup',function(event){
+		var value = ('' + this.value).toLowerCase();
+		var row,col,r_len,c_len,td;
+		var data = dataCurrency;
+		var searcharray = [];
+		if(value){
+			if( value.length>1){
+				//console.log(value)
+				for(row=0,r_len = data.length;row< r_len;row++){
+					for(col in data[row]){
+						if (data[row].hasOwnProperty(col)){
+							if(data[row][col] == null){
+								continue;
+							}
+							if(('' + data[row][col]).toLowerCase().indexOf(value) > -1){
+								searcharray.push(data[row])
+								break;
+							}
+							else{
+							}
+						}
+					}
+				}
+				var ht = $('#CurrencyTable').handsontable('getInstance');
+				if ($.isArray(searcharray) && searcharray[0] ){
+					ht.loadData(searcharray);
+				}
+			}
+		}
+		else{
+			var ht = $('#CurrencyTable').handsontable('getInstance');
+			ht.loadData(dataCurrency);
+		}
+		
+	});	
+	
+	$('#searchgrid2').on('keyup',function(event){
+		var value = ('' + this.value).toLowerCase();
+		var row,col,r_len,c_len,td;
+		var data = reactionsData;
+		var searcharray = [];
+		if(value){
+			if( value.length>1){
+				//console.log(value)
+				for(row=0,r_len = data.length;row< r_len;row++){
+					for(col in data[row]){
+						if (data[row].hasOwnProperty(col)){
+							if(data[row][col] == null){
+								continue;
+							}
+							if(('' + data[row][col]).toLowerCase().indexOf(value) > -1){
+								searcharray.push(data[row])
+								break;
+							}
+							else{
+							}
+						}
+					}
+				}
+				var ht = $('#fbaResult').handsontable('getInstance');
+				if ($.isArray(searcharray) && searcharray[0] ){
+					ht.loadData(searcharray);
+				}
+			}
+		}
+		else{
+			var ht = $('#fbaResult').handsontable('getInstance');
+			ht.loadData(reactionsData);
+		}
+		
+	});	
+	
+	
+	/////////////////////////////////////////////////////////////
+	var listNodes=[]
+	var listEdges=[]  
+	var edgeSelected;  
+	var nextStateJson=0;
+	var historyUndo=[];
+	var historyPositions=[];
+	var mtokens;
+	var startLayoutElements;
+	var startLayoutPositions;
+
+	var targetNode="";
+	var draggedNode="";
+
+	$('#layout1menu').hide();
+	document.getElementById("slide1").style.visibility = "hidden";	
+	document.getElementById("lcolor").style.visibility = "hidden";	
+	document.getElementById("slide2").style.visibility = "hidden";
+	document.getElementById("createMid").style.visibility = "hidden";
+	document.getElementById("stopL").style.visibility = "hidden";
+	document.getElementById("slide1").style.left = "0px";
+	document.getElementById("slide1").setAttribute('orient','vertical');
+	document.getElementById("slide2").style.top = "120px";
+	document.getElementById("slide2").style.left = "20px";
+	
+	
+
+}
+</script>
