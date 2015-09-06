@@ -1,0 +1,29 @@
+<div class='container'>
+	<div class="jumbotron">
+	<h1>FBA Pathway Graphs </h1>
+	
+	
+	<table class='table table-bordered' style="text-align:left;">
+		<tr>
+			
+			<th>Name</th>
+			<th>Comment</th>
+			<th>Action</th>
+		</tr>
+		
+
+		<% _.each(ptws, function(ptw) { %>
+		<tr data-id="<%= ptw.id %>" data-model="ptw">
+			
+			<td><%= ptw.name %></td>
+			<td><%= ptw.comment %></td>
+			<td><a href="/fbapathway/show/<%= ptw.id %>" class="btn btn-sm btn-success">View Graph</a></td>
+		</tr> 
+
+		<% }) %>
+	</table>
+	
+	
+	
+	
+</div>
