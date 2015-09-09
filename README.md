@@ -33,7 +33,7 @@ Simulocyte administrator manual: how to install - how to maintain
 	8- then go to the simulocyte folder where you can see the package.json file, and type "sails lift" in the command line to start the server.
 	9- open the Chrome web browser , and look at the url address : http://localhost:1337/ to get started.
 
-1.2 On the sysbio2 Linux server 
+1.2 On a Linux server 
 
 	1- install mongodb.
 	2- download and install node.js 
@@ -45,7 +45,7 @@ Simulocyte administrator manual: how to install - how to maintain
 	8- go to the /simulocyte folder/config/ folder and paste the local.js file present in the distribution. This will enable the server to work on the http port nb 80...
 	9- make sure that the solver executables (sfba.exe and qsspn.exe) are set in a read write execute permission node (chmod 775)
 	10- then go to the simulocyte folder where you can see the package.json file, and type "sudo forever start -ae errors.log app.js --dev --port 80" in the command line to start the server in a forever process
-	11- open the Chrome web browser , and look at the url address : http://sysbio2.fhms.surrey.ac.uk to get started.
+	11- open the Chrome web browser , and look at the url address to get started.
 
 
 2 Maintenance
@@ -55,7 +55,7 @@ Simulocyte administrator manual: how to install - how to maintain
 	2.1.1 on Windows
 		1- just make sure the sails server is stopped in the command line in the simulocyte folder where you can see the package.json file, and type "Control + C" and "y" to confirm you want to stop the sails server
 
-	2.1.2 on the sysbio2 Linux server 
+	2.1.2 on the Linux server 
 		1- go to the simulocyte folder where you can see the package.json file, and type " sudo forever stop app.js --dev --port 80" in the command line to stop the server forever process and change things
 
 2.1 Restarting the server	
@@ -63,7 +63,7 @@ Simulocyte administrator manual: how to install - how to maintain
 	2.1.1 on Windows
 		1- go to the simulocyte folder where you can see the package.json file, and type "sails lift" in the command line to start the server.
 
-	2.1.2 on the sysbio2 Linux server 
+	2.1.2 on the Linux server 
 		1- go to the simulocyte folder where you can see the package.json file, and type "sudo forever start -ae errors.log app.js --dev --port 80" in the command line to start the server in a forever process
 
 2.2 Adding a new Model/Controller
