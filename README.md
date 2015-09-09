@@ -66,7 +66,7 @@ Simulocyte administrator manual: how to install - how to maintain
 	2.1.2 on the sysbio2 Linux server 
 		1- go to the simulocyte folder where you can see the package.json file, and type "sudo forever start -ae errors.log app.js --dev --port 80" in the command line to start the server in a forever process
 
-2.3 Adding a new Model/Controller
+2.2 Adding a new Model/Controller
 	1- stop the server
 	2- go to the main simulocyte folder where you can see the package.json file. Type "sails generate <name of new model you want to add>"
 	3- a model and a controller files will be automatically added to the folder : /simulocyte folder/api/controllers/ and /simulocyte folder/api/models/
@@ -77,7 +77,7 @@ Simulocyte administrator manual: how to install - how to maintain
 	8- change the file located in /simulocyte folder/.tmp/public/linker/js/app.js to make sure to add the name of the new model controller in the list of sockets (just add it to the already present names)
 	7- restart the server
 
-2.4 Changing/adding a new javascript library
+2.3 Changing/adding a new javascript library
 	1- stop the server
 	2- copy paste the javascript library file into the /simulocyte folder/assets/linker/js/ folder
 	3- go to the to the main simulocyte folder file and modify the Gruntfile.js to add the library to the list of existing libraries
