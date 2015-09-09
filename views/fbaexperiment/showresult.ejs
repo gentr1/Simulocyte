@@ -1,4 +1,4 @@
-<br><br>
+<br><br><br><br>
 <div class='container' id="showresult" style="width:80%">
 <%var data=[];
 	_.each(mtb.file, function(compartment) {
@@ -474,15 +474,14 @@ if (mtnl.hasOwnProperty("id")){
 	//console.log(mtnl.id)
 }
 
-var met = <%- JSON.stringify(method) %>
-//console.log(met)
-//var res0 =<%- JSON.stringify(result) %>;
+
+
 //console.log(res0)
 
 var fbaData = [];
 if(<%- JSON.stringify(method) %>==="fba") {
 	fbaData = [];
-	var result =<%- JSON.stringify(result) %>;
+	var result =<%- JSON.stringify(result) %>
 	
 	result = result.split(';')[0];
 	var lines = result.split('\n');
@@ -4272,27 +4271,29 @@ function selectValue(el){
 		});	
 	}
 
-	
-	var mlength=JSON.stringify(fbaData).length;
-	var nbArrays=1;
-	if (mlength>524288){
-		nbArrays=parseInt(Math.ceil(mlength/524288.0));
-	}
-	if (nbArrays==1){
-		document.getElementById("graphdata0").value=JSON.stringify(fbaData);
-	}
-	else{
-		var stringSfba=JSON.stringify(fbaData);
-		var chunksize=524288;
-		var stringChunks=[];
-		//console.log(mlength)
-		for (var i=0;i<nbArrays;i++){
-			stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
-			document.getElementById("graphdata"+i).value=stringChunks[i];
-			//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
-			//console.log(document.getElementById("fbaData"+i).value.length)
+	if($("#fbaResult").length > 0){
+		var mlength=JSON.stringify(fbaData).length;
+		//console.log(fbaData)
+		var nbArrays=1;
+		if (mlength>524288){
+			nbArrays=parseInt(Math.ceil(mlength/524288.0));
 		}
-		//console.log(stringChunks)
+		if (nbArrays==1){
+			document.getElementById("graphdata0").value=JSON.stringify(fbaData);
+		}
+		else{
+			var stringSfba=JSON.stringify(fbaData);
+			var chunksize=524288;
+			var stringChunks=[];
+			//console.log(mlength)
+			for (var i=0;i<nbArrays;i++){
+				stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+				document.getElementById("graphdata"+i).value=stringChunks[i];
+				//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+				//console.log(document.getElementById("fbaData"+i).value.length)
+			}
+			//console.log(stringChunks)
+		}
 	}
 
 </script>

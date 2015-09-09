@@ -1,3 +1,15 @@
+#cy {
+  background: white;
+  border-style: solid;
+    border-width: 1px;
+}
+#svgchart {
+  background: white;
+  border-style: solid;
+    border-width: 1px;
+}
+
+
 .disabled {
 	pointer-events: none;
 }

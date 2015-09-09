@@ -1,5 +1,6 @@
-<div id="mcont"class='container'>
+
 	<br><br><br>
+	<form action="/fbapathway/update/<%= graphdata.id %>" method="POST" id="update-fbapathway-form" enctype="multipart/form-data" class="form-signin" onsubmit="return updateGraphData()" >	
 	<h1>FBA Pathway </h1>
 	<hr>
 	<h2>Name: <%= graphdata.name %> </h2>
@@ -8,11 +9,20 @@
 	
 	<hr>
 	<h2>Comment: </h2>
-	<%= graphdata.comment %>
+	<div class="control-group">
+		<input type="text" class="form-control" placeholder="comments" name="comment" value = "<%= graphdata.comment %>">
+	</div>
+	<hr>
+	<% if ((session.User.name==graphdata.owner) || (session.User.name==graphdata.owner.split(",")[0])) {%>
+	<hr>
+	<a href="/fbapathway/editusers/<%=graphdata.id%>" class="btn btn-sm btn-success">Edit/View list of users privileges</a>
+	<%}%>
 	<hr>
 	
-	
 	<hr>
+	<br>
+	<div id="CurrencyTable" style="overflow: scroll"></div>
+
 	<br><br>
 	<div id="cy" style="height: 700px;"></div>
 	<br>
@@ -21,7 +31,7 @@
   <br>
   <p id="midGroup" align="left" style="position:absolute"><input type="button"  id="createMid" onclick="createMiddleNode()" value="Add MidPoint"/></p>
  <br>
-  <br><p id="undoGroup" align="left" style="position:absolute"><input id= "linkC" type="checkbox" name="linkC" onclick="changeLinkCompounds(linkC.checked)" />Link compounds<input id= "hideT" type="checkbox" name="hideT" onclick="changeVisibilityToken(hideT.checked)" />Hide Currency Compounds<input id= "hideB" type="checkbox" name="hideB" onclick="changeVisibilityBoxes(hideB.checked)" />Hide Boxes <input type="color" value="#ff0000" id="lcolor" name="lcolor" oninput="changeColor()"><button id="undoG" onclick="undo()" >Undo</button>  Layout:  <select id="selectL" name="decision" onchange="changeLayout(this.value);this.value=null; return false;">
+  <br><p id="undoGroup" align="left" style="position:absolute"><input id= "linkC" type="checkbox" name="linkC" onclick="changeLinkCompounds(linkC.checked)" />Link compounds<input id= "hideT" type="checkbox" name="hideT" onclick="changeVisibilityToken(hideT.checked)" />Hide Currency Compounds<input id= "hideB" type="checkbox" name="hideB" onclick="changeVisibilityBoxes(hideB.checked)" />Hide Boxes <input type="color" value="#ff0000" id="lcolor" name="lcolor" oninput="changeColor()"><input type="button"  id="undoG" onclick="undo()" value ="Undo" /> Layout:  <select id="selectL" name="decision" onchange="changeLayout(this.value);this.value=null; return false;">
 <option selected value="0">Default
 <option value="1">COLA
 <option value="2">DAGRE
@@ -38,7 +48,26 @@
 <input type="button" class="btn btn-default btn-xs" title="Add under parent" id="b_add_sibling" style="position: relative;left: 20px;" value="Add under parent"/>
 <input type="button" class="btn btn-warning btn-xs" title="Cancel" id="b_cancel" style="position: relative;left: 20px;" value="Cancel"/>
 </div>
-</div>
+
+
+
+<input type="text"  name="graphdata0" id ="graphdata0" style="visibility: hidden;" value=<%=graphdata%>>
+<input type="text"  name="graphdata1" id ="graphdata1" style="visibility: hidden;" value="">
+<input type="text"  name="graphdata2" id ="graphdata2" style="visibility: hidden;" value="">
+<input type="text"  name="graphdata3" id ="graphdata3" style="visibility: hidden;" value="">
+<input type="text"  name="graphdata4" id ="graphdata4" style="visibility: hidden;" value="">
+<input type="text"  name="graphdata5" id ="graphdata5" style="visibility: hidden;" value="">
+<input type="text"  name="graphdata6" id ="graphdata6" style="visibility: hidden;" value="">
+<input type="text"  name="graphdata7" id ="graphdata7" style="visibility: hidden;" value="">
+<input type="text"  name="graphdata8" id ="graphdata8" style="visibility: hidden;" value="">
+<input type="text"  name="graphdata9" id ="graphdata9" style="visibility: hidden;" value="">
+<input type="submit" class="btn btn-lg btn-primary btn-block" value="Save pathway graph in database"/>
+<input type="hidden" name="_csrf" value="<%= _csrf %>" />
+</form>
+
+
+
+
 
 <script>
 var musers = <%- JSON.stringify(graphdata.users) %>
@@ -48,6 +77,7 @@ var myCanvas = mdata["canvas"];
 var startcoord = mdata["coord"];
 var myreactions = mdata["reactions"];
 var mytokens = mdata["tokens"];
+//console.log(mytokens)
 //console.log(myCanvas)
 //console.log(startcoord)
 //console.log(myreactions)
@@ -66,6 +96,64 @@ var listNodes=[]
 	var draggedNode="";
 
 	$('#layout1menu').hide();
+	
+	
+	
+	var dataCurrency=[];
+	if (mytokens.length>0){
+		for (elem in mytokens){
+			dataCurrency.push([mytokens[elem],true])	
+		}	
+	}
+	else{
+		dataCurrency=[["",false]]
+	}
+	//console.log(dataCurrency)
+	var recordedChanges={};
+	var tokens=[];
+	var $containerCurrency = $("#CurrencyTable");
+	$containerCurrency.handsontable({
+		data: dataCurrency,
+		width: $("#mcont").width(),
+		height:200,
+		colWidths: [350,40],
+		//dataSchema: {n_id:null, n_name: null, n_hide: null},
+		startRows: 0,
+		startCols: 2,
+		
+		colHeaders: ['Metabolite name','Hide'],
+		columns: [
+		{},
+		{type: 'checkbox'}
+		],
+		beforeChange: function(changes, source) {
+		},
+		afterChange: function(changes, source) {
+			if (changes){
+				var obj = this;	
+				for (var i =0; i< changes.length;i++){
+					if (changes[i]){
+						var rowChanged=changes[i][0];
+						var colChanged=changes[i][1];
+							if (colChanged==1){
+								recordedChanges[obj.getDataAtCell (rowChanged,0)]=obj.getDataAtCell (rowChanged,colChanged)
+								if (recordedChanges[obj.getDataAtCell (rowChanged,0)]==true){
+									
+								}
+								else{
+									delete recordedChanges[obj.getDataAtCell (rowChanged,0)];
+								}							
+							}
+					}
+				}
+				mtokens= Object.keys(recordedChanges)
+			}
+		},
+		columnSorting: true,
+		minSpareRows: 0
+	});
+	
+	
 	
 	//$(function(){ // on dom ready
 $(function(){ 
@@ -447,16 +535,13 @@ $(function(){
 			cy.add(myCanvas.elements.nodes);
 			cy.add(myCanvas.elements.edges);
 			
-			
 			cy.edges().forEach(function( edge ){
-				
 				if (edge.data("curve")!=0){
 					edge.css({'curve-style': 'unbundled-bezier',
 								'control-point-distance': edge.data('curve'),
 								'control-point-weight': edge.data('center_curve')});
 				}
 			});
-			
 			
 			cy.boxSelectionEnabled(true)
 			//cy.center()
@@ -485,7 +570,325 @@ $(function(){
 		
 	});
 	
-	
+	$('#cy').cytoscapeCxtmenu({
+		commands: [
+			{
+				content: '<span class="fa fa-rotate-right fa-2x"></span>',
+				select: function(){
+					var cyg = $("#cy").cytoscape("get");
+					var selected= cyg.$(':selected').nodes();
+					if (selected.length>0){
+						var tmpcoord ={}
+						//console.log('add to stack')
+						cyg.nodes().forEach(function( node ){
+							tmpcoord[node.id()]={};
+							tmpcoord[node.id()].x=node.position('x')
+							tmpcoord[node.id()].y=node.position('y')
+						})
+						if (historyUndo.length<5){
+							historyPositions.push(tmpcoord);
+							historyUndo.push(cy.json());
+							nextStateJson=historyUndo.length-1;
+						}
+						else{
+							historyPositions.splice(0, 1);
+							historyPositions.push(tmpcoord);
+							historyUndo.splice(0, 1);
+							historyUndo.push(cy.json());
+							nextStateJson=historyUndo.length-1;
+						}
+						var xCenter = cy.$('#'+this.id()).position().x
+						var yCenter = cy.$('#'+this.id()).position().y
+						selected.forEach(function( ele ){
+							
+								var xRot = xCenter + Math.cos( Math.PI/2.0) * (ele.position('x') - xCenter) - Math.sin(Math.PI/2.0) * (ele.position('y') - yCenter);
+								var yRot = yCenter + Math.sin(Math.PI/2.0) * (ele.position('x') - xCenter) + Math.cos(Math.PI/2.0) * (ele.position('y') - yCenter);
+								ele.position('x',xRot);
+								ele.position('y',yRot);
+								
+							
+						});
+						
+						
+					}
+					else{
+						var pathGroup = cy.elements().breadthFirstSearch('#'+this.id());
+						var xCenter = cy.$('#'+this.id()).position().x
+						var yCenter = cy.$('#'+this.id()).position().y
+						pathGroup.path.forEach(function( ele ){
+							if (ele.isNode()){
+								var xRot = xCenter + Math.cos( Math.PI/2.0) * (ele.position('x') - xCenter) - Math.sin(Math.PI/2.0) * (ele.position('y') - yCenter);
+								var yRot = yCenter + Math.sin(Math.PI/2.0) * (ele.position('x') - xCenter) + Math.cos(Math.PI/2.0) * (ele.position('y') - yCenter);
+								ele.position('x',xRot);
+								ele.position('y',yRot);
+							}
+						});
+					}
+				}
+			},
+
+			{
+				content: '<span class="fa fa-arrows fa-2x"></span>',
+				select: function(){
+					var name = prompt("Please enter new scale for selected group (e.g. 0.5 for half size or 2.0 for double size)","");
+					if (name != null && !(isNaN(parseFloat(name)))) {
+						var scale= parseFloat(name);
+						//console.log('number')
+						var cyg = $("#cy").cytoscape("get");
+						var selected= cyg.$(':selected').nodes();
+						if (selected.length>0){
+							var tmpcoord ={}
+							//console.log('add to stack')
+							cyg.nodes().forEach(function( node ){
+								tmpcoord[node.id()]={};
+								tmpcoord[node.id()].x=node.position('x')
+								tmpcoord[node.id()].y=node.position('y')
+							})
+							if (historyUndo.length<5){
+								historyPositions.push(tmpcoord);
+								historyUndo.push(cy.json());
+								nextStateJson=historyUndo.length-1;
+							}
+							else{
+								historyPositions.splice(0, 1);
+								historyPositions.push(tmpcoord);
+								historyUndo.splice(0, 1);
+								historyUndo.push(cy.json());
+								nextStateJson=historyUndo.length-1;
+							}
+							var xCenter = cy.$('#'+this.id()).position().x
+							var yCenter = cy.$('#'+this.id()).position().y
+							selected.forEach(function( ele ){
+									var xTrans = (ele.position('x') - xCenter)
+									var yTrans = (ele.position('y') - yCenter)
+									var xTransScaled = (ele.position('x') - xCenter)*scale;
+									var yTransScaled = (ele.position('y') - yCenter)*scale;
+									
+									ele.position('x',ele.position('x')-xTrans+xTransScaled);
+									ele.position('y',ele.position('y')-yTrans+yTransScaled);
+									
+								
+							});
+							
+							
+						}
+						else{
+							var pathGroup = cy.elements().breadthFirstSearch('#'+this.id());
+							var xCenter = cy.$('#'+this.id()).position().x
+							var yCenter = cy.$('#'+this.id()).position().y
+							pathGroup.path.forEach(function( ele ){
+								if (ele.isNode()){
+									var xTrans = (ele.position('x') - xCenter)
+									var yTrans = (ele.position('y') - yCenter)
+									var xTransScaled = (ele.position('x') - xCenter)*scale;
+									var yTransScaled = (ele.position('y') - yCenter)*scale;
+									
+									ele.position('x',ele.position('x')-xTrans+xTransScaled);
+									ele.position('y',ele.position('y')-yTrans+yTransScaled);
+								}
+							});
+						}
+					}
+					 
+				}
+			},
+			{
+				content: 'Rename',
+				select: function(){
+					var name = prompt("Please enter new name for node:", this.data('name'));
+					if (name != null) {
+						this.data('name',name)
+					}
+					 
+				}
+			},
+
+			{
+				content: 'Label On/Off',
+				select: function(){
+					var cyg = $("#cy").cytoscape("get");
+					if (cy.$('#'+this.id())._private.ids[this.id()]._private.style['text-opacity'].value==0){
+						cy.$('#'+this.id()).css({'text-opacity': '1'});
+					}
+					else{
+						cy.$('#'+this.id()).css({'text-opacity': '0'});
+					}
+				}
+			},
+			{
+				content: 'Add Parent',
+				select: function(){
+					var cyg = $("#cy").cytoscape("get");
+					if (cy.$('#'+this.id()).isParent()){
+						var name = prompt("Please enter new name for node:", "parent");
+						if (name != null) {
+							//console.log("name parent: "+name)
+							var node = cy.$('#'+this.id())
+							//get all descendants of compound node that is dragged
+							var superParent;
+							var createSuper =true;
+							if (node.parent().length>0 || node.children().filter('$node > node').length==1){
+								//console.log(cy.$('#'+target).parent()[0].data())
+								//superParent=node.parent()[0].data();
+								createSuper =false;
+							}
+							else{
+							
+								//var superParentNewName="sp";
+								//if (cy.$('#'+name).length>0){
+									var scnt=1;
+									while(cy.$('#sp'+scnt).length>0){
+										scnt++;
+									}
+									//window.alert("There is already a parent node named "+name+". Node renamed: "+name+scnt);
+									superParent={ id: "sp"+scnt, name: name,weight: 5, col: 'red', valign:'top', halign:'center',fontsize:'10',fontstyle:'italic', isJoint:1/*, parent :data['reactions'][reaction]['name']*/}
+								//}
+								//else{
+								//	superParent={ id: name, name: name,weight: 5, col: 'red', valign:'top', halign:'center',fontsize:'10',fontstyle:'italic', isJoint:1/*, parent :data['reactions'][reaction]['name']*/}
+								//}
+								
+							}
+										
+							if (createSuper){			
+							var parent1=[];
+							parent1.push({});
+							for (elem in node.data()){
+								if (elem=="id"){
+									parent1[0][elem]=node.data()[elem]
+								}
+								else{
+									parent1[0][elem]=node.data()[elem]
+								}
+							}
+							parent1[0]["parent"]=superParent["id"];
+							parent1.push(node.position('x'));
+							parent1.push(node.position('y'));
+							
+							
+									
+							var des = node.descendants();
+							//console.log(des)
+							var clone_nodes={};
+							des.forEach(function( ele ){
+								clone_nodes[ele.id()]=[{},ele.position('x'),ele.position('y')]
+								for (elem in ele.data()){
+									if((elem=="parent") && (ele.data()[elem]==node.id())){
+										clone_nodes[ele.id()][0][elem]=parent1[0]["id"]
+									}
+									else{
+										clone_nodes[ele.id()][0][elem]=ele.data()[elem];
+									}
+								}
+								
+							});
+							
+							var clone_edges={};
+							des.connectedEdges().forEach(function( ele ){
+								clone_edges[ele.id()]={}
+								for (elem in ele.data()){
+									clone_edges[ele.id()][elem]=ele.data()[elem];
+								}
+								
+							});
+							
+							
+							des.remove()
+							node.remove()
+							
+							
+							cy.add({group: "nodes",  data: superParent})
+							cy.$('#'+superParent["id"]).position('x',parent1[1]);
+							cy.$('#'+superParent["id"]).position('y',parent1[2]);
+							cy.$('#'+superParent["id"]).style({'background-opacity': '0.3',});
+							
+							cy.add({group: "nodes",  data: parent1[0]})
+							cy.$('#'+parent1[0]["id"]).position('x',parent1[1]);
+							cy.$('#'+parent1[0]["id"]).position('y',parent1[2]);
+							cy.$('#'+parent1[0]["id"]).style({'background-opacity': '0.3',});
+							
+							for (elem in clone_nodes){
+								cy.add({group: "nodes",  data: clone_nodes[elem][0]})
+								cy.$('#'+clone_nodes[elem][0]["id"]).position('x',clone_nodes[elem][1]);
+								cy.$('#'+clone_nodes[elem][0]["id"]).position('y',clone_nodes[elem][2]);
+							}
+							for (elem in clone_edges){
+								cy.add({group: "edges",  data: clone_edges[elem]})
+							}
+							}
+						}
+					}
+					else{
+						window.alert("You can only create a parent node on a rectangular node representing a reaction or a group of reactions.");
+					}
+					
+				}
+			},
+			{
+					content: '<span class="fa fa-eraser fa-2x"></span>',
+					select: function(){
+						var cyg = $("#cy").cytoscape("get");
+						
+						
+						var selected= cyg.$(':selected').nodes();
+						if (selected.length>1){								
+								var r = confirm("Are you sure you want to delete the selected nodes and associated edges ?");
+								if (r == true) {
+									var tmpcoord ={}
+								//console.log('add to stack')
+								cyg.nodes().forEach(function( node ){
+									tmpcoord[node.id()]={};
+									tmpcoord[node.id()].x=node.position('x')
+									tmpcoord[node.id()].y=node.position('y')
+								})
+								if (historyUndo.length<5){
+									historyPositions.push(tmpcoord);
+									historyUndo.push(cy.json());
+									nextStateJson=historyUndo.length-1;
+								}
+								else{
+									historyPositions.splice(0, 1);
+									historyPositions.push(tmpcoord);
+									historyUndo.splice(0, 1);
+									historyUndo.push(cy.json());
+									nextStateJson=historyUndo.length-1;
+								}
+									selected.forEach(function( ele ){
+										cyg.$('#'+ele.id()).remove()
+									});
+									
+								}
+								
+						}
+						else{
+							var r = confirm("Are you sure you want to delete the selected node and associated edges ?");
+							if (r == true) {
+								var tmpcoord ={}
+								//console.log('add to stack')
+								cyg.nodes().forEach(function( node ){
+									tmpcoord[node.id()]={};
+									tmpcoord[node.id()].x=node.position('x')
+									tmpcoord[node.id()].y=node.position('y')
+								})
+								if (historyUndo.length<5){
+									historyPositions.push(tmpcoord);
+									historyUndo.push(cy.json());
+									nextStateJson=historyUndo.length-1;
+								}
+								else{
+									historyPositions.splice(0, 1);
+									historyPositions.push(tmpcoord);
+									historyUndo.splice(0, 1);
+									historyUndo.push(cy.json());
+									nextStateJson=historyUndo.length-1;
+								}
+								cyg.$('#'+this.id()).remove();
+								
+							}
+						}								
+					}
+				}
+		]
+	});
 	
 	
 	
@@ -1190,5 +1593,50 @@ function showVal(newVal){
 		}
 
 
+		function updateGraphData(){
+			
+			var cy = $("#cy").cytoscape("get");
+			cy.fit();
+			var tmpcoord ={}
+			cy.nodes().forEach(function( node ){
+				if (node.removed()==false){
+					tmpcoord[node.id()]={};
+					tmpcoord[node.id()].x=node.position('x')
+					tmpcoord[node.id()].y=node.position('y')
+				}
+				else{
+					console.log("pb, node does not exist in new graph : "+node.id())
+				}
+			})
+			var saved =  cy.json();
+			//console.log(saved.elements)
+			for (var i=0; i<saved.elements.edges.length;i++){
+					saved.elements.edges[i].data.curve=cy.$('#'+saved.elements.edges[i].data.id).data('curve');
+					saved.elements.edges[i].data.center_curve=cy.$('#'+saved.elements.edges[i].data.id).data('center_curve');
+					//console.log(cy.$('#'+saved.elements.edges[i].data.id).data('curve'))
+				}
+				//console.log(tokens)
+			var myCanvas = {"canvas" : saved, "coord":tmpcoord, 'reactions':myreactions,'tokens':mytokens}
+			var mlength=JSON.stringify(myCanvas).length;
+			var nbArrays=1;
+			if (mlength>524288){
+				nbArrays=parseInt(Math.ceil(mlength/524288.0));
+			}
+			if (nbArrays==1){
+				document.getElementById("graphdata0").value=JSON.stringify(myCanvas);
+			}
+			else{
+				var stringSfba=JSON.stringify(myCanvas);
+				var chunksize=524288;
+				var stringChunks=[];
+				//console.log(mlength)
+				for (var i=0;i<nbArrays;i++){
+					stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+					document.getElementById("graphdata"+i).value=stringChunks[i];
+				}
+			}
+			return true;
+			
+		}
 
 </script>

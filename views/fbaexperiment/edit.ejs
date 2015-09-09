@@ -1,4 +1,4 @@
-<br><br>
+<br><br><br><br>
 <form action="/fbaexperiment/update/<%= exp.id %>" id="experiment-edit-form" method="POST" class="form-signin">
 	<h1>FBA Experiment </h1>
 	<hr>
@@ -84,9 +84,6 @@
 	}
 
 	
-	var bounds =<%- JSON.stringify(exp.parameters[0])%>;
-	
-	console.log("FBA EXPERIMENT edit.ejs, BOUNDS:" + bounds);
 	
 	var tempdt=<%- JSON.stringify(exp.parameters)%>;	
 	

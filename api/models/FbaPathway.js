@@ -31,10 +31,6 @@ module.exports = {
 		  type: 'json',
 		  defaultsTo: {}
 		},
-		graphlayout:{
-		  type: 'json',
-		  defaultsTo: {}
-		},
 		toJSON: function() {
 			var obj = this.toObject();
 			delete obj._csrf;

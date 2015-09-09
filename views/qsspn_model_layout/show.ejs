@@ -2319,7 +2319,7 @@ cy = cytoscape( options = {
       selector: 'node',
       css: {
         'content': 'data(name)',
-		'shape': 'data(faveShape)',
+		'shape': 'data[faveShape]',
 		'background-color': 'data(faveColor)',
 		'border-width': 1,
         //'font-family': 'helvetica',
@@ -2361,7 +2361,7 @@ cy = cytoscape( options = {
         'width': 'data(faveWidth)',
 		'line-color': 'data(faveColor)',
 		'target-arrow-shape': 'data(faveShape)',
-        //'curve-style': 'haystack',
+        'curve-style': 'unbundled-bezier',//'haystack',
 		//'control-point-weight': 0.8,
 		'target-arrow-color': 'data(faveColor)'
       }
@@ -2397,7 +2397,7 @@ cy = cytoscape( options = {
   
 } );
 //cy.panningEnabled();
-
+cy.boxSelectionEnabled(true);
 
   
 var nodeClicked = cy.on('click', 'node', function(e) {

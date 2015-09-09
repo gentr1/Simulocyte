@@ -102,7 +102,7 @@ module.exports = function (grunt) {
 	'linker/js/cytoscape.min.js',
 	'linker/js/jquery.cytoscape.js-cxtmenu',
 	'linker/js/cola.v3.min.js',
-	'linker/js/dagre.min.js',
+	'linker/js/dagre.js',
 	//'linker/js/cytoscape.js-panzoom.js',
 	//'linker/js/Curry-1.0.1.js',
 	//'linker/js/dracula_algorithms.js',

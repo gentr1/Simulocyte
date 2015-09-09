@@ -97,6 +97,7 @@ module.exports = {
 			if (!req.param('defaultread')){
 				openp= false;
 		  }
+		  //console.log(req.param('users'))
           var expObj = {
             name: req.param('name'),
 			owner: req.param('owner'),

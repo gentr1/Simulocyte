@@ -82,9 +82,10 @@
 			  <li><a href="/qsspn_model/index">QSSPN models</a></li>
 			  <li><a href="/experiment/index">QSSPN Experiments</a></li>
 			  <li><a href="/fbaexperiment/index">FBA experiments</a></li>
+			  <li><a href="/fbapathway/index">FBA 2d pathways</a></li>
             <% } %>
             <% if (session.authenticated && session.User.admin) { %>
-            <li><a href="/user">User Administration</a></li>
+            <li><a href="/user">Admin</a></li>
             
             <% } %>
           </ul>
@@ -214,7 +215,7 @@
     <script src="/linker/js/arbor.js"></script>
     <script src="/linker/js/cytoscape.min.js"></script>
     <script src="/linker/js/cola.v3.min.js"></script>
-    <script src="/linker/js/dagre.min.js"></script>
+    <script src="/linker/js/dagre.js"></script>
     <script src="/linker/js/Projector.js"></script>
     <script src="/linker/js/bootstrap.js"></script>
     <script src="/linker/js/customValidate.js"></script>

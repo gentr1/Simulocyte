@@ -1,0 +1,153 @@
+<br><br><br><h1>FBA Pathway</h1>
+
+<form action="/fbapathway/updateusers/<%= ptwid %>" method="POST" id="fba-pathway-users-edit" enctype="multipart/form-data" class="form-signin">
+	<h1>Update user privileges for this fba pathway</h2>
+
+	<% if(flash && flash.err) { %>
+		<ul class="alert alert-success">
+	<% Object.keys(flash.err).forEach(function(error) { %>
+		<li><%- JSON.stringify(flash.err[error]) %></li>
+	<% }) %>
+	</ul>
+	<% } %>
+	<h1>Name: <%=ptwname%></h2>
+	
+	<h2 class="form-signin-heading">Update user privileges for this metabolic network</h2>
+	<br>
+	<div class="control-group">
+	Set users or groups of users (labs)'s privileges ("no access", "read access", or "read-write access") to this metabolic network (labs in orange):
+	<br><input type="checkbox" name="defaultread" id ="defaultread" value="true"> Tick here if you want an open policy - future users not defined yet have read access by default<br>
+	<div id="usersTable"></div>
+	</div>
+	<input type="text" name="users" id ="users" style="visibility: hidden;" value="[]">
+	
+	<input type="submit" class="btn btn-lg btn-primary btn-block" value="Update list of users"/>
+
+	<input type="hidden" name="_csrf" value="<%= _csrf %>" />
+</form>
+
+
+<script>
+var masterUser=<%-JSON.stringify( session.User.name) %>;
+var sessionAuthenticated=<%-JSON.stringify( session.authenticated)%>;
+if (sessionAuthenticated){
+var listUsers=<%-JSON.stringify( usrs) %>;
+var listLabs=<%-JSON.stringify( labs) %>;
+var isop= <%-JSON.stringify( openpolicy) %>
+document.getElementById("defaultread").checked=isop;
+var mtnlUsers=<%-JSON.stringify( ptwusers) %>
+var dataUsers=new Array(listUsers.length+listLabs.length);
+
+for (var i=0, j=listLabs.length; i<j;i++){
+	dataUsers[i]=new Array(3);
+	dataUsers[i][0]=listLabs[i]["name"];
+	dataUsers[i][1]=false;
+	dataUsers[i][2]=true;
+	dataUsers[i][3]=false;
+}
+for (var i=listLabs.length, j=listLabs.length+listUsers.length; i<j;i++){
+	dataUsers[i]=new Array(2);
+	dataUsers[i][0]=listUsers[i-listLabs.length];
+	if (dataUsers[i][0]==masterUser){
+		dataUsers[i][1]=false;
+		dataUsers[i][2]=false;
+		dataUsers[i][3]=true;
+	}
+	else{
+		dataUsers[i][1]=false;
+		dataUsers[i][2]=true;
+		dataUsers[i][3]=false;
+	}
+}
+
+for (var i=0; i<dataUsers.length;i++){
+	for (var i1=0; i1<mtnlUsers.length; i1++){
+		if (dataUsers[i][0]==mtnlUsers[i1][0]){
+			dataUsers[i][1]=mtnlUsers[i1][1];
+			dataUsers[i][2]=mtnlUsers[i1][2];
+			dataUsers[i][3]=mtnlUsers[i1][3];
+		}
+	}
+}
+
+
+greenRenderer = function(instance, td, row, col, prop, value, cellProperties) {
+	if (row<listLabs.length){
+		Handsontable.renderers.TextRenderer.apply(this, arguments);
+		td.style.backgroundColor = 'orange';
+	}
+	else{Handsontable.renderers.TextRenderer.apply(this, arguments);}
+
+};
+
+var flagCondition=true;
+var $container1 = $("#usersTable");
+$container1.handsontable({
+	data: dataUsers,
+	width: 750,
+	height:400,
+	startRows: 1,
+	startCols: 4,
+	colHeaders: ['User Name', 'No-Access','Read-Only','Read-Write'],
+	columns: [
+		{renderer: greenRenderer},
+		{type: 'checkbox'},
+		{type: 'checkbox'},
+		{type: 'checkbox'}
+	],
+	colWidths: [250, 100,100,100],
+	beforeChange: function(changes, source) {
+		if (changes){
+			for (var i =0; i< changes.length;i++){
+				if (changes[i][3]==false && flagCondition==true){
+					changes[i]=null;
+				}
+			}
+		}
+	},
+	afterChange: function(changes, source) {
+		if (changes){
+			var obj = this;
+			var recordedChanges=[];
+			for (var i =0; i< changes.length;i++){
+				if (changes[i]){
+					var rowChanged=changes[i][0];
+					var colChanged=changes[i][1];
+					for (j=1;j<4;j++){
+						if (colChanged!=j){
+							if (changes[i][3]==true){
+								recordedChanges.push([rowChanged, j, false]);
+							}
+						}
+					}
+				}
+			}
+			flagCondition=false;
+			obj.setDataAtCell (recordedChanges)
+			flagCondition=true;
+			obj.render()
+		}
+		//console.log(dataUsers)
+		document.getElementById("users").value= JSON.stringify(dataUsers);
+	},
+	minSpareRows: 0
+});
+
+
+var ht = $('#usersTable').handsontable('getInstance');
+ht.updateSettings({
+	cells: function (row, col, prop) {
+		var cellProperties = {};
+		if (ht.getData()[row]){
+			if (ht.getData()[row][0]==masterUser){
+				cellProperties.readOnly = true;
+			}
+		}
+		return cellProperties;
+	}
+});
+
+}
+
+
+</script>

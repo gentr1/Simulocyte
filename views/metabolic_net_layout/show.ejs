@@ -5621,7 +5621,7 @@
 		 
 		  minZoom: 0.0,
 		  maxZoom: 10,
-
+		  pixelRatio: 1,
 		  // style can be specified as plain JSON, a stylesheet string (probably a CSS-like
 		  // file pulled from the server), or in a functional format
 		  style: [
@@ -5629,7 +5629,7 @@
 			  selector: 'node',
 			  css: {
 				'content': 'data(name)',
-				'shape': 'data(faveShape)',
+				'shape': 'data[faveShape]',
 				'background-color': 'data(faveColor)',
 				'border-width': 1,
 				//'font-family': 'helvetica',
@@ -5671,7 +5671,7 @@
 				'width': 'data(faveWidth)',
 				'line-color': 'data(faveColor)',
 				'target-arrow-shape': 'data(faveShape)',
-				//'curve-style': 'haystack',
+				'curve-style': 'unbundled-bezier',//'haystack',
 				//'control-point-weight': 0.8,
 				'target-arrow-color': 'data(faveColor)'
 			  }
@@ -5681,14 +5681,15 @@
 		  // specify the elements in the graph
 		  elements: {
 			nodes: [
-			  //{ data: { id: 'j', name: 'Jerry', weight: 65, height: 174 } },
+			  //{ data: { id: 'e', name: 'e', nameid: 'ee',nameCp: 'eee',faveColor: '#ffffff', faveShape: 'circle'} },
+			 //{ data: { id: 'f', name: 'f', nameid: 'ee',nameCp: 'eee',faveColor: '#ffffff', faveShape: 'rectangle'} }
 			  //{ data: { id: 'e', name: 'Elaine', weight: 48, height: 160 } },
 			 // { data: { id: 'k', name: 'Kramer', weight: 75, height: 185 } },
 			  //{ data: { id: 'g', name: 'George', weight: 70, height: 150 } }
 			],
 
 			edges: [
-			  //{ data: { source: 'j', target: 'e' } },
+			 //{ data: { source: 'e', target: 'f' ,faveColor: '#ffa500', faveShape: 'triangle', faveWidth: 2} }
 			  //{ data: { source: 'j', target: 'k' } },
 			  //{ data: { source: 'j', target: 'g' } },
 
@@ -5708,7 +5709,7 @@
 		} );
 		//cy.panningEnabled();
 
-
+		cy.boxSelectionEnabled(true);
   
 		var nodeClicked = cy.on('click', 'node', function(e) {
 			// get json of graph
@@ -5766,7 +5767,7 @@
 						
 						if (listNodes[listElem[nb][0]][6]==4){
 						
-							myelems.push({ group: "nodes", data: { id: listElem[nb][1], name: listElem[nb][1] , nameid: listElem[nb][0],nameCp: nameC, faveColor: '#ffffff', faveShape: 'rectangle'} });
+							myelems.push({ group: "nodes", data: { id: listElem[nb][1], name: listElem[nb][1] , nameid: listElem[nb][0],nameCp: nameC, faveColor: '#bbbbbb', faveShape: 'rectangle'} });
 							if (listNodes[listElem[nb][0]][11]){
 								if (listNodes[listElem[nb][0]][11][0]){
 								//console.log("a")
@@ -5996,21 +5997,21 @@
 		
 		function selectValue(el){
 			if (parseInt(el.value)==0){
-				var options = {
-					name: 'breadthfirst2',
+				//var options = {
+				//	name: 'null',
 
-					fit: true, // whether to fit the viewport to the graph
-					ready: undefined, // callback on layoutready
-					stop: undefined, // callback on layoutstop
-					directed: true, // whether the tree is directed downwards (or edges can point in any direction if false)
-					pan: true, 
-					textureOnViewport: false,
-					padding: 30, // padding on fit
-					circle: false, // put depths in concentric circles if true, put depths top down if false
-					roots: undefined, // the roots of the trees
-					maximalAdjustments: 5 // how many times to try to position the nodes in a maximal way (i.e. no backtracking)
-				};
-				cy.layout( options );
+					//fit: true, // whether to fit the viewport to the graph
+					//ready: undefined, // callback on layoutready
+					//stop: undefined, // callback on layoutstop
+					//directed: true, // whether the tree is directed downwards (or edges can point in any direction if false)
+					//pan: true, 
+					//textureOnViewport: false,
+					//padding: 30, // padding on fit
+					//circle: false, // put depths in concentric circles if true, put depths top down if false
+					//roots: undefined, // the roots of the trees
+					//maximalAdjustments: 5 // how many times to try to position the nodes in a maximal way (i.e. no backtracking)
+				//};
+				//cy.layout( null );
 				
 				// if (mtnlLayout["nodes_layout"]){
 					// var listDisplacedNodes = Object.keys(mtnlLayout["nodes_layout"]);
@@ -6157,7 +6158,8 @@
 			//console.log("update coordinates")
 			//console.log(cy.extent());
 			//console.log(cy.boundingBox())
-			var boundingBox=cy.boundingBox()
+			//console.log(cy.extent())
+			var boundingBox=cy.extent();//cy.boundingBox();
 			var boundWidth=boundingBox['w'];
 			var boundHeight=boundingBox['h'];
 			var centerBoundX=(boundingBox['x2']+boundingBox['x1'])/2.0
@@ -6249,9 +6251,9 @@
 			//console.log(allElements)
 		}
 		
-		cy.on('free', function (e) {
-			cy.boundingBox();
-		});
+		//cy.on('free', function (e) {
+		//	cy.boundingBox();
+		//});
 		
 		function unique(a){
 			var arr = [];
