@@ -109,7 +109,24 @@
 			<td>Status</td><td id='status'></td>
 		</tr>
 	</table>
-	<br><br>
+	<br>
+	<% var gData=JSON.stringify([]); %>
+	<form action="/fvapathway/new" method="POST" id="fvapathway-creation-form" enctype="multipart/form-data">
+	<input type="text"  name="graphdata0" id ="graphdata0" style="visibility: hidden;" value=<%=gData%>>
+    <input type="text"  name="graphdata1" id ="graphdata1" style="visibility: hidden;" value="">
+    <input type="text"  name="graphdata2" id ="graphdata2" style="visibility: hidden;" value="">
+    <input type="text"  name="graphdata3" id ="graphdata3" style="visibility: hidden;" value="">
+    <input type="text"  name="graphdata4" id ="graphdata4" style="visibility: hidden;" value="">
+    <input type="text"  name="graphdata5" id ="graphdata5" style="visibility: hidden;" value="">
+    <input type="text"  name="graphdata6" id ="graphdata6" style="visibility: hidden;" value="">
+    <input type="text"  name="graphdata7" id ="graphdata7" style="visibility: hidden;" value="">
+    <input type="text"  name="graphdata8" id ="graphdata8" style="visibility: hidden;" value="">
+    <input type="text"  name="graphdata9" id ="graphdata9" style="visibility: hidden;" value="">
+	
+	<input type="submit" class="btn btn-lg btn-primary btn-block" value="Use results to create a new pathway 2D graph"/>
+	<input type="hidden" name="_csrf" value="<%= _csrf %>" />
+	</form>
+	<br>
 	<div id="searchfield" >Search Term: <input id="searchgrid" type="text" class="form-control input-sm"/></div>
 	<br>
 	
@@ -482,7 +499,7 @@ var fbaData = [];
 if(<%- JSON.stringify(method) %>==="fba") {
 	fbaData = [];
 	var result =<%- JSON.stringify(result) %>
-	
+	//console.log(result)
 	result = result.split(';')[0];
 	var lines = result.split('\n');
 	var firstLine = lines[0].split(' ');
@@ -4272,6 +4289,30 @@ function selectValue(el){
 	}
 
 	if($("#fbaResult").length > 0){
+		var mlength=JSON.stringify(fbaData).length;
+		//console.log(fbaData)
+		var nbArrays=1;
+		if (mlength>524288){
+			nbArrays=parseInt(Math.ceil(mlength/524288.0));
+		}
+		if (nbArrays==1){
+			document.getElementById("graphdata0").value=JSON.stringify(fbaData);
+		}
+		else{
+			var stringSfba=JSON.stringify(fbaData);
+			var chunksize=524288;
+			var stringChunks=[];
+			//console.log(mlength)
+			for (var i=0;i<nbArrays;i++){
+				stringChunks.push(stringSfba.substring((i*(chunksize-1)), ((i+1)*(chunksize-1))));
+				document.getElementById("graphdata"+i).value=stringChunks[i];
+				//console.log(((i*(chunksize-1)))  +"  "+ (((i+1)*(chunksize-1))))
+				//console.log(document.getElementById("fbaData"+i).value.length)
+			}
+			//console.log(stringChunks)
+		}
+	}
+	if($("#fvaResult").length > 0){
 		var mlength=JSON.stringify(fbaData).length;
 		//console.log(fbaData)
 		var nbArrays=1;

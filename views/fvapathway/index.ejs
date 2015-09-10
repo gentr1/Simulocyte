@@ -1,0 +1,34 @@
+<div class='container'>
+	<div class="jumbotron">
+	<h1>FBA Pathway Graphs </h1>
+	
+	
+	<table class='table table-bordered' style="text-align:left;">
+		<tr>
+			
+			<th>Name</th>
+			<th>Comment</th>
+			<th>Action</th>
+		</tr>
+		
+
+		<% _.each(ptws, function(ptw) { %>
+		<tr data-id="<%= ptw[0] %>" data-model="ptw">
+			
+			<td><%= ptw[1]%></td>
+			<td><%= ptw[2] %></td>
+			<td><a href="/fbapathway/show/<%= ptw[0] %>" class="btn btn-sm btn-success">View Graph</a> <% if (ptw[3]==true){%> &nbsp; &nbsp;<a href="/fbapathway/edit/<%= ptw[0] %>" class="btn btn-sm btn-primary">Edit Graph</a><%} %></td>
+		</tr> 
+
+		<% }) %>
+	</table>
+	
+	
+	
+	
+</div>
+
+<script>
+var lusers = <%- JSON.stringify(ptws) %>
+console.log(lusers)
+</script>
