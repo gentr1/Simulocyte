@@ -83,6 +83,6 @@ It also uses webgl to visualise metabolic networks of the cell using three.js, a
 	4- if you are just updating an existing library , also make sure to copy/paste the updated version of your library to both the  /simulocyte folder/assets/linker/js/ and the /simulocyte folder/.tmp/public/linker/js/ folders to make sure the system is updates next time you restart the server
 	5- restart the server
 	
-	All done! 
-	An online active version of simulocye is available at: http://sysbio2.fhms.surrey.ac.uk/
+All done! 
+An online active version of simulocye is available at: http://sysbio2.fhms.surrey.ac.uk/
 	
