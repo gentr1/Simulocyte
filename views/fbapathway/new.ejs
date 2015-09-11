@@ -53,7 +53,7 @@
   <br>
   <p id="midGroup" align="left" style="position:absolute"><input type="button"  id="createMid" onclick="createMiddleNode()" value="Add MidPoint"/></p>
  <br>
-  <br><p id="undoGroup" align="left" style="position:absolute"><input id= "linkC" type="checkbox" name="linkC" onclick="changeLinkCompounds(linkC.checked)" />Link compounds<input id= "hideT" type="checkbox" name="hideT" onclick="changeVisibilityToken(hideT.checked)" />Hide Currency Compounds<input id= "hideB" type="checkbox" name="hideB" onclick="changeVisibilityBoxes(hideB.checked)" />Hide Boxes <input type="color" value="#ff0000" id="lcolor" name="lcolor" oninput="changeColor()"><input type="button" id="undoG" onclick="undo()" value="Undo" />  Layout:  <select id="selectL" name="decision" onchange="changeLayout(this.value);this.value=null; return false;">
+  <br><p id="undoGroup" align="left" style="position:absolute"><input id= "linkC" type="checkbox" name="linkC" onclick="changeLinkCompounds(linkC.checked)" />Link compounds<input id= "hideT" type="checkbox" name="hideT" onclick="changeVisibilityToken(hideT.checked)" />Hide Currency Compounds<input id= "hideB" type="checkbox" name="hideB" onclick="changeVisibilityBoxes(hideB.checked)" />Hide Boxes <input type="color" value="#ff0000" id="lcolor" name="lcolor" oninput="changeColor()"><input id= "showF" type="checkbox" name="showF" onclick="showFlux(showF.checked)" />Show Fluxes <input type="button" id="undoG" onclick="undo()" value="Undo" />  Layout:  <select id="selectL" name="decision" onchange="changeLayout(this.value);this.value=null; return false;">
 <option selected value="0">Default
 <option value="1">COLA
 <option value="2">DAGRE
@@ -62,7 +62,7 @@
   <br><p id="exportGroup" align="left"><input type="button" id="previewG" onclick="mpreviewG()" value="preview mode"/><input type="button"  id="editG" onclick="meditG()" value="edit mode"/><input type="button" id="export" onclick="exportViewPng()" value="Export View Png"/><input type="button" id="export2" onclick="exportFullPng()" value="Export Full Graph Png" /> </p>
   <p><img id ="pngim" style="border:1px solid black;position:absolute" height="250" width="250"></p>
 <br><br><br><br><br><br><br><br><br><br><br><br><br>
-  <br><p id="svgGroup" align="left" ><input type="button" id="svgExport" onclick="exportSVG()" value="create SVG" /><div id="imagesave" ></div></p>
+  <br><p id="svgGroup" align="left" ><input type="button" id="svgExport" onclick="exportSVG()" value="create SVG (experimental)" /><div id="imagesave" ></div></p>
   <br>
  <div id="svgchart" align="left" style="height: 250px;width: 250px;"></div>
  
@@ -630,7 +630,7 @@ ht.updateSettings({
 						if (data['reactions'][reaction]['involvedWith'].hasOwnProperty(metabolite)) {
 							//console.log(data['reactions'][reaction]['name']+'___'+metabolite)
 							//if (data['reactions'][reaction]['direction']=='right'){
-							listNodes.push({ data: { id: data['reactions'][reaction]['name']+'___'+metabolite, parent: 'parent'+data['reactions'][reaction]['name'],name: metabolite,weight: 8, col: 'black', valign:'bottom', halign:'right',fontsize:'10',fontstyle:'normal', isJoint:0/*, parent :data['reactions'][reaction]['name']*/} })
+							listNodes.push({ data: { id: data['reactions'][reaction]['name']+'___'+metabolite, parent: 'parent'+data['reactions'][reaction]['name'],name: metabolite,weight: 8, col: 'black', valign:'bottom', halign:'right',fontsize:'10',fontstyle:'normal', isJoint:0, flux:data['reactions'][reaction]['flux']/*, parent :data['reactions'][reaction]['name']*/} })
 							
 							//}
 							//else if (data['reactions'][reaction]['direction']=='left'){													
@@ -654,27 +654,27 @@ ht.updateSettings({
 							
 							if (data['reactions'][reaction]['involvedWith'][metabolite]>0){
 								if (data['reactions'][reaction]['direction']=='reversible'){
-									listEdges.push({ data: { source: data['reactions'][reaction]['name'], target: data['reactions'][reaction]['name']+'___'+metabolite ,tshape: 'triangle',sshape: 'none', col: data['reactions'][reaction]['color'], style: data['reactions'][reaction]['style'], width : data['reactions'][reaction]['width'], curve:'0', center_curve:'0.5',side:'right'} })				
+									listEdges.push({ data: { source: data['reactions'][reaction]['name'], target: data['reactions'][reaction]['name']+'___'+metabolite ,tshape: 'triangle',sshape: 'none', col: data['reactions'][reaction]['color'], style: data['reactions'][reaction]['style'], width : data['reactions'][reaction]['width'], flux:data['reactions'][reaction]['flux'], curve:'0', center_curve:'0.5',side:'right'} })				
 								}
 								else {
 									if (data['reactions'][reaction]['direction']=='right'){
-										listEdges.push({ data: { source: data['reactions'][reaction]['name'], target: data['reactions'][reaction]['name']+'___'+metabolite ,tshape: 'triangle',sshape: 'none', col: data['reactions'][reaction]['color'],style: data['reactions'][reaction]['style'],width : data['reactions'][reaction]['width'],curve:'0',center_curve:'0.5',side:'right'} })		
+										listEdges.push({ data: { source: data['reactions'][reaction]['name'], target: data['reactions'][reaction]['name']+'___'+metabolite ,tshape: 'triangle',sshape: 'none', col: data['reactions'][reaction]['color'],style: data['reactions'][reaction]['style'],width : data['reactions'][reaction]['width'], flux:data['reactions'][reaction]['flux'],curve:'0',center_curve:'0.5',side:'right'} })		
 									}
 									else if (data['reactions'][reaction]['direction']=='left'){
-										listEdges.push({ data: { source: data['reactions'][reaction]['name'], target: data['reactions'][reaction]['name']+'___'+metabolite ,tshape: 'none',sshape: 'none', col: data['reactions'][reaction]['color'], style: data['reactions'][reaction]['style'],width : data['reactions'][reaction]['width'],curve:'0',center_curve:'0.5',side:'right'} })
+										listEdges.push({ data: { source: data['reactions'][reaction]['name'], target: data['reactions'][reaction]['name']+'___'+metabolite ,tshape: 'none',sshape: 'none', col: data['reactions'][reaction]['color'], style: data['reactions'][reaction]['style'],width : data['reactions'][reaction]['width'], flux:data['reactions'][reaction]['flux'],curve:'0',center_curve:'0.5',side:'right'} })
 									}
 								}
 							}
 							else if (data['reactions'][reaction]['involvedWith'][metabolite]<0){
 								if (data['reactions'][reaction]['direction']=='reversible'){
-									listEdges.push({ data: { source: data['reactions'][reaction]['name']+'___'+metabolite, target: data['reactions'][reaction]['name'] ,tshape: 'none',sshape: 'triangle', col: data['reactions'][reaction]['color'], style: data['reactions'][reaction]['style'],width : data['reactions'][reaction]['width'],curve:'0',center_curve:'0.5',side:'left'} })
+									listEdges.push({ data: { source: data['reactions'][reaction]['name']+'___'+metabolite, target: data['reactions'][reaction]['name'] ,tshape: 'none',sshape: 'triangle', col: data['reactions'][reaction]['color'], style: data['reactions'][reaction]['style'],width : data['reactions'][reaction]['width'], flux:data['reactions'][reaction]['flux'],curve:'0',center_curve:'0.5',side:'left'} })
 								}
 								else {
 									if (data['reactions'][reaction]['direction']=='right'){
-										listEdges.push({ data: { source: data['reactions'][reaction]['name']+'___'+metabolite, target: data['reactions'][reaction]['name'] ,tshape: 'none',sshape: 'none', col: data['reactions'][reaction]['color'], style: data['reactions'][reaction]['style'],width : data['reactions'][reaction]['width'],curve:'0',center_curve:'0.5',side:'left'} })
+										listEdges.push({ data: { source: data['reactions'][reaction]['name']+'___'+metabolite, target: data['reactions'][reaction]['name'] ,tshape: 'none',sshape: 'none', col: data['reactions'][reaction]['color'], style: data['reactions'][reaction]['style'],width : data['reactions'][reaction]['width'], flux:data['reactions'][reaction]['flux'],curve:'0',center_curve:'0.5',side:'left'} })
 									}
 									else if (data['reactions'][reaction]['direction']=='left'){
-										listEdges.push({ data: { source: data['reactions'][reaction]['name']+'___'+metabolite, target: data['reactions'][reaction]['name'] ,tshape: 'none',sshape: 'triangle', col: data['reactions'][reaction]['color'], style: data['reactions'][reaction]['style'],width : data['reactions'][reaction]['width'],curve:'0',center_curve:'0.5',side:'left'} })
+										listEdges.push({ data: { source: data['reactions'][reaction]['name']+'___'+metabolite, target: data['reactions'][reaction]['name'] ,tshape: 'none',sshape: 'triangle', col: data['reactions'][reaction]['color'], style: data['reactions'][reaction]['style'],width : data['reactions'][reaction]['width'], flux:data['reactions'][reaction]['flux'],curve:'0',center_curve:'0.5',side:'left'} })
 									}
 								}
 							}
@@ -2007,118 +2007,370 @@ ht.updateSettings({
 				}
 			});
 		}
+		
+		function showFlux(hidevalue){
+			var cy = $("#cy").cytoscape("get");
+			cy.batch(function(){
+				if (hidevalue){
+					//console.log("fluxes")
+					//console.log(cy.edges("[flux]").length)
+					
+					cy.edges("[flux]").forEach(function( edge ){
+						var flux_initial = edge.data("flux");
+						//console.log(flux_initial)
+						var flux_final=1.0;
+						var color ='red';
+						if (flux_initial==0){
+							flux_final = 1.0;
+						}
+						else if(flux_initial>0){
+							flux_final = 1+(1.5*Math.log(1+Math.abs(flux_initial)));
+							color ='red';
+						}
+						else if(flux_initial<0){
+							flux_final = 1+(1.5*Math.log(1+Math.abs(flux_initial)));
+							color ='blue';
+						}
+						//console.log(flux_final)
+						edge.style({'width': flux_final, 'line-color': color,'target-arrow-color': color,'source-arrow-color': color});
+						if (edge.source().data("isReaction") && edge.source().data("isJoint")>0){
+							edge.source().style({'width': flux_final,'height': flux_final, 'background-color':color});
+						}
+						if (edge.target().data("isReaction") && edge.target().data("isJoint")>0){
+							edge.target().style({'width': flux_final,'height': flux_final, 'background-color':color});
+						}
+						//edge.target()
+					});
+					//cy.$(':parent').style({'background-opacity': '0',}).css({'text-opacity': '0'});
+				}
+				else{
+					//console.log("no fluxes")
+					cy.edges("[flux]").forEach(function( edge ){
+						edge.style({'width': 1.0,'line-color': 'red','target-arrow-color': 'red','source-arrow-color': 'red'});
+						if (edge.source().data("isReaction") && edge.source().data("isReaction")==true){
+							edge.source().style({'width': edge.source().data("isJoint"),'height': edge.source().data("isJoint"),'background-color': 'red'});
+						}
+						if (edge.target().data("isReaction") && edge.target().data("isReaction")==true){
+							edge.target().style({'width': edge.target().data("isJoint"),'height': edge.target().data("isJoint"),'background-color': 'red'});
+						}
+					});
+					//cy.$(':parent').style({'background-opacity': '0.3',}).css({'text-opacity': '1'});
+				}
+			});
+		}
 
 		function changeLinkCompounds(linkedvalue){
 			var cy = $("#cy").cytoscape("get");
+			var fluxActivated = document.getElementById("showF").checked;
 			if (linkedvalue){
 				cy.batch(function(){
-		  
+					//console.log(fluxActivated)
 					//console.log(cy.elements('node#j, edge[source = "j"]'));
 					//cnt=0;
 					//console.log(cy.elements('edge[link = "single"]'));
 					//cy.$('edge[link = "single"]').forEach(function( edge ){
-					var edges = cy.filter('edge[link = "single"]');
-					edges.forEach(function( edge ){
-						edge.source().connectedEdges().forEach(function( ed ){
-							 edge.data({"sshape": ed.data("sshape"),"tshape": ed.data("tshape"),"col": ed.data("col"),"style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
-							 if ((ed.data("source")==edge.data("source")) && (ed.data("target")!=edge.data("target"))) {
-								cy.$('#'+edge.data("target")).data({"weight":ed.data("width"),"col":ed.data("col")});
-							 }
-							 else if ((ed.data("target")==edge.data("source"))&& (ed.data("source")!=edge.data("target"))){
-								cy.$('#'+edge.data("source")).data({"weight":ed.data("width"),"col":ed.data("col")});
-							 }
-						});
-						
-					});
-					var edges = cy.filter('edge[link = "multiple_source"], [link = "multiple_target"]');
-					edges.forEach(function( edge ){
-						var dt = edge.data();
-						if (dt["target"].startsWith("junction")){
-							cy.$('#'+dt["target"]).data({"weight":8});
-							var listE = cy.$('#'+dt["source"]).connectedEdges();
-							listE.forEach(function( ed ){
-								if (((ed.data("source")==dt["source"]) && (ed.data("target")!=dt["target"]))) {
-								//|| ((ed.data("target")==dt["source"])&& (ed.data("source")!=dt["target"])) ){
-									edge.data({"sshape": ed.data("sshape"),"tshape": ed.data("tshape"),"col": ed.data("col"),"style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
-									cy.$('#'+dt["source"]).data({"weight":ed.data("width"),"col":ed.data("col")});
-								}
-								else if (((ed.data("target")==dt["source"])&& (ed.data("source")!=dt["target"]))) {
-								//|| ((ed.data("target")==dt["source"])&& (ed.data("source")!=dt["target"])) ){
-									edge.data({"sshape": ed.data("sshape"),"tshape": ed.data("tshape"),"col": ed.data("col"),"style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
-									cy.$('#'+dt["source"]).data({"weight":ed.data("width"),"col":ed.data("col")});
-								}
+					if (fluxActivated){
+						var edges = cy.filter('edge[link = "single"]');
+						edges.forEach(function( edge ){
+							edge.source().connectedEdges().forEach(function( ed ){
+								 
+								 if ((ed.data("source")==edge.data("source")) && (ed.data("target")!=edge.data("target"))) {
+									//console.log(edge.data())
+									//console.log(ed.data())
+									
+									var flux_initial = edge.source().data("flux");
+									var flux_final=1.0;
+									var color ='red';
+									if (flux_initial==0){
+										flux_final = 1.0;
+									}
+									else if(flux_initial>0){
+										flux_final = 1+(1.5*Math.log(1+Math.abs(flux_initial)));
+										color ='red';
+									}
+									else if(flux_initial<0){
+										flux_final = 1+(1.5*Math.log(1+Math.abs(flux_initial)));
+										color ='blue';
+									}
+									cy.$('#'+ed.data("source")).data({"weight":ed.data("width"),"col":color});
+									edge.data({"sshape": ed.data("tshape"),"tshape": ed.data("sshape"),"col": color,"style":ed.data("style"),"width":flux_final,"side":ed.data("side")});
+								 }
+								 else if ((ed.data("target")==edge.data("source"))&& (ed.data("source")!=edge.data("target"))){
+									//console.log(ed.data("target"))
+									//console.log(edge.source().data())
+									var flux_initial = edge.source().data("flux");
+									var flux_final=1.0;
+									var color ='red';
+									if (flux_initial==0){
+										flux_final = 1.0;
+									}
+									else if(flux_initial>0){
+										flux_final = 1+(1.5*Math.log(1+Math.abs(flux_initial)));
+										color ='red';
+									}
+									else if(flux_initial<0){
+										flux_final = 1+(1.5*Math.log(1+Math.abs(flux_initial)));
+										color ='blue';
+									}
+									cy.$('#'+edge.data("source")).data({"weight":ed.data("width"),"col":color});
+									edge.data({"sshape": ed.data("sshape"),"tshape": ed.data("tshape"),"col": color,"style":ed.data("style"),"width":flux_final,"side":ed.data("side")});
+								 }
 							});
-							//console.log(dt)
-						}
-						else if (dt["source"].startsWith("junction")){
-							cy.$('#'+dt["source"]).data({"weight":8});
 							
-							var listE = cy.$('#'+dt["target"]).connectedEdges();
-							listE.forEach(function( ed ){
-								if (((ed.data("source")==dt["target"]) && (ed.data("target")!=dt["source"]))) {
-								//|| ((ed.data("target")==dt["target"])&& (ed.data("source")!=dt["source"])) ){
-									edge.data({"sshape": ed.data("sshape"),"tshape": ed.data("tshape"),"col": ed.data("col"),"style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
-									cy.$('#'+dt["target"]).data({"weight":ed.data("width"),"col":ed.data("col")});
-								}
-								else if (((ed.data("target")==dt["target"])&& (ed.data("source")!=dt["source"])) ) {
-								//|| ((ed.data("target")==dt["target"])&& (ed.data("source")!=dt["source"])) ){
-									edge.data({"sshape": ed.data("tshape"),"tshape": ed.data("sshape"),"col": ed.data("col"),"style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
-									cy.$('#'+dt["target"]).data({"weight":ed.data("width"),"col":ed.data("col")});
-								}
+						});
+						var edges = cy.filter('edge[link = "multiple_source"], [link = "multiple_target"]');
+						edges.forEach(function( edge ){
+							var dt = edge.data();
+							if (dt["target"].startsWith("junction")){
+								cy.$('#'+dt["target"]).data({"weight":8});
+								var listE = cy.$('#'+dt["source"]).connectedEdges();
+								listE.forEach(function( ed ){
+									if (((ed.data("source")==dt["source"]) && (ed.data("target")!=dt["target"]))) {
+										
+										//console.log(edge.source().data())
+										//console.log(edge.target().data())
+										//console.log(ed.data())
+										var flux_initial = edge.source().data("flux");
+										var flux_final=1.0;
+										var color ='red';
+										if (flux_initial==0){
+											flux_final = 1.0;
+										}
+										else if(flux_initial>0){
+											flux_final = 1+(1.5*Math.log(1+Math.abs(flux_initial)));
+											color ='red';
+										}
+										else if(flux_initial<0){
+											flux_final = 1+(1.5*Math.log(1+Math.abs(flux_initial)));
+											color ='blue';
+										}
+										edge.data({"sshape": ed.data("tshape"),"tshape": ed.data("sshape"),"col": color,"style":ed.data("style"),"width":flux_final,"side":ed.data("side")});
+										cy.$('#'+dt["source"]).data({"weight":ed.data("width"),"col":color});
+									}
+									else if (((ed.data("target")==dt["source"])&& (ed.data("source")!=dt["target"]))) {
+										var flux_initial = edge.source().data("flux");
+										var flux_final=1.0;
+										var color ='red';
+										if (flux_initial==0){
+											flux_final = 1.0;
+										}
+										else if(flux_initial>0){
+											flux_final = 1+(1.5*Math.log(1+Math.abs(flux_initial)));
+											color ='red';
+										}
+										else if(flux_initial<0){
+											flux_final = 1+(1.5*Math.log(1+Math.abs(flux_initial)));
+											color ='blue';
+										}
+										edge.data({"sshape": ed.data("sshape"),"tshape": ed.data("tshape"),"col": color,"style":ed.data("style"),"width":flux_final,"side":ed.data("side")});
+										cy.$('#'+dt["source"]).data({"weight":ed.data("width"),"col":color});
+									}
+								});
+								//console.log(dt)
+							}
+							else if (dt["source"].startsWith("junction")){
+								cy.$('#'+dt["source"]).data({"weight":8});
+								
+								var listE = cy.$('#'+dt["target"]).connectedEdges();
+								listE.forEach(function( ed ){
+									if (((ed.data("source")==dt["target"]) && (ed.data("target")!=dt["source"]))) {
+										var flux_initial = edge.target().data("flux");
+										var flux_final=1.0;
+										var color ='red';
+										if (flux_initial==0){
+											flux_final = 1.0;
+										}
+										else if(flux_initial>0){
+											flux_final = 1+(1.5*Math.log(1+Math.abs(flux_initial)));
+											color ='red';
+										}
+										else if(flux_initial<0){
+											flux_final = 1+(1.5*Math.log(1+Math.abs(flux_initial)));
+											color ='blue';
+										}
+										edge.data({"sshape": ed.data("sshape"),"tshape": ed.data("tshape"),"col": color,"style":ed.data("style"),"width":flux_final,"side":ed.data("side")});
+										cy.$('#'+dt["target"]).data({"weight":ed.data("width"),"col":color});
+									}
+									else if (((ed.data("target")==dt["target"])&& (ed.data("source")!=dt["source"])) ) {
+										//console.log(edge.source().data())
+										//console.log(edge.target().data())
+										//console.log(ed.data())
+										var flux_initial = edge.target().data("flux");
+										var flux_final=1.0;
+										var color ='red';
+										if (flux_initial==0){
+											flux_final = 1.0;
+										}
+										else if(flux_initial>0){
+											flux_final = 1+(1.5*Math.log(1+Math.abs(flux_initial)));
+											color ='red';
+										}
+										else if(flux_initial<0){
+											flux_final = 1+(1.5*Math.log(1+Math.abs(flux_initial)));
+											color ='blue';
+										}
+										edge.data({"sshape": ed.data("tshape"),"tshape": ed.data("sshape"),"col": color,"style":ed.data("style"),"width":flux_final,"side":ed.data("side")});
+										cy.$('#'+dt["target"]).data({"weight":ed.data("width"),"col":color});
+									}
+								});
+							}
+						});
+					}
+					else{
+						var edges = cy.filter('edge[link = "single"]');
+						edges.forEach(function( edge ){
+							edge.source().connectedEdges().forEach(function( ed ){
+								 edge.data({"sshape": ed.data("sshape"),"tshape": ed.data("tshape"),"col": ed.data("col"),"style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
+								 if ((ed.data("source")==edge.data("source")) && (ed.data("target")!=edge.data("target"))) {
+									cy.$('#'+edge.data("target")).data({"weight":ed.data("width"),"col":ed.data("col")});
+								 }
+								 else if ((ed.data("target")==edge.data("source"))&& (ed.data("source")!=edge.data("target"))){
+									cy.$('#'+edge.data("source")).data({"weight":ed.data("width"),"col":ed.data("col")});
+								 }
 							});
-						}
-					});
+							
+						});
+						var edges = cy.filter('edge[link = "multiple_source"], [link = "multiple_target"]');
+						edges.forEach(function( edge ){
+							var dt = edge.data();
+							if (dt["target"].startsWith("junction")){
+								cy.$('#'+dt["target"]).data({"weight":8});
+								var listE = cy.$('#'+dt["source"]).connectedEdges();
+								listE.forEach(function( ed ){
+									if (((ed.data("source")==dt["source"]) && (ed.data("target")!=dt["target"]))) {
+									//|| ((ed.data("target")==dt["source"])&& (ed.data("source")!=dt["target"])) ){
+										edge.data({"sshape": ed.data("sshape"),"tshape": ed.data("tshape"),"col": ed.data("col"),"style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
+										cy.$('#'+dt["source"]).data({"weight":ed.data("width"),"col":ed.data("col")});
+									}
+									else if (((ed.data("target")==dt["source"])&& (ed.data("source")!=dt["target"]))) {
+									//|| ((ed.data("target")==dt["source"])&& (ed.data("source")!=dt["target"])) ){
+										edge.data({"sshape": ed.data("sshape"),"tshape": ed.data("tshape"),"col": ed.data("col"),"style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
+										cy.$('#'+dt["source"]).data({"weight":ed.data("width"),"col":ed.data("col")});
+									}
+								});
+								//console.log(dt)
+							}
+							else if (dt["source"].startsWith("junction")){
+								cy.$('#'+dt["source"]).data({"weight":8});
+								
+								var listE = cy.$('#'+dt["target"]).connectedEdges();
+								listE.forEach(function( ed ){
+									if (((ed.data("source")==dt["target"]) && (ed.data("target")!=dt["source"]))) {
+									//|| ((ed.data("target")==dt["target"])&& (ed.data("source")!=dt["source"])) ){
+										edge.data({"sshape": ed.data("sshape"),"tshape": ed.data("tshape"),"col": ed.data("col"),"style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
+										cy.$('#'+dt["target"]).data({"weight":ed.data("width"),"col":ed.data("col")});
+									}
+									else if (((ed.data("target")==dt["target"])&& (ed.data("source")!=dt["source"])) ) {
+									//|| ((ed.data("target")==dt["target"])&& (ed.data("source")!=dt["source"])) ){
+										edge.data({"sshape": ed.data("tshape"),"tshape": ed.data("sshape"),"col": ed.data("col"),"style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
+										cy.$('#'+dt["target"]).data({"weight":ed.data("width"),"col":ed.data("col")});
+									}
+								});
+							}
+						});
+					}
+					
 				});
 				
 			}
 			else{
 				cy.batch(function(){
-					var edges = cy.filter('edge[link = "single"]');
-					edges.forEach(function( edge ){
-						edge.source().connectedEdges().forEach(function( ed ){
-							 edge.data({"sshape": ed.data("sshape"),"tshape": ed.data("tshape"),"col": ed.data("col"),"style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
-							 if ((ed.data("source")==edge.data("source")) && (ed.data("target")!=edge.data("target"))) {
-								//cy.$('#'+edge.data("target")).data({"weight":ed.data("width"),"col":ed.data("col")});
-								edge.data({"sshape":"none","tshape": "none","col": "black","style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
-								cy.$('#'+edge.data("target")).data({"weight":8,"col":"black"});
-							 }
-							 else if ((ed.data("target")==edge.data("source"))&& (ed.data("source")!=edge.data("target"))){
-								//cy.$('#'+edge.data("source")).data({"weight":ed.data("width"),"col":ed.data("col")});
-								edge.data({"sshape":"none","tshape": "none","col": "black","style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
-								cy.$('#'+edge.data("source")).data({"weight":8,"col":"black"});
-							 }
+					if (fluxActivated){
+						var edges = cy.filter('edge[link = "single"]');
+						edges.forEach(function( edge ){
+							edge.source().connectedEdges().forEach(function( ed ){
+								 edge.data({"sshape": ed.data("sshape"),"tshape": ed.data("tshape"),"col": ed.data("col"),"style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
+								 if ((ed.data("source")==edge.data("source")) && (ed.data("target")!=edge.data("target"))) {
+									//cy.$('#'+edge.data("target")).data({"weight":ed.data("width"),"col":ed.data("col")});
+									edge.data({"sshape":"none","tshape": "none","col": "black","style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
+									cy.$('#'+edge.data("target")).data({"weight":8,"col":"black"});
+								 }
+								 else if ((ed.data("target")==edge.data("source"))&& (ed.data("source")!=edge.data("target"))){
+									//cy.$('#'+edge.data("source")).data({"weight":ed.data("width"),"col":ed.data("col")});
+									edge.data({"sshape":"none","tshape": "none","col": "black","style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
+									cy.$('#'+edge.data("source")).data({"weight":8,"col":"black"});
+								 }
+							});
+							
 						});
 						
-					});
-					
-					var edges = cy.filter('edge[link = "multiple_source"], [link = "multiple_target"]');
-					edges.forEach(function( edge ){
-						var dt = edge.data();
-						if (dt["target"].startsWith("junction")){
-							cy.$('#'+dt["target"]).data({"weight":15});
-							var listE = cy.$('#'+dt["source"]).connectedEdges();
-							listE.forEach(function( ed ){
-								if (((ed.data("source")==dt["source"]) && (ed.data("target")!=dt["target"])) 
-								|| ((ed.data("target")==dt["source"])&& (ed.data("source")!=dt["target"])) ){
-									edge.data({"sshape": "none","tshape": "none","col": "black","style":"solid","width":2,"side":""});
-									cy.$('#'+dt["source"]).data({"weight":8,"col":"black"});
-								}
+						var edges = cy.filter('edge[link = "multiple_source"], [link = "multiple_target"]');
+						edges.forEach(function( edge ){
+							var dt = edge.data();
+							if (dt["target"].startsWith("junction")){
+								cy.$('#'+dt["target"]).data({"weight":15});
+								var listE = cy.$('#'+dt["source"]).connectedEdges();
+								listE.forEach(function( ed ){
+									if (((ed.data("source")==dt["source"]) && (ed.data("target")!=dt["target"])) 
+									|| ((ed.data("target")==dt["source"])&& (ed.data("source")!=dt["target"])) ){
+										edge.data({"sshape": "none","tshape": "none","col": "black","style":"solid","width":2,"side":""});
+										cy.$('#'+dt["source"]).data({"weight":8,"col":"black"});
+									}
+								});
+								
+							}
+							else if (dt["source"].startsWith("junction")){
+								cy.$('#'+dt["source"]).data({"weight":15});
+								
+								var listE = cy.$('#'+dt["target"]).connectedEdges();
+								listE.forEach(function( ed ){
+									if (((ed.data("source")==dt["target"]) && (ed.data("target")!=dt["source"])) 
+									|| ((ed.data("target")==dt["target"])&& (ed.data("source")!=dt["source"])) ){
+										edge.data({"sshape": "none","tshape": "none","col": "black","style":"solid","width":2,"side":""});
+										cy.$('#'+dt["target"]).data({"weight":8,"col":"black"});
+									}
+								});
+							}
+						});
+					}
+					else{
+						var edges = cy.filter('edge[link = "single"]');
+						edges.forEach(function( edge ){
+							edge.source().connectedEdges().forEach(function( ed ){
+								 edge.data({"sshape": ed.data("sshape"),"tshape": ed.data("tshape"),"col": ed.data("col"),"style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
+								 if ((ed.data("source")==edge.data("source")) && (ed.data("target")!=edge.data("target"))) {
+									//cy.$('#'+edge.data("target")).data({"weight":ed.data("width"),"col":ed.data("col")});
+									edge.data({"sshape":"none","tshape": "none","col": "black","style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
+									cy.$('#'+edge.data("target")).data({"weight":8,"col":"black"});
+								 }
+								 else if ((ed.data("target")==edge.data("source"))&& (ed.data("source")!=edge.data("target"))){
+									//cy.$('#'+edge.data("source")).data({"weight":ed.data("width"),"col":ed.data("col")});
+									edge.data({"sshape":"none","tshape": "none","col": "black","style":ed.data("style"),"width":ed.data("width"),"side":ed.data("side")});
+									cy.$('#'+edge.data("source")).data({"weight":8,"col":"black"});
+								 }
 							});
 							
-						}
-						else if (dt["source"].startsWith("junction")){
-							cy.$('#'+dt["source"]).data({"weight":15});
-							
-							var listE = cy.$('#'+dt["target"]).connectedEdges();
-							listE.forEach(function( ed ){
-								if (((ed.data("source")==dt["target"]) && (ed.data("target")!=dt["source"])) 
-								|| ((ed.data("target")==dt["target"])&& (ed.data("source")!=dt["source"])) ){
-									edge.data({"sshape": "none","tshape": "none","col": "black","style":"solid","width":2,"side":""});
-									cy.$('#'+dt["target"]).data({"weight":8,"col":"black"});
-								}
-							});
-						}
-					});
+						});
+						
+						var edges = cy.filter('edge[link = "multiple_source"], [link = "multiple_target"]');
+						edges.forEach(function( edge ){
+							var dt = edge.data();
+							if (dt["target"].startsWith("junction")){
+								cy.$('#'+dt["target"]).data({"weight":15});
+								var listE = cy.$('#'+dt["source"]).connectedEdges();
+								listE.forEach(function( ed ){
+									if (((ed.data("source")==dt["source"]) && (ed.data("target")!=dt["target"])) 
+									|| ((ed.data("target")==dt["source"])&& (ed.data("source")!=dt["target"])) ){
+										edge.data({"sshape": "none","tshape": "none","col": "black","style":"solid","width":2,"side":""});
+										cy.$('#'+dt["source"]).data({"weight":8,"col":"black"});
+									}
+								});
+								
+							}
+							else if (dt["source"].startsWith("junction")){
+								cy.$('#'+dt["source"]).data({"weight":15});
+								
+								var listE = cy.$('#'+dt["target"]).connectedEdges();
+								listE.forEach(function( ed ){
+									if (((ed.data("source")==dt["target"]) && (ed.data("target")!=dt["source"])) 
+									|| ((ed.data("target")==dt["target"])&& (ed.data("source")!=dt["source"])) ){
+										edge.data({"sshape": "none","tshape": "none","col": "black","style":"solid","width":2,"side":""});
+										cy.$('#'+dt["target"]).data({"weight":8,"col":"black"});
+									}
+								});
+							}
+						});
+					}
 				});
 				
 			}
