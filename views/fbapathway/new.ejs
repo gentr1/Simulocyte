@@ -96,7 +96,9 @@
 
 <script>
 var gdata = <%- JSON.stringify(graphdata) %>
-
+var Gchanged=false;
+var prefbadata = <%- JSON.stringify(prefba) %>
+//console.log(prefbadata)
 //var results=Papa.parse($('#rdat').val(),{	delimiter: "\t",
 //									header: false,
 //									dynamicTyping: true//,
@@ -219,69 +221,159 @@ ht.updateSettings({
 //console.log(JSON.stringify(dataUsers))
 //console.log(JSON.parse(JSON.stringify(dataUsers)))
 	
-	
+	//console.log(prefbadata.graphdata.reactions)
 	var dataGraph={ 'reactions':[]}
 	var reactionsData=[];
-	
 	var metabolites_degrees={};
-	for (var i =0, j= gdata.length-1;i<j;i++){
-		var parsed = gdata[i][2].replace(/\r/g, "").split(' ');
-		var reaction_sfba_name=parsed[0].split(':')[0];
-		reactionsData.push([reaction_sfba_name,gdata[i][1], gdata[i][2], false])
-		var direction;
-		var separator=-1;
-		for (var nb =1; nb< parsed.length;nb++){
+	
+	if (!(_.isEmpty(prefbadata))){
+		var prereacs= prefbadata.graphdata.reactions;
+		for (var i =0, j= gdata.length-1;i<j;i++){
+			var parsed = gdata[i][2].replace(/\r/g, "").split(' ');
+			var reaction_sfba_name=parsed[0].split(':')[0];
+			var res = reaction_sfba_name.replace(/[().]/g, '-');
+			var res2 = res.replace(/\+/g, 'plus');
+			reaction_sfba_name=res2;
+			var isInR=false;
+			for (prer in prereacs){
+				if (prereacs[prer].name==reaction_sfba_name){
+					isInR=true;
+				}
+			}
+			if (isInR==true){
+				reactionsData.push([reaction_sfba_name,gdata[i][1], gdata[i][2], true])
+			}
+			else{
+				reactionsData.push([reaction_sfba_name,gdata[i][1], gdata[i][2], false])
+			}
 			
-			if (parsed[nb].search('<=>')!=-1){
-				direction = 'reversible';
-				separator=nb;
+			var direction;
+			var separator=-1;
+			for (var nb =1; nb< parsed.length;nb++){
+				
+				if (parsed[nb].search('<=>')!=-1){
+					direction = 'reversible';
+					separator=nb;
+				}
+				else if(parsed[nb].search('-->')!=-1){
+					direction = 'right';
+					separator=nb;
+				}
+				else if(parsed[nb].search('<--')!=-1){
+					direction = 'left';
+					separator=nb;
+				}
+				else{}
 			}
-			else if(parsed[nb].search('-->')!=-1){
-				direction = 'right';
-				separator=nb;
-			}
-			else if(parsed[nb].search('<--')!=-1){
-				direction = 'left';
-				separator=nb;
-			}
-			else{}
-		}
-		var involved ={};
-		//console.log(parsed)
-		for (var nb =1; nb< parsed.length;nb++){
-		//for (var nb =1; nb< separator;nb++){
-			if (nb< separator){
-				if (parsed[nb]!='+'){
-					involved[parsed[nb]]=-1.0
-					if (metabolites_degrees.hasOwnProperty(parsed[nb])){
-						metabolites_degrees[parsed[nb]]+=1;
+			var involved ={};
+			//console.log(parsed)
+			for (var nb =1; nb< parsed.length;nb++){
+			//for (var nb =1; nb< separator;nb++){
+				if (nb< separator){
+					if (parsed[nb]!='+'){
+						involved[parsed[nb]]=-1.0
+						if (metabolites_degrees.hasOwnProperty(parsed[nb])){
+							metabolites_degrees[parsed[nb]]+=1;
+						}
+						else{
+							metabolites_degrees[parsed[nb]]=1;
+						}
 					}
-					else{
-						metabolites_degrees[parsed[nb]]=1;
+				}
+				if (nb> separator){
+			//}
+			//for (var nb =separator+1; nb< parsed.length;nb++){
+					if (parsed[nb]!='+'){
+						involved[parsed[nb]]=1.0
+						if (metabolites_degrees.hasOwnProperty(parsed[nb])){
+							metabolites_degrees[parsed[nb]]+=1;
+						}
+						else{
+							metabolites_degrees[parsed[nb]]=1;
+						}
 					}
 				}
 			}
-			if (nb> separator){
-		//}
-		//for (var nb =separator+1; nb< parsed.length;nb++){
-				if (parsed[nb]!='+'){
-					involved[parsed[nb]]=1.0
-					if (metabolites_degrees.hasOwnProperty(parsed[nb])){
-						metabolites_degrees[parsed[nb]]+=1;
+			//dataGraph['reactions'].push({'name': reaction_sfba_name,'sbmlName': gdata[i][0],'direction':direction, 'involvedWith':involved,'color':'red','style':'solid','width':'1','flux':gdata[i][1]})
+		}
+	}
+	else{
+		for (var i =0, j= gdata.length-1;i<j;i++){
+			var parsed = gdata[i][2].replace(/\r/g, "").split(' ');
+			var reaction_sfba_name=parsed[0].split(':')[0];
+			var res = reaction_sfba_name.replace(/[().]/g, '-');
+			var res2 = res.replace(/\+/g, 'plus');
+			reaction_sfba_name=res2;
+			reactionsData.push([reaction_sfba_name,gdata[i][1], gdata[i][2], false])
+			var direction;
+			var separator=-1;
+			for (var nb =1; nb< parsed.length;nb++){
+				
+				if (parsed[nb].search('<=>')!=-1){
+					direction = 'reversible';
+					separator=nb;
+				}
+				else if(parsed[nb].search('-->')!=-1){
+					direction = 'right';
+					separator=nb;
+				}
+				else if(parsed[nb].search('<--')!=-1){
+					direction = 'left';
+					separator=nb;
+				}
+				else{}
+			}
+			var involved ={};
+			//console.log(parsed)
+			for (var nb =1; nb< parsed.length;nb++){
+			//for (var nb =1; nb< separator;nb++){
+				if (nb< separator){
+					if (parsed[nb]!='+'){
+						involved[parsed[nb]]=-1.0
+						if (metabolites_degrees.hasOwnProperty(parsed[nb])){
+							metabolites_degrees[parsed[nb]]+=1;
+						}
+						else{
+							metabolites_degrees[parsed[nb]]=1;
+						}
 					}
-					else{
-						metabolites_degrees[parsed[nb]]=1;
+				}
+				if (nb> separator){
+			//}
+			//for (var nb =separator+1; nb< parsed.length;nb++){
+					if (parsed[nb]!='+'){
+						involved[parsed[nb]]=1.0
+						if (metabolites_degrees.hasOwnProperty(parsed[nb])){
+							metabolites_degrees[parsed[nb]]+=1;
+						}
+						else{
+							metabolites_degrees[parsed[nb]]=1;
+						}
 					}
 				}
 			}
+			//dataGraph['reactions'].push({'name': reaction_sfba_name,'sbmlName': gdata[i][0],'direction':direction, 'involvedWith':involved,'color':'red','style':'solid','width':'1','flux':gdata[i][1]})
 		}
-		//dataGraph['reactions'].push({'name': reaction_sfba_name,'sbmlName': gdata[i][0],'direction':direction, 'involvedWith':involved,'color':'red','style':'solid','width':'1','flux':gdata[i][1]})
 	}
 	
 	var dataCurrency=[];
-	for (elem in metabolites_degrees){
-		if (metabolites_degrees.hasOwnProperty(elem)){		
-			dataCurrency.push([elem,metabolites_degrees[elem],false])			
+	if (!(_.isEmpty(prefbadata))){
+		for (elem in metabolites_degrees){
+			if (metabolites_degrees.hasOwnProperty(elem)){	
+				if 	(prefbadata.graphdata.tokens.indexOf(elem)>-1){	
+					dataCurrency.push([elem,metabolites_degrees[elem],true])
+				}
+				else{
+					dataCurrency.push([elem,metabolites_degrees[elem],false])
+				}
+			}
+		}
+	}
+	else{
+		for (elem in metabolites_degrees){
+			if (metabolites_degrees.hasOwnProperty(elem)){		
+				dataCurrency.push([elem,metabolites_degrees[elem],false])			
+			}
 		}
 	}
 	dataCurrency.sort(function(a, b){return (b[1] - a[1]) //causes an array to be sorted numerically and ascending
@@ -334,6 +426,8 @@ ht.updateSettings({
 		minSpareRows: 1
 	});
 	
+	
+	
 	var recordedChangesReactions={};
 	
 	var $containerf = $("#fbaResult");
@@ -353,6 +447,7 @@ ht.updateSettings({
 	  colHeaders: ['Reaction name', 'Flux', 'Comment','Select'],
 	  afterChange: function(changes, source) {
 		if (changes){
+			Gchanged=true;
 			var obj = this;	
 			for (var i =0; i< changes.length;i++){
 				if (changes[i]){
@@ -377,8 +472,13 @@ ht.updateSettings({
 			for (var i =0, j= gdata.length-1;i<j;i++){
 				
 				var parsed = gdata[i][2].replace(/\r/g, "").split(' ');
+				
 				var tpn=parsed[0];
 				var reaction_sfba_name=tpn.split(':')[0];
+				
+				var res = reaction_sfba_name.replace(/[().]/g, '-');
+				var res2 = res.replace(/\+/g, 'plus');
+				reaction_sfba_name=res2;
 				if (recordedChangesReactions.hasOwnProperty(reaction_sfba_name) ){
 					var direction;
 					var separator=-1;
@@ -415,7 +515,70 @@ ht.updateSettings({
 					
 					//console.log(JSON.stringify(involved))
 					dataGraph['reactions'].push({'name': reaction_sfba_name,'sbmlName': gdata[i][0],'direction':direction, 'involvedWith':involved,'color':'red','style':'solid','width':'1','flux':gdata[i][1]})
+				
 				}
+				var isInData=false;
+				for (elR in reactionsData){
+					if ((reactionsData[elR][0]==reaction_sfba_name) && (reactionsData[elR][3]==true)){
+						isInData=true;
+						//dataGraph['reactions'].push({'name': reaction_sfba_name,'sbmlName': gdata[i][0],'direction':direction, 'involvedWith':involved,'color':'red','style':'solid','width':'1','flux':gdata[i][1]})
+					}
+				}
+				if(isInData){
+					var direction;
+					var separator=-1;
+					for (var nb =1; nb< parsed.length;nb++){
+						
+						if (parsed[nb].search('<=>')!=-1){
+							direction = 'reversible';
+							separator=nb;
+						}
+						else if(parsed[nb].search('-->')!=-1){
+							direction = 'right';
+							separator=nb;
+						}
+						else if(parsed[nb].search('<--')!=-1){
+							direction = 'left';
+							separator=nb;
+						}
+						
+					}
+					if (separator==-1){console.log("weird separator")}
+					var involved ={};
+					for (var nb =1; nb< separator;nb++){
+						if (parsed[nb]!='+'){
+							//console.log(parsed[nb])
+							involved[parsed[nb]]=-1.0
+							
+						}
+					}
+					for (var nb =separator+1; nb< parsed.length;nb++){
+						if (parsed[nb]!='+'){
+							involved[parsed[nb]]=1.0
+						}
+					}
+					
+					//console.log(JSON.stringify(involved))
+					
+					var isInDataGRaph =false;
+					for (rr in dataGraph['reactions']){
+						if (dataGraph['reactions'][rr].name==reaction_sfba_name){
+							isInDataGRaph=true;
+							//dataGraph['reactions'].push({'name': reaction_sfba_name,'sbmlName': gdata[i][0],'direction':direction, 'involvedWith':involved,'color':'red','style':'solid','width':'1','flux':gdata[i][1]})
+						}
+					}
+					if (isInDataGRaph==false){
+						dataGraph['reactions'].push({'name': reaction_sfba_name,'sbmlName': gdata[i][0],'direction':direction, 'involvedWith':involved,'color':'red','style':'solid','width':'1','flux':gdata[i][1]})
+					}
+					
+					
+					
+					
+					//dataGraph['reactions'].push({'name': reaction_sfba_name,'sbmlName': gdata[i][0],'direction':direction, 'involvedWith':involved,'color':'red','style':'solid','width':'1','flux':gdata[i][1]})
+				}
+				
+					//reactionsData.push([reaction_sfba_name,gdata[i][1], gdata[i][2], true])
+				
 			}
 			if (dataGraph['reactions'].length>100){
 				document.getElementById("nbR").innerHTML=("Total nb of reactions selected: " +dataGraph['reactions'].length + " <br><b>(Warning: selecting more than 100 reactions will make the layout very slow !! )</b><br><b>This editor is just intended for drawing small subsets of relevant reactions e.g. catabolic core,<br> and making the resulting figure ready for publication</b>");
@@ -423,6 +586,7 @@ ht.updateSettings({
 			else{
 				document.getElementById("nbR").innerHTML=("Total nb of reactions selected: " +dataGraph['reactions'].length);
 			}
+			//console.log("eeeeee")
 			//console.log(dataGraph)
 		}
 	  },
@@ -1045,7 +1209,7 @@ ht.updateSettings({
 						}
 					});
 					
-					
+				if (_.isEmpty(prefbadata)){	
 				var l_tokens = tokens;
 				mtokens =tokens;
 				
@@ -1463,10 +1627,475 @@ ht.updateSettings({
 					cy.$(':parent').style({'background-opacity': '0.3',});
 				});
 				
-				cy.boxSelectionEnabled(true)
-				//cy.center()
-				cy.fit()
 				
+				//cy.center()
+				
+				
+				//if (!(_.isEmpty(prefbadata))){
+				//	console.log(prefbadata)
+					// cy.add(prefbadata.myCanvas.elements.nodes);
+					// cy.add(prefbadata.myCanvas.elements.edges);
+					
+					
+					// cy.edges().forEach(function( edge ){
+						
+						// if (edge.data("curve")!=0){
+							// edge.css({'curve-style': 'unbundled-bezier',
+										// 'control-point-distance': edge.data('curve'),
+										// 'control-point-weight': edge.data('center_curve')});
+						// }
+					// });
+				//}
+				}
+				else{
+					
+					if(Gchanged==false){
+						cy.nodes().remove();
+						cy.edges().remove();
+						cy.add(prefbadata.graphdata.canvas.elements.nodes);
+						cy.add(prefbadata.graphdata.canvas.elements.edges);	
+						cy.edges().forEach(function( edge ){		
+							if (edge.data("curve")!=0){
+								edge.css({'curve-style': 'unbundled-bezier',
+											'control-point-distance': edge.data('curve'),
+											'control-point-weight': edge.data('center_curve')});
+							}
+						});
+					}
+					else{
+						var l_tokens = tokens;
+						mtokens =tokens;
+						
+						cy.batch(function(){
+							var im=0;
+							var jm=0;
+							var km=0;
+							for (var reaction in data['reactions']) {
+								if (data['reactions'].hasOwnProperty(reaction)) {
+									//console.log(cy.nodes())
+									//console.log(cy.$('#'+data['reactions'][reaction]['name']).id())
+									if (data['reactions'][reaction]['name'].endsWith('_tx')){
+										
+										cy.$('#'+data['reactions'][reaction]['name']).position('x', 0+jm*400);
+										cy.$('#'+data['reactions'][reaction]['name']).position('y', -300);
+										
+										jm+=1;
+									}
+									else{
+										
+										
+										cy.$('#'+data['reactions'][reaction]['name']).position('x', 0+im*900);
+										cy.$('#'+data['reactions'][reaction]['name']).position('y', 200+km*400);
+										
+										
+										if (im==6){im=0; km+=1}
+										else{im+=1;}
+									}
+									
+
+									
+									var metabolites = Object.keys(data['reactions'][reaction]['involvedWith'])
+									//console.log(metabolites)
+									var metabolitesL=[];
+									var metabolitesR=[];
+									for (var metabolite in data['reactions'][reaction]['involvedWith']) {
+										if (data['reactions'][reaction]['involvedWith'].hasOwnProperty(metabolite)) {
+											if (data['reactions'][reaction]['involvedWith'][metabolite]<0){
+												if (l_tokens.indexOf(metabolite) >= 0){
+													metabolitesL.push(metabolite)
+												}
+												else{
+													metabolitesL.unshift(metabolite)
+												}
+												
+											}
+											if (data['reactions'][reaction]['involvedWith'][metabolite]>0){
+												if (l_tokens.indexOf(metabolite) >= 0){
+													metabolitesR.push(metabolite)
+												}
+												else{
+													metabolitesR.unshift(metabolite)
+												}
+											}
+										}
+									}
+									
+									if (metabolites.length == 2){
+										
+										cy.$('#'+data['reactions'][reaction]['name']+'___'+metabolites[0]).position('x', cy.$('#'+data['reactions'][reaction]['name']).position('x'));
+										cy.$('#'+data['reactions'][reaction]['name']+'___'+metabolites[0]).position('y', cy.$('#'+data['reactions'][reaction]['name']).position('y')-100);
+										cy.$('#'+data['reactions'][reaction]['name']+'___'+metabolite).data("side","left")
+										cy.$('#'+data['reactions'][reaction]['name']+'___'+metabolites[1]).position('x', cy.$('#'+data['reactions'][reaction]['name']).position('x'));
+										cy.$('#'+data['reactions'][reaction]['name']+'___'+metabolites[1]).position('y', cy.$('#'+data['reactions'][reaction]['name']).position('y')+100);
+										cy.$('#'+data['reactions'][reaction]['name']+'___'+metabolite).data("side","right")
+									}
+									else if (metabolites.length >2){
+										var nbMetabolitesLeft = 0;
+										var nbMetabolitesRight = 0;
+										for (var metabolite in data['reactions'][reaction]['involvedWith']) {
+											
+											
+											if (data['reactions'][reaction]['involvedWith'].hasOwnProperty(metabolite)) {
+												if (data['reactions'][reaction]['involvedWith'][metabolite]<0){
+													nbMetabolitesRight +=1;
+												}
+												if (data['reactions'][reaction]['involvedWith'][metabolite]>0){
+													nbMetabolitesLeft +=1;
+												}
+											}
+										}
+										if (nbMetabolitesLeft==nbMetabolitesRight){
+											
+											for (var metabolite in data['reactions'][reaction]['involvedWith']) {
+												if (data['reactions'][reaction]['involvedWith'].hasOwnProperty(metabolite)) {
+													if (data['reactions'][reaction]['involvedWith'][metabolite]<0){
+														var indent =0;
+														if (metabolitesL.indexOf(metabolite)>0){
+															indent =0
+														}
+														cy.$('#'+data['reactions'][reaction]['name']+'___'+metabolite).position('x', cy.$('#'+data['reactions'][reaction]['name']).position('x')+(metabolitesL.indexOf(metabolite)*50));//+50*(cntRight/(nbMetabolitesRight)));											
+														cy.$('#'+data['reactions'][reaction]['name']+'___'+metabolite).position('y', cy.$('#'+data['reactions'][reaction]['name']).position('y')-100+indent);
+														cy.$('#'+data['reactions'][reaction]['name']+'___'+metabolite).data("side","left")
+														
+													}
+													if (data['reactions'][reaction]['involvedWith'][metabolite]>0){
+														var indent =0;
+														if (metabolitesR.indexOf(metabolite)>0){
+															indent =0
+														}
+														cy.$('#'+data['reactions'][reaction]['name']+'___'+metabolite).position('x', cy.$('#'+data['reactions'][reaction]['name']).position('x')+(metabolitesR.indexOf(metabolite)*50));//-50*(cntLeft/(nbMetabolitesLeft)));
+														cy.$('#'+data['reactions'][reaction]['name']+'___'+metabolite).position('y', cy.$('#'+data['reactions'][reaction]['name']).position('y')+100-indent);
+														cy.$('#'+data['reactions'][reaction]['name']+'___'+metabolite).data("side","right")
+														
+													}
+												}
+											}
+										}
+										else{
+											
+											for (var metabolite in data['reactions'][reaction]['involvedWith']) {
+												if (data['reactions'][reaction]['involvedWith'].hasOwnProperty(metabolite)) {
+													if (data['reactions'][reaction]['involvedWith'][metabolite]<0){
+														var indent =0;
+														if (metabolitesL.indexOf(metabolite)>0){
+															indent =0
+														}
+														cy.$('#'+data['reactions'][reaction]['name']+'___'+metabolite).position('x', cy.$('#'+data['reactions'][reaction]['name']).position('x')+(metabolitesL.indexOf(metabolite))*50);
+														cy.$('#'+data['reactions'][reaction]['name']+'___'+metabolite).position('y', cy.$('#'+data['reactions'][reaction]['name']).position('y')-100+indent);
+														cy.$('#'+data['reactions'][reaction]['name']+'___'+metabolite).data("side","left")
+														
+													}
+													if (data['reactions'][reaction]['involvedWith'][metabolite]>0){
+														var indent =0;
+														if (metabolitesR.indexOf(metabolite)>0){
+															indent =0
+														}
+														cy.$('#'+data['reactions'][reaction]['name']+'___'+metabolite).position('x', cy.$('#'+data['reactions'][reaction]['name']).position('x')+(metabolitesR.indexOf(metabolite))*50);
+														cy.$('#'+data['reactions'][reaction]['name']+'___'+metabolite).position('y', cy.$('#'+data['reactions'][reaction]['name']).position('y')+100-indent);
+														cy.$('#'+data['reactions'][reaction]['name']+'___'+metabolite).data("side","right")
+														
+													}
+												}
+											}
+											
+										}
+										
+									}
+									
+									
+									
+								}
+							}
+						
+						});
+						// do multiple pass pairing of reactions involving the same compounds, to find network clusters of reactions
+						var ReactionsCompounds={}
+						for (var reaction in data['reactions']) {
+							if (data['reactions'].hasOwnProperty(reaction)) {
+								for (var metabolite in data['reactions'][reaction]['involvedWith']) {
+									
+									if (data['reactions'][reaction]['involvedWith'].hasOwnProperty(metabolite)) {
+										if (l_tokens.indexOf(metabolite) == -1){
+											if (ReactionsCompounds[data['reactions'][reaction]['name']]){
+											
+												ReactionsCompounds[data['reactions'][reaction]['name']].push(metabolite)
+											}
+											else{
+												ReactionsCompounds[data['reactions'][reaction]['name']]=[];
+												ReactionsCompounds[data['reactions'][reaction]['name']].push(metabolite)
+											}
+										}
+									}
+								}
+							}
+						}
+						//console.log(ReactionsCompounds)
+						var pairs={}
+						for (var reaction in ReactionsCompounds) {
+							if (ReactionsCompounds.hasOwnProperty(reaction)) {
+								for (var reaction2 in ReactionsCompounds) {
+									if (ReactionsCompounds.hasOwnProperty(reaction2)) {
+										if (reaction!=reaction2){
+											if(pairs[reaction+'___'+reaction2]){
+												pairs[reaction+'___'+reaction2].concat(_.intersection(ReactionsCompounds[reaction], ReactionsCompounds[reaction2]));
+											}
+											else{
+												if(pairs[reaction2+'___'+reaction]){
+													pairs[reaction2+'___'+reaction].concat(_.intersection(ReactionsCompounds[reaction], ReactionsCompounds[reaction2]));
+												}
+												else{
+													pairs[reaction+'___'+reaction2]=_.intersection(ReactionsCompounds[reaction], ReactionsCompounds[reaction2]);
+												}
+											}
+											
+											
+										}
+									}
+								}
+							}
+						}
+						for (var pair in pairs) {
+							if (pairs.hasOwnProperty(pair)) {
+							 if (pairs[pair].length==0){
+								//console.log(pair)
+								delete pairs[pair]
+							 }
+							}
+						}
+						var tupples ={}
+						for (var pair in pairs) {
+							if (pairs.hasOwnProperty(pair)) {
+								var leftReac = pair.split("___")[0];
+								var rightReac = pair.split("___")[1];
+								if (tupples[leftReac] && !(rightReac.endsWith('_tx'))){/////////////////////////
+									tupples[leftReac]=_.uniq(tupples[leftReac].concat(leftReac,rightReac));
+								}
+								else{
+									if (!(rightReac.endsWith('_tx'))){
+										tupples[leftReac]=[leftReac,rightReac];
+									}
+								}
+							}
+						}
+						for (var item in tupples) {
+							if (tupples.hasOwnProperty(item)) {
+								for (var item2 in tupples) {
+									if (tupples.hasOwnProperty(item2)) {
+										if (item!=item2){
+											var intersect = _.intersection(tupples[item2],tupples[item])
+											if (tupples[item2].indexOf(item)>0){
+												tupples[item]=_.uniq(tupples[item2].concat(tupples[item]));
+												delete tupples[item2]
+											}	
+											else if ( intersect.length>0){
+												tupples[item]=_.uniq(tupples[item].concat(tupples[item2]));
+												delete tupples[item2]
+											}
+										}
+									}
+								}
+							}
+						}
+						
+						//console.log(tupples)
+						cy.batch(function(){
+							var cnt=0;
+							for (var tup in tupples) {
+								if (tupples.hasOwnProperty(tup)) {
+									//cy.add({group: "nodes",  data: { id: 'parent_'+tup, name: 'parent_'+tup,weight: 1, col: 'red', valign:'top', halign:'center',fontsize:'10',fontstyle:'italic'/*, parent :data['reactions'][reaction]['name']*/}});
+									for (var t =0;t<tupples[tup].length;t++){
+										var pathGroup = cy.elements().breadthFirstSearch('#'+tupples[tup][t]);
+										var centerx = cy.$('#'+tupples[tup][t]).position('x');
+										var centery = cy.$('#'+tupples[tup][t]).position('y');
+										pathGroup.path.forEach(function( ele ){
+												if (ele.isNode()){
+													//if (ele.data('name')=='RXN-7909'){console.log('RXN-7909')}
+													//if (ele.data('name')=='ADDALT-RXN'){console.log('ADDALT-RXN')}
+													//if (ele.data('name')=='CH4_tx'){console.log('CH4_tx')}
+													
+													ele.position('x',ele.position('x')-centerx+t* 340 );
+													ele.position('y',ele.position('y')-centery+cnt*400);							
+												}
+										});
+										//cy.$('#'+tupples[tup][t]).data('parent','parent_'+tup);
+										
+									}
+									cnt+=1;
+								}
+							}	
+						});
+						////////////////////////////////////////////////////////////////////////////
+						// start linking reactions
+						var reactionProximity={}
+						for (var pair in pairs) {
+							if (pairs.hasOwnProperty(pair)) {
+								reactionProximity[pair.split("___")[0]]=0;
+							}
+						}
+						var listJunctions={};
+						var cnt=0;
+						
+						
+						
+						for (var pair in pairs) {
+							if (pairs.hasOwnProperty(pair)) {
+								var leftReac = pair.split("___")[0];
+								var rightReac = pair.split("___")[1];
+								
+								if (!(leftReac.endsWith('_tx') || rightReac.endsWith('_tx'))){
+									for (var met =0;met<pairs[pair].length;met++) {
+										var metabolite = pairs[pair][met]
+										var idNode1 = leftReac+'___'+metabolite;
+										var idNode2 = rightReac+'___'+metabolite;
+										if (listJunctions.hasOwnProperty(idNode1) && listJunctions.hasOwnProperty(idNode2)){
+											
+										}
+										else if (listJunctions.hasOwnProperty(idNode1) && (!listJunctions.hasOwnProperty(idNode2))){
+											listJunctions[idNode2]=listJunctions[idNode1];
+										}
+										else if (!(listJunctions.hasOwnProperty(idNode1)) && listJunctions.hasOwnProperty(idNode2)){
+											listJunctions[idNode1]=listJunctions[idNode2];
+										}
+										else{
+											listJunctions[idNode1]="junction"+cnt;
+											listJunctions[idNode2]="junction"+cnt;
+											cnt++
+										}
+									}
+								}
+							}
+						}
+						
+						
+						//console.log(listJunctions)
+						var countMap={}
+						for (elem in listJunctions){
+							if (countMap.hasOwnProperty(listJunctions[elem])){
+								countMap[listJunctions[elem]]+=1;
+							}
+							else{
+								countMap[listJunctions[elem]]=1;
+							}
+							
+						}
+						var countMap2={}
+						for (elem in countMap){
+							countMap2[elem]=countMap[elem];
+						}
+						//console.log(countMap)
+						cy.batch(function(){
+							var edgesAdded=[]
+							for (var pair in pairs) {
+								if (pairs.hasOwnProperty(pair)) {
+									var leftReac = pair.split("___")[0];
+									var rightReac = pair.split("___")[1];
+									
+									if (!(leftReac.endsWith('_tx') || rightReac.endsWith('_tx'))){
+										for (var met =0;met<pairs[pair].length;met++) {
+											var metabolite = pairs[pair][met]
+											var idNode1 = leftReac+'___'+metabolite;
+											var idNode2 = rightReac+'___'+metabolite;
+											
+											//cy.add({group: "edges",  data: { source: idNode1, target: idNode2 ,tshape: "none",sshape: "none", col: "black", style: "solid",width : "1",curve:"0",center_curve:"0.5",side:""}})
+											//flag++;
+											
+											var nbConnect1= 0;
+											//var nbConnect2= 0;
+											if (listJunctions.hasOwnProperty(idNode1) && listJunctions.hasOwnProperty(idNode2)){
+												if (countMap.hasOwnProperty(listJunctions[idNode1]) && countMap.hasOwnProperty(listJunctions[idNode2])){
+													nbConnect1= countMap[listJunctions[idNode1]];
+													//nbConnect2= countMap[listJunctions[idNode2]]
+												}
+											}
+											//console.log(nbConnect1)
+											//console.log(nbConnect2)
+											if(nbConnect1==2){
+												
+												cy.add({group: "edges",  data: { source: idNode1, target: idNode2 ,tshape: "none",sshape: "none", col: "black", style: "solid",width : "2",curve:"0",center_curve:"0.5",side:"", link:"single"}})
+											}
+											if(nbConnect1>2){
+												//console.log(listJunctions[idNode1])
+												if (cy.$('#'+listJunctions[idNode1]).length==0){
+													//cy.add({group: "nodes",  data: { id: "parent"+listJunctions[idNode1], name: cy.$('#'+idNode1).data("name"),weight: 15, col: 'black', valign:'top', halign:'center',fontsize:'10',fontstyle:'italic', isJoint:1/*, parent :data['reactions'][reaction]['name']*/}})
+													//cy.add({group: "nodes",  data: { id: listJunctions[idNode1], name: cy.$('#'+idNode1).data("name"),weight: 15, col: 'black', valign:'top', halign:'center',fontsize:'10',fontstyle:'italic', isJoint:1, parent: "parent"+listJunctions[idNode1]/*, parent :data['reactions'][reaction]['name']*/}})					
+													cy.add({group: "nodes",  data: { id: listJunctions[idNode1], name: cy.$('#'+idNode1).data("name"),weight: 15, col: 'black', valign:'top', halign:'center',fontsize:'10',fontstyle:'italic', isJoint:1/*, parent :data['reactions'][reaction]['name']*/}})
+													cy.$('#'+listJunctions[idNode1]).position('x',cy.$('#'+idNode1).position('x'))
+													cy.$('#'+listJunctions[idNode1]).position('y',cy.$('#'+idNode1).position('y')+100)
+													cy.add({group: "edges",  data: { source: idNode1, target: listJunctions[idNode1] ,tshape: "none",sshape: "none", col: "black", style: "solid",width : "2",curve:"0",center_curve:"0.5",side:"left",link:"multiple_source"}})
+													cy.add({group: "edges",  data: { source: listJunctions[idNode1], target: idNode2 ,tshape: "none",sshape: "none", col: "black", style: "solid",width : "2",curve:"0",center_curve:"0.5",side:"left",link:"multiple_target"}})
+													edgesAdded.push([idNode1,listJunctions[idNode1],idNode2])
+													//countMap2[listJunctions[idNode1]]-=2;
+												}
+											}
+										}
+									}
+								}
+							}
+							
+							// //console.log(flag)
+							
+							for (var pair in pairs) {
+								if (pairs.hasOwnProperty(pair)) {
+									var leftReac = pair.split("___")[0];
+									var rightReac = pair.split("___")[1];
+									
+									if (!(leftReac.endsWith('_tx') || rightReac.endsWith('_tx'))){
+										for (var met =0;met<pairs[pair].length;met++) {
+											var metabolite = pairs[pair][met]
+											var idNode1 = leftReac+'___'+metabolite;
+											var idNode2 = rightReac+'___'+metabolite;
+											if (listJunctions.hasOwnProperty(idNode1) && listJunctions.hasOwnProperty(idNode2)){
+												var isIn1=false;
+												var isIn2=false;
+												for (elem in edgesAdded){
+													var n1= edgesAdded[elem][0];
+													var n2= edgesAdded[elem][1];
+													var n3= edgesAdded[elem][2];
+													if (idNode1==n1 && n2==listJunctions[idNode1] && idNode2==n3){
+													//console.log(n1+"  "+n2)
+														isIn1=true;
+														isIn2=true;
+													}
+													else if (idNode1==n1 && n2==listJunctions[idNode1] && idNode2!=n3){
+													//console.log(n1+"  "+n2)
+														//isIn1=true;
+														if (cy.$('#'+listJunctions[idNode1]).length>0){
+															cy.add({group: "edges",  data: { source: listJunctions[idNode1], target: idNode2 ,tshape: "none",sshape: "none", col: "black", style: "solid",width : "2",curve:"0",center_curve:"0.5",side:"left",link:"multiple_source"}})
+														}
+													}
+													else if (idNode2==n3 && n2==listJunctions[idNode1] && idNode1!=n3){
+													//console.log(n1+"  "+n2)
+														//isIn2=true;
+														if (cy.$('#'+listJunctions[idNode1]).length>0){
+															cy.add({group: "edges",  data: { source: idNode1, target: listJunctions[idNode1] ,tshape: "none",sshape: "none", col: "black", style: "solid",width : "2",curve:"0",center_curve:"0.5",side:"left",link:"multiple_source"}})
+														}
+													}									
+												}
+											}													
+										}
+									}
+								}
+							}
+							
+							cy.$(':parent').style({'background-opacity': '0.3',});
+							if(historyUndo[nextStateJson]){
+								for (nodd in historyUndo[nextStateJson].elements.nodes){
+									cy.$('#'+historyUndo[nextStateJson].elements.nodes[nodd]['data']['id']).position('x',historyUndo[nextStateJson].elements.nodes[nodd]['position']['x'])
+									cy.$('#'+historyUndo[nextStateJson].elements.nodes[nodd]['data']['id']).position('y',historyUndo[nextStateJson].elements.nodes[nodd]['position']['y'])
+								}
+							}
+						});
+						
+						
+					}
+					
+					
+					
+					
+				}
+				cy.boxSelectionEnabled(true)
+				cy.fit()
+			
 				nextStateJson=0;
 				var saved = cy.json();
 				historyUndo.push(saved);
@@ -1480,6 +2109,10 @@ ht.updateSettings({
 				
 				startLayoutElements=saved;
 				startLayoutPositions=tmpcoord;
+				updateGraphData();
+				
+				
+				
 					
 				
 				
@@ -1488,7 +2121,16 @@ ht.updateSettings({
 				},
 			});
 		}
-		updateGraphData();
+		
+			//if (_.isEmpty(prefbadata)){
+				try{
+				updateGraphData();
+				}
+				catch(err){
+					
+				}
+			//}
+		
 	}
 	
 	
@@ -1881,7 +2523,7 @@ ht.updateSettings({
 				var initial_edge_style = initial_edge.data('style');
 				var initial_edge_width = initial_edge.data('width');
 				if ((cy.$('#'+initial_edge_source).isChild() && cy.$('#'+initial_edge_target).isChild()) && (cy.$('#'+initial_edge_source).parent().id()==cy.$('#'+initial_edge_target).parent().id())){
-					console.log("condition")
+					//console.log("condition")
 					cy.add({group: "nodes",  data: { id: initial_edge_source+'___'+initial_edge_target, name: "",weight: initial_edge.data('width'), col: 'red', valign:'top', halign:'center',fontsize:'10',fontstyle:'italic', isJoint:initial_edge.data('width'), parent: cy.$('#'+initial_edge_source).parent().id()/*, parent :data['reactions'][reaction]['name']*/}})
 				}
 				else{
@@ -2702,7 +3344,7 @@ ht.updateSettings({
 									pathData.push({"x":ptx,"y":pty})
 								}
 								pathData.push({"x":x2,"y":y2})
-								console.log(lineFunction(pathData))
+								//console.log(lineFunction(pathData))
 								return lineFunction(pathData);
 							}
 							else{

@@ -36,7 +36,15 @@ module.exports = {
 					}
 					var stringData=req.param('graphdata0')+req.param('graphdata1')+req.param('graphdata2')+req.param('graphdata3')+req.param('graphdata4')+req.param('graphdata5')+req.param('graphdata6')+req.param('graphdata7')+req.param('graphdata8')+req.param('graphdata9');
 					var gdata = JSON.parse(stringData);
-					return res.view({usrs: listUsers, labs: labs, graphdata: gdata});
+					//console.log(req.param('listf'))
+					if (req.param('listf')!=""){
+						FbaPathway.findOne(req.param('listf'), function foundfba(err, ptw) {
+							return res.view({usrs: listUsers, labs: labs, graphdata: gdata, prefba: ptw});
+						});
+					}
+					else{
+						return res.view({usrs: listUsers, labs: labs, graphdata: gdata, prefba: {} });
+					}
 				});
 			});
 		}

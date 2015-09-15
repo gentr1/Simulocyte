@@ -36,7 +36,16 @@ module.exports = {
 					}
 					var stringData=req.param('graphdata0')+req.param('graphdata1')+req.param('graphdata2')+req.param('graphdata3')+req.param('graphdata4')+req.param('graphdata5')+req.param('graphdata6')+req.param('graphdata7')+req.param('graphdata8')+req.param('graphdata9');
 					var gdata = JSON.parse(stringData);
-					return res.view({usrs: listUsers, labs: labs, graphdata: gdata});
+					
+					if (req.param('listf')!=""){
+						FvaPathway.findOne(req.param('listf'), function foundfva(err, ptw) {
+							return res.view({usrs: listUsers, labs: labs, graphdata: gdata, prefva: ptw});
+						});
+					}
+					else{
+						return res.view({usrs: listUsers, labs: labs, graphdata: gdata, prefva: {} });
+					}
+					//return res.view({usrs: listUsers, labs: labs, graphdata: gdata});
 				});
 			});
 		}

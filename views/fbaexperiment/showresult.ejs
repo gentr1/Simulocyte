@@ -81,7 +81,14 @@
     <input type="text"  name="graphdata8" id ="graphdata8" style="visibility: hidden;" value="">
     <input type="text"  name="graphdata9" id ="graphdata9" style="visibility: hidden;" value="">
 	
-	<input type="submit" class="btn btn-lg btn-primary btn-block" value="Use results to create a new pathway 2D graph"/>
+	<p>Use an existing layout: <select name="listf" id="listf">
+		<option value="">None</option>
+		<% _.each(fbal, function(fb) {%>
+		   <option value=<%=fb['id']%>><%=fb['name']%></option>
+		<% }) %>
+	</select>
+	
+	<input type="submit" class="btn btn-lg btn-primary" value="Use results to create a new pathway 2D graph"/></p>
 	<input type="hidden" name="_csrf" value="<%= _csrf %>" />
 	</form>
 	<br>
@@ -122,7 +129,12 @@
     <input type="text"  name="graphdata7" id ="graphdata7" style="visibility: hidden;" value="">
     <input type="text"  name="graphdata8" id ="graphdata8" style="visibility: hidden;" value="">
     <input type="text"  name="graphdata9" id ="graphdata9" style="visibility: hidden;" value="">
-	
+	<p>Use an existing layout: <select name="listf" id="listf">
+		<option value="">None</option>
+		<% _.each(fval, function(fv) {%>
+		   <option value=<%=fv['id']%>><%=fv['name']%></option>
+		<% }) %>
+	</select>
 	<input type="submit" class="btn btn-lg btn-primary btn-block" value="Use results to create a new pathway 2D graph"/>
 	<input type="hidden" name="_csrf" value="<%= _csrf %>" />
 	</form>
@@ -491,10 +503,10 @@ if (mtnl.hasOwnProperty("id")){
 	//console.log(mtnl.id)
 }
 
-
-
-//console.log(res0)
-
+//var lfba= <%-JSON.stringify(fbal)%>
+//var lfva= <%-JSON.stringify(fval)%>
+//console.log(lfba)
+//console.log(lfva)
 var fbaData = [];
 if(<%- JSON.stringify(method) %>==="fba") {
 	fbaData = [];

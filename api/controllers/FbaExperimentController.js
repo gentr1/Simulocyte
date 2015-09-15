@@ -281,42 +281,86 @@ module.exports = {
 								  
 								  try {
 									fs.readFile(file,"utf-8", function (err, data) {
-									
-										if (goNextL==true){	
-										  res.view(
-											{
-											  result: data,
-											  sfba_model_instance: exp.sfba_model_instance,											  
-											  name: exp.name, 
-											  id: exp.id,
-											  comment: exp.comment,
-											  objective: exp.objective,
-											  minimise: exp.minimise,
-											  method: method,
-											  status: status,
-											  mtb: mtb,
-											  mtnls: listLayouts,
-											  mtnl: mtnl
+										FbaPathway.find(function(errfba, fbapthws) {
+											FvaPathway.find(function(errfva, fvapthws) {
+												//console.log(fbapthws)
+												//console.log(fvapthws)
+												var fbaP={};
+												for (fb in fbapthws){
+													
+														var isIn=false;
+														for (var melem in fbapthws[fb].users){
+															if (fbapthws[fb].users[melem][0]==username){
+																//console.log(ptw.users[elem][0][1])
+																if(fbapthws[fb].users[melem][1]==false){							
+																	isIn=true;
+																}																
+															}
+														}
+														if(isIn){
+															fbaP[fbapthws[fb].name]={id: fbapthws[fb].id, name: fbapthws[fb].name};
+														}
+													
+												}
+												var fvaP={};
+												for (fv in fvapthws){
+													
+														var isIn=false;
+														for (var melem in fvapthws[fv].users){
+															if (fvapthws[fv].users[melem][0]==username){
+																//console.log(ptw.users[elem][0][1])
+																if(fvapthws[fv].users[melem][1]==false){							
+																	isIn=true;
+																}																
+															}
+														}
+														if(isIn){
+															fvaP[fvapthws[fv].name]={id: fvapthws[fv].id, name: fvapthws[fv].name};
+														}
+													
+												}
+												
+												if (goNextL==true){	
+												  res.view(
+													{
+													  result: data,
+													  sfba_model_instance: exp.sfba_model_instance,											  
+													  name: exp.name, 
+													  id: exp.id,
+													  comment: exp.comment,
+													  objective: exp.objective,
+													  minimise: exp.minimise,
+													  method: method,
+													  status: status,
+													  mtb: mtb,
+													  mtnls: listLayouts,
+													  mtnl: mtnl,
+													  fbal:fbaP,
+													  fval:fvaP
+													});
+												}
+												else if (isNotIn && mtn.openpolicy==true){
+													res.view(
+													{
+													  result: data, 
+													  sfba_model_instance: exp.sfba_model_instance,	
+													  name: exp.name, 
+													  id: exp.id,
+													  comment: exp.comment,
+													  objective: exp.objective,
+													  minimise: exp.minimise,
+													  method: method,
+													  status: status,
+													  mtb: mtb,
+													  mtnls: listLayouts,
+													  mtnl: mtnl,
+													  fbal:fbaP,
+													  fval:fvaP
+													});
+												}
+												else return next();
 											});
-										}
-										else if (isNotIn && mtn.openpolicy==true){
-											res.view(
-											{
-											  result: data, 
-											  sfba_model_instance: exp.sfba_model_instance,	
-											  name: exp.name, 
-											  id: exp.id,
-											  comment: exp.comment,
-											  objective: exp.objective,
-											  minimise: exp.minimise,
-											  method: method,
-											  status: status,
-											  mtb: mtb,
-											  mtnls: listLayouts,
-											  mtnl: mtnl
-											});
-										}
-										else return next();
+										});
 									});
 								  } catch(erf){}
 							}
