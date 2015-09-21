@@ -233,6 +233,13 @@ ht.updateSettings({
 		//console.log(prereacs)
 		for (var i =0, j= gdata.length-1;i<j;i++){
 			var parsed = gdata[i][5].replace(/\r/g, "").split(' ');
+			var parsed2=[];
+			for (elem in parsed){
+				if (parsed[elem]!=""){
+					parsed2.push(parsed[elem])
+				}
+			}
+			parsed = parsed2;
 			var reaction_sfba_name=parsed[0].split(':')[0];
 			
 			
@@ -309,6 +316,13 @@ ht.updateSettings({
 	else{
 		for (var i =0, j= gdata.length-1;i<j;i++){
 			var parsed = gdata[i][5].replace(/\r/g, "").split(' ');
+			var parsed2=[];
+			for (elem in parsed){
+				if (parsed[elem]!=""){
+					parsed2.push(parsed[elem])
+				}
+			}
+			parsed = parsed2;
 			var reaction_sfba_name=parsed[0].split(':')[0];
 			var res = reaction_sfba_name.replace(/[().]/g, '-');
 			var res2 = res.replace(/\+/g, 'plus');

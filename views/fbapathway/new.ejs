@@ -230,6 +230,13 @@ ht.updateSettings({
 		var prereacs= prefbadata.graphdata.reactions;
 		for (var i =0, j= gdata.length-1;i<j;i++){
 			var parsed = gdata[i][2].replace(/\r/g, "").split(' ');
+			var parsed2=[];
+			for (elem in parsed){
+				if (parsed[elem]!=""){
+					parsed2.push(parsed[elem])
+				}
+			}
+			parsed = parsed2;
 			var reaction_sfba_name=parsed[0].split(':')[0];
 			var res = reaction_sfba_name.replace(/[().]/g, '-');
 			var res2 = res.replace(/\+/g, 'plus');
@@ -300,6 +307,13 @@ ht.updateSettings({
 	else{
 		for (var i =0, j= gdata.length-1;i<j;i++){
 			var parsed = gdata[i][2].replace(/\r/g, "").split(' ');
+			var parsed2=[];
+			for (elem in parsed){
+				if (parsed[elem]!=""){
+					parsed2.push(parsed[elem])
+				}
+			}
+			parsed = parsed2;
 			var reaction_sfba_name=parsed[0].split(':')[0];
 			var res = reaction_sfba_name.replace(/[().]/g, '-');
 			var res2 = res.replace(/\+/g, 'plus');
@@ -378,6 +392,7 @@ ht.updateSettings({
 	}
 	dataCurrency.sort(function(a, b){return (b[1] - a[1]) //causes an array to be sorted numerically and ascending
 	});
+	console.log(dataCurrency[0])
 	
 	var recordedChanges={};
 	tokens=[];
